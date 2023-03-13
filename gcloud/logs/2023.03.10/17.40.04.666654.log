@@ -1,0 +1,43 @@
+2023-03-10 17:40:04,670 DEBUG    root            Loaded Command Group: ['gcloud', 'config']
+2023-03-10 17:40:04,676 DEBUG    root            Loaded Command Group: ['gcloud', 'config', 'config_helper']
+2023-03-10 17:40:04,681 DEBUG    root            Running [gcloud.config.config-helper] with arguments: [--format: "json", --quiet: "True", --verbosity: "warning"]
+2023-03-10 17:40:04,762 DEBUG    urllib3.connectionpool Starting new HTTPS connection (1): www.gstatic.com:443
+2023-03-10 17:40:04,831 DEBUG    urllib3.connectionpool https://www.gstatic.com:443 "GET /cloudsdk/feature_flag_config_file.yaml HTTP/1.1" 200 101
+2023-03-10 17:40:04,843 DEBUG    root            Chosen display Format:default json
+2023-03-10 17:40:04,844 INFO     root            Display format: "default json"
+2023-03-10 17:40:04,845 INFO     ___FILE_ONLY___ {
+  "configuration": {
+    "active_configuration": "default",
+    "properties": {
+      "compute": {
+        "region": "europe-west4",
+        "zone": "europe-west4-a"
+      },
+      "container": {
+        "use_application_default_credentials": "true"
+      },
+      "core": {
+        "account": "llbbbmn.wenzlawski@gmail.com",
+        "disable_prompts": "True",
+        "disable_usage_reporting": "True",
+        "print_unhandled_tracebacks": "true",
+        "project": "astute-tome-369119",
+        "verbosity": "warning"
+      },
+      "metrics": {
+        "environment": "cloudcode.vscode",
+        "environment_version": "1.21.3"
+      }
+    }
+  },
+  "credential": {
+    "access_token": "ya29.a0AVvZVsqgNWoEZDeYINXhcVDLHN39GTN5E-OQXeb44mf5xCn1Bj5H8YEbPxmFaiRZI_FVRBKWm9QZ6GHtY5ZQqp8cTiJD24J9-Kp718gJUBDVBlTbEWW2_y9ABysjVTSakOZc5-jKJS1KJCmvjGcqXn-HUv_OwFsFcQaWIBAaCgYKAb0SARESFQGbdwaIzEaIbEHXHDVNKPKPB5F6JA0174",
+    "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjI1NWNjYTZlYzI4MTA2MDJkODBiZWM4OWU0NTZjNDQ5NWQ3NDE4YmIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIzMjU1NTk0MDU1OS5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsImF1ZCI6IjMyNTU1OTQwNTU5LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTE3MTAyMzYxOTYwMzExMDY1MTEwIiwiZW1haWwiOiJsbGJiYm1uLndlbnpsYXdza2lAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiJqVlpwVFBNTVh3RUE1bkpLV0V0R2ZnIiwiaWF0IjoxNjc4NDY3MzI2LCJleHAiOjE2Nzg0NzA5MjZ9.DlN5YAUgxzLkKBL1kQO0cqbtS3ISvTNUDBId_PLDPKEYH2VfXmTKLE18-d5N0wfPgbcbtVrabjVauiLtec7Ckh5O40V7f2hcPzpJ4j8xzbjV0vt1zjmr1Te82huwcKg8484kzLmz3_WRBbGZ06xGcWSwZJhBizkOV_ic_LaJfLa6URQ_SW5UW62RLdVLlJYjFa0kr6iRz3WO1PwgB0ZYqq5TtESnZ-S9wwea1pFlsjEp2HVUSAsBmlD9ac1HaDFX-ePH2jkKXy18STaZcwIZcGyuNIZHx_k94DksY9PwgGhbwPoEqSri4hPyfEQ6PZfd7R-42Bwn97eCEuXqRtZiQw",
+    "token_expiry": "2023-03-10T17:55:25Z"
+  },
+  "sentinels": {
+    "config_sentinel": "/Users/mw/.config/gcloud/config_sentinel"
+  }
+}
+2023-03-10 17:40:04,846 INFO     ___FILE_ONLY___ 
+

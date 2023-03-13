@@ -1,0 +1,14 @@
+/teleport test 0_semos_city 20 20
+/summon bestiary 25 25
+/teleport test 0_semos_city 20 20
+/summon rat 25 25
+/teleport test 0_semos_city 20 20
+/summon bestiary 25 25
+/summon rat 25 )5
+/summon rat 25 25
+/summon squirrel
+/teleport test int_kalavan_house_14 5 5
+/summon post
+/summon squirrel
+/summon post
+/alter test xp add 10000000

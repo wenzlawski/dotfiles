@@ -1,0 +1,6 @@
+# Feature Flag Config File
+test/feature_flag:
+- value: true
+  weight: 50
+- value: false
+  weight: 50
