@@ -1,0 +1,1 @@
+{"title":"Caps Lock to Escape on Tap, CTRL + Alt on hold","rules":[{"description":"Caps Lock to Escape on Tap, CTRL + Alt on hold","manipulators":[{"from":{"key_code":"caps_lock","modifiers":{"optional":["caps_lock","left_shift"]}},"to":[{"key_code":"left_control","modifiers":["left_option"]}],"to_if_alone":[{"key_code":"escape"}],"type":"basic"}]}]}
