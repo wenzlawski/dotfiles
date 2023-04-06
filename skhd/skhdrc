@@ -128,7 +128,7 @@ ctrl + cmd - j : yabai -m window --focus prev
 ctrl + cmd - k : yabai -m window --focus next
 
 # equalize size of windows
-shift + alt - 0 : yabai -m space --balance
+shift + alt - 0x1A : yabai -m space --balance
 
 # swap window
 shift + ctrl + alt - h : yabai -m window --swap west
@@ -136,11 +136,12 @@ shift + ctrl + alt - j : yabai -m window --swap south
 shift + ctrl + alt - k : yabai -m window --swap north
 shift + ctrl + alt - l : yabai -m window --swap east
 
-# move window
-shift + ctrl - h : yabai -m window --warp west
-shift + ctrl - j : yabai -m window --warp south
-shift + ctrl - k : yabai -m window --warp north
-shift + ctrl - l : yabai -m window --warp east
+# resize windows with control alt command
+# h and j are working
+ctrl + alt + cmd - h : yabai -m window --resize right:-50:0
+ctrl + alt + cmd - j : yabai -m window --resize top:0:50
+ctrl + alt + cmd - k : yabai -m window --resize top:0:-50
+ctrl + alt + cmd - l : yabai -m window --resize right:50:0
 
 # make floating window fill screen
 shift + alt - up     : yabai -m window --grid 1:1:0:0:1:1
@@ -245,7 +246,7 @@ ctrl + alt - r : yabai -m space --rotate 90
 ctrl + alt - y : yabai -m space --mirror y-axis
 
 # mirror tree x-axis
-ctrl + alt - x : yabai -m space --mirror x-axis
+shift + ctrl + alt - y : yabai -m space --mirror x-axis
 
 # toggle padding on the current space
 ctrl + cmd - p : yabai -m space --toggle padding

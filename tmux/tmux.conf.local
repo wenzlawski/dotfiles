@@ -352,6 +352,8 @@ tmux_conf_copy_to_os_clipboard=false
 # -- user customizations -------------------------------------------------------
 # this is the place to override or undo settings
 
+set -g default-terminal "xterm-256color"
+
 # increase history size
 #set -g history-limit 10000
 
@@ -370,6 +372,8 @@ unbind C-b
 set -g prefix C-u
 bind C-u send-prefix
 
+bind -n C-c send-keys C-l \; run 'sleep 0.2' \; clear-history
+
 set -sg escape-time 0
 
 # split panes using | and -
@@ -382,14 +386,14 @@ bind-key "-" split-window -v -c "#{pane_current_path}"
 bind-key "_" split-window -fv -c "#{pane_current_path}"
 
 # easy resizing
-unbind j
-unbind k
-unbind l
-unbind h
-bind -r j resize-pane -D 5
-bind -r k resize-pane -U 5
-bind -r l resize-pane -R 5
-bind -r h resize-pane -L 5
+# unbind j
+# unbind k
+# unbind l
+# unbind h
+# bind -r j resize-pane -D 5
+# bind -r k resize-pane -U 5
+# bind -r l resize-pane -R 5
+# bind -r h resize-pane -L 5
 
 # navigate windows with n and p
 unbind n
@@ -420,11 +424,21 @@ unbind -T copy-mode-vi MouseDragEnd1Pane # don't exit copy mode after dragging w
 # Smart pane switching with awareness of Vim splits.
 # See: https://github.com/christoomey/vim-tmux-navigator
 is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
-    | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?)(diff)?$'"
-bind-key -n 'C-h' if-shell "$is_vim" 'send-keys C-h'  'select-pane -L'
-bind-key -n 'C-j' if-shell "$is_vim" 'send-keys C-j'  'select-pane -D'
-bind-key -n 'C-k' if-shell "$is_vim" 'send-keys C-k'  'select-pane -U'
-bind-key -n 'C-l' if-shell "$is_vim" 'send-keys C-l'  'select-pane -R'
+    | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|n?vim?x?)(diff)?$'"
+bind-key -n C-h if-shell "$is_vim" 'send-keys C-h'  'select-pane -L'
+bind-key -n C-j if-shell "$is_vim" 'send-keys C-j'  'select-pane -D'
+bind-key -n C-k if-shell "$is_vim" 'send-keys C-k'  'select-pane -U'
+bind-key -n C-l if-shell "$is_vim" 'send-keys C-l'  'select-pane -R'
+
+bind -n M-j resize-pane -D 5
+bind -n M-k resize-pane -U 5
+bind -n M-l resize-pane -R 5
+bind -n M-h resize-pane -L 5
+# bind-key -n M-h if-shell "$is_vim" 'send-keys M-left' 'resize-pane -L 3'
+# bind-key -n M-j if-shell "$is_vim" 'send-keys M-down' 'resize-pane -D 3'
+# bind-key -n M-k if-shell "$is_vim" 'send-keys M-up' 'resize-pane -U 3'
+# bind-key -n M-l if-shell "$is_vim" 'send-keys M-right' 'resize-pane -R 3'
+
 tmux_version='$(tmux -V | sed -En "s/^tmux ([0-9]+(.[0-9]+)?).*/\1/p")'
 if-shell -b '[ "$(echo "$tmux_version < 3.0" | bc)" = 1 ]' \
     "bind-key -n 'C-\\' if-shell \"$is_vim\" 'send-keys C-\\'  'select-pane -l'"
@@ -435,8 +449,7 @@ bind-key -T copy-mode-vi 'C-h' select-pane -L
 bind-key -T copy-mode-vi 'C-j' select-pane -D
 bind-key -T copy-mode-vi 'C-k' select-pane -U
 bind-key -T copy-mode-vi 'C-l' select-pane -R
-bind-key -T copy-mode-vi 'C-\' select-pane -l-position top
-
+bind-key -T copy-mode-vi 'C-\' select-pane -l
 
 # -- tpm -----------------------------------------------------------------------
 
