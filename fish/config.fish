@@ -1,3 +1,6 @@
+if not status --is-interactive
+	exit
+end
 # Aliases
 alias l=lsd
 alias la="lsd -a"
@@ -21,6 +24,7 @@ alias sg="search google"
 alias ch=z
 alias brew="env PATH=(string replace (pyenv root)/shims '' \"\$PATH\") brew"
 alias nvd="neovide"
+alias g="git"
 
 abbr --add jrnl " jrnl"
 
