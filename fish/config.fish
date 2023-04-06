@@ -25,6 +25,7 @@ alias ch=z
 alias brew="env PATH=(string replace (pyenv root)/shims '' \"\$PATH\") brew"
 alias nvd="neovide"
 alias g="git"
+alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
 
 abbr --add jrnl " jrnl"
 
