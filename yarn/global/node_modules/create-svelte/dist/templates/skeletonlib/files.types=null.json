@@ -1,6 +1,0 @@
-[
-	{
-		"name": "src/routes/+page.svelte",
-		"contents": "<h1>Welcome to your library project</h1>\n<p>Create your package using @sveltejs/package and preview/showcase your work with SvelteKit</p>\n<p>Visit <a href=\"https://kit.svelte.dev\">kit.svelte.dev</a> to read the documentation</p>\n"
-	}
-]
