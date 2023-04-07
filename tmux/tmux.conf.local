@@ -6,6 +6,7 @@
 
 
 # -- session creation ----------------------------------------------------------
+set -g default-terminal "xterm-256color"
 
 # prompt for session name when creating a new session, possible values are:
 #   - true
@@ -352,7 +353,6 @@ tmux_conf_copy_to_os_clipboard=false
 # -- user customizations -------------------------------------------------------
 # this is the place to override or undo settings
 
-set -g default-terminal "xterm-256color"
 
 # increase history size
 #set -g history-limit 10000
@@ -375,6 +375,7 @@ bind C-u send-prefix
 bind -n C-c send-keys C-l \; run 'sleep 0.2' \; clear-history
 
 set -sg escape-time 0
+setw -g agressive-resize on
 
 # split panes using | and -
 unbind '"'
@@ -488,12 +489,12 @@ tmux_conf_uninstall_plugins_on_reload=true
 # visit https://github.com/tmux-plugins for available plugins
 #set -g @plugin 'tmux-plugins/tmux-copycat'
 #set -g @plugin 'tmux-plugins/tmux-cpu'
-set -g @plugin 'christoomey/vim-tmux-navigator' # for navigating panes and vim/nvim with Ctrl-hjkl
+# set -g @plugin 'christoomey/vim-tmux-navigator' # for navigating panes and vim/nvim with Ctrl-hjkl
 set -g @plugin 'tmux-plugins/tmux-resurrect'
 # set -g @plugin 'tmux-plugins/tmux-continuum'
 # set -g @continuum-restore 'on'
 set -g @resurrect-capture-pane-contents 'on' # allow tmux-ressurect to capture pane contents
-
+set -g @plugin 'laktak/extrakto'
 
 # -- custom variables ----------------------------------------------------------
 

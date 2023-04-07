@@ -249,7 +249,8 @@ ctrl + alt - y : yabai -m space --mirror y-axis
 shift + ctrl + alt - y : yabai -m space --mirror x-axis
 
 # toggle padding on the current space
-ctrl + cmd - p : yabai -m space --toggle padding
+ctrl + cmd - p : yabai -m space --toggle padding;\
+                         yabai -m space --toggle gap
 
 # ctrl + alt - b : echo "$SHELL"
 
