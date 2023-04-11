@@ -13,8 +13,8 @@ sudo yabai --load-sa
 
 # global settings
 yabai -m config                                 \
-    mouse_follows_focus          on             \
-    focus_follows_mouse          autoraise      \
+    mouse_follows_focus          off            \
+    focus_follows_mouse          on            \
     window_origin_display        default        \
     window_placement             second_child   \
     window_zoom_persist          on             \
@@ -27,20 +27,20 @@ yabai -m config                                 \
     normal_window_opacity        0.90           \
     window_opacity               off            \
     insert_feedback_color        0xffd75f5f     \
-    active_window_border_color   0xff775759     \
+    active_window_border_color   0xffff7600     \
     normal_window_border_color   0xff555555     \
     window_border_width          4              \
     window_border_radius         12             \
     window_border_blur           off            \
     window_border_hidpi          on             \
-    window_border                off            \
+    window_border                on            \
     split_ratio                  0.50           \
     split_type                   auto           \
     auto_balance                 off            \
     top_padding                  36             \
-    bottom_padding               10             \
-    left_padding                 10             \
-    right_padding                10             \
+    bottom_padding               8             \
+    left_padding                 8             \
+    right_padding                8             \
     window_gap                   06             \
     layout                       bsp            \
     mouse_modifier               fn             \

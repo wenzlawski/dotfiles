@@ -1,7 +1,9 @@
 if not status --is-interactive
+  set -x PATH $PATH /usr/local/bin
 	exit
 end
 # Aliases
+alias ls=lsd
 alias l=lsd
 alias la="lsd -a"
 alias lh="lsd -hla"
