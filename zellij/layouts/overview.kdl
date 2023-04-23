@@ -1,0 +1,9 @@
+layout {
+    pane // panes can be bare
+    pane command="btm" // panes can have arguments on the same line
+    pane {
+        // panes can have arguments inside child-braces
+        command "lsd"
+        cwd "/"
+    }
+}

@@ -1,2 +1,0 @@
-(key) @keyword
-(value) @string

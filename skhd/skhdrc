@@ -106,7 +106,7 @@
 # ]
 
 # open terminal, blazingly fast compared to iTerm/Hyper
-ctrl + alt - return : open -na /Applications/WezTerm.app
+ctrl + alt - return : wezterm
 
 # open edge
 ctrl + alt - b : open -na /Applications/Microsoft\ Edge\ Dev.app
@@ -277,15 +277,12 @@ ctrl + cmd - p : yabai -m space --toggle padding;\
 # alt - q : yabai -m window --toggle fade
 
 # float / unfloat window and center on screen
-# alt - t : yabai -m window --toggle float;\
-#           yabai -m window --grid-layout 4:4:1:1:2:2
+ alt - t : yabai -m window --toggle float;\
+           yabai -m window --grid-layout 4:4:1:1:2:2
 
 # toggle sticky
-# alt - s : yabai -m window --toggle sticky
+alt - s : yabai -m window --toggle sticky
 
-# toggle sticky, float and resize to picture-in-picture size
-# alt - p : yabai -m window --toggle sticky;\
-#           yabai -m window --grid-layout 5:5:4:0:1:1
 
 # float next window to be tiled
 # shift + alt - t : chunkc set window_float_next 1

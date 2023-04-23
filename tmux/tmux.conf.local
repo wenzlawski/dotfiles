@@ -7,6 +7,8 @@
 
 # -- session creation ----------------------------------------------------------
 set -g default-terminal "xterm-256color"
+# set -g default-terminal "tmux-256color"
+# set -ag terminal-overrides ",xterm-256color:RGB"
 
 # prompt for session name when creating a new session, possible values are:
 #   - true
@@ -39,7 +41,7 @@ tmux_conf_new_pane_retain_current_path=true
 #   - true
 #   - false (default)
 #   - disabled (do not modify split-window bindings)
-tmux_conf_new_pane_reconnect_ssh=true
+tmux_conf_new_pane_reconnect_ssh=false:w
 
 
 # -- display -------------------------------------------------------------------
@@ -372,7 +374,7 @@ unbind C-b
 set -g prefix C-u
 bind C-u send-prefix
 
-bind -n C-c send-keys C-l \; run 'sleep 0.2' \; clear-history
+#bind -n M-p send-keys C-l \; run 'sleep 0.2' \; clear-history
 
 set -sg escape-time 0
 setw -g agressive-resize on

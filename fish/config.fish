@@ -1,5 +1,6 @@
 if not status --is-interactive
   set -x PATH $PATH /usr/local/bin
+  set -x PATH $PATH $HOME/.local/bin
 	exit
 end
 # Aliases
@@ -27,7 +28,7 @@ alias ch=z
 alias brew="env PATH=(string replace (pyenv root)/shims '' \"\$PATH\") brew"
 alias nvd="neovide"
 alias g="git"
-alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
+alias cat="bat"
 
 abbr --add jrnl " jrnl"
 
@@ -39,6 +40,8 @@ set -gx XDG_CONFIG_HOME ~/.config
 set -x PATH $PATH ~/.cargo/bin
 set PATH $PATH ~/.config/emacs/bin
 set -gx EDITOR /usr/local/bin/nvim
+set -gx VISUAL $EDITOR
+set -x PATH $PATH $HOME/.local/bin
 
 
 # CLI inits

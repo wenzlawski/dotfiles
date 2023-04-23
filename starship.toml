@@ -1,3 +1,7 @@
+
+add_newline = false
+# format = """$character"""
+
 [username]
 style_user = "green bold"
 style_root = "red bold"
@@ -6,14 +10,13 @@ disabled = false
 show_always = true
 
 [hostname]
-ssh_only = false
+ssh_only = true
 format = 'on [MacBook-Pro-14](bold yellow) '
 trim_at = "."
-disabled = true
 
 # Replace the "❯" symbol in the prompt with "➜"
 [character] # The name of the module we are configuring is "character"
-success_symbol = "[➜](bold green)" # The "success_symbol" segment is being set to "➜" with the color "bold green"
+success_symbol = "[>](bold green)" # The "success_symbol" segment is being set to "➜" with the color "bold green"
 error_symbol = "[✗](bold red)"
 
 #  
@@ -173,8 +176,9 @@ format = '\[[$symbol$stack]($style)\]'
 format = '\[[$symbol($version)]($style)\]'
 
 [python]
-format = '\[[${symbol}${pyenv_prefix}(${version})(\($virtualenv\))]($style)\]'
-pyenv_version_name = true
+format = ''
+# format = '\[[${symbol}${pyenv_prefix}(${version})(\($virtualenv\))]($style)\]'
+# pyenv_version_name = true
 
 [raku]
 format = '\[[$symbol($version-$vm_version)]($style)\]'
