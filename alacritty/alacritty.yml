@@ -4,7 +4,7 @@
 # environment variables. Some entries may override variables
 # set by alacritty it self.
 env:
-  TERM: xterm-256color
+  TERM: screen-256color
   # TERM env customization.
   #
   # If this property is not set, alacritty will set it to xterm-256color.
@@ -28,7 +28,7 @@ window:
   # DPI and the specified value is always added at both opposing sides.
   padding:
     x: 2
-    y: 0
+    y: 2
 
   # Spread additional padding evenly around the terminal content.
   dynamic_padding: false
@@ -70,30 +70,23 @@ font:
   # The normal (roman) font face to use.
   # Style can be specified to pick a specific face.
   normal:
-    # family: Iosevka
-    style: Light
-    family: "FiraCode Nerd Font"
-    # family: "Source Code Pro"
-    # style: Retina
+    # family: "FiraCode Nerd Font"
+    # family: "Hack Nerd Font"
+    family: "MesloLGS Nerd Font"
+    style: Regular
 
   # The bold font face
   bold:
-    # family: Iosevka
-    style: Retina
-    family: "FiraCode Nerd Font"
-    # family: "Source Code Pro"
+    family: "MesloLGS Nerd Font"
+    style: "Bold"
 
   # The italic font face
   italic:
-    # family: Iosevka
-    # style: "Light Italic"
-    # style: "Light Oblique"
-    family: "FiraCode Nerd Font"
-    # family: "Source Code Pro"
-    style: "Retina Italic"
+    family: "MesloLGS Nerd Font"
+    style: "Italic"
 
   # Point size of the font
-  size: 14.0
+  size: 16.0
 
   # Offset is the extra space around each character. offset.y can be thought of
   # as modifying the linespacing, and offset.x as modifying the letter spacing.
@@ -107,7 +100,6 @@ font:
   glyph_offset:
     x: 0
     y: 0
-
   # Thin stroke font rendering (macOS only)
   #
   # Thin strokes are suitable for retina displays, but for non-retina you
@@ -123,9 +115,8 @@ font:
   # This is a global setting and will require a log out or restart to take
   # effect.
   # use_thin_strokes: true
-
 # When true, bold text is drawn using the bright variant of colors.
-draw_bold_text_with_bright_colors: false
+draw_bold_text_with_bright_colors: true
 
 # Use custom cursor colors. If true, display the cursor in the cursor.foreground
 # and cursor.background colors, otherwise invert the colors of the cursor.
@@ -162,7 +153,6 @@ custom_cursor_colors: true
 #     magenta: "0x282a2e"
 #     cyan: "0xa3685a"
 #     white: "0x1d1f21"
-
 # # Tomorrow Night (https://github.com/aarowill/base16-alacritty/blob/master/colors/base16-tomorrow-night.yml)
 # # Default colors
 # primary:
@@ -192,7 +182,6 @@ custom_cursor_colors: true
 #   magenta: '0xe0e0e0'
 #   cyan:    '0xa3685a'
 #   white:   '0xffffff'
-
 # Indexed Colors
 #
 # The indexed colors include all colors from 16 to 256.
@@ -202,7 +191,6 @@ custom_cursor_colors: true
 #   `- { index: 16, color: '0xff00ff' }`
 #
 # indexed_colors: []
-
 # Visual Bell
 #
 # Any time the BEL code is received, Alacritty "rings" the visual bell. Once
@@ -229,6 +217,38 @@ bell:
   animation: EaseOutExpo
   color: "0xffffff"
   duration: 0
+colors:
+  # Default colors
+  primary:
+    background: "0x24292e"
+    foreground: "0xd1d5da"
+
+  # Normal colors
+  normal:
+    black: "0x24292e"
+    red: "0xf14c4c"
+    green: "0x23d18b"
+    yellow: "0xe2e210"
+    blue: "0x3b8eea"
+    magenta: "0xbc3fbc"
+    cyan: "0x29b7da"
+    white: "0xd1d5da"
+
+  # Bright colors
+  bright:
+    black: "0x666666"
+    red: "0xf14c4c"
+    green: "0x23d18b"
+    yellow: "0xf5f543"
+    blue: "0x3b8eea"
+    magenta: "0xd670d6"
+    cyan: "0x29b7da"
+    white: "0xd1d5da"
+
+  indexed_colors:
+    - { index: 16, color: "0xd18616" }
+    - { index: 17, color: "0xf14c4c" }
+theme: github_dark
 # Key bindings
 #
 # Key bindings are specified as a list of objects. Each binding will specify a

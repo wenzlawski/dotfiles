@@ -3,6 +3,15 @@ if not status --is-interactive
   set -x PATH $PATH $HOME/.local/bin
 	exit
 end
+
+# Base16 Shell
+if status --is-interactive
+  set BASE16_SHELL_PATH "$HOME/.config/base16-shell"
+  if test -s "$BASE16_SHELL_PATH" -a "$TERM" = "screen-256color"
+    source "$BASE16_SHELL_PATH/profile_helper.fish"
+  end
+end
+
 # Aliases
 alias ls=lsd
 alias l=lsd
@@ -29,6 +38,8 @@ alias brew="env PATH=(string replace (pyenv root)/shims '' \"\$PATH\") brew"
 alias nvd="neovide"
 alias g="git"
 alias cat="bat"
+alias zj="zellij"
+alias alt="alacritty-themes"
 
 abbr --add jrnl " jrnl"
 
@@ -42,6 +53,7 @@ set PATH $PATH ~/.config/emacs/bin
 set -gx EDITOR /usr/local/bin/nvim
 set -gx VISUAL $EDITOR
 set -x PATH $PATH $HOME/.local/bin
+set -x PATH $PATH $HOME/.local/lib/python3.10/site-packages
 
 
 # CLI inits

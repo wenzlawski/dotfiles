@@ -106,7 +106,7 @@
 # ]
 
 # open terminal, blazingly fast compared to iTerm/Hyper
-ctrl + alt - return : wezterm
+ctrl + alt - return : open -na /Applications/Alacritty.app
 
 # open edge
 ctrl + alt - b : open -na /Applications/Microsoft\ Edge\ Dev.app

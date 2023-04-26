@@ -12,6 +12,8 @@ end
 
 -- This is where you actually apply your config choices
 
+config.animation_fps = 30
+
 -- For example, changing the color scheme:
 config.color_scheme = "Guezwhoz"
 config.font = wezterm.font("Fira Code")
@@ -23,7 +25,7 @@ config.window_decorations = "RESIZE"
 config.window_padding = {
 	left = 4,
 	right = 0,
-	top = 10,
+	top = 5,
 	bottom = 0,
 }
 
