@@ -1,11 +1,10 @@
-if not status --is-interactive
-  set -x PATH $PATH /usr/local/bin
-  set -x PATH $PATH $HOME/.local/bin
-	exit
-end
-
 # Base16 Shell
 if status --is-interactive
+# CLI inits
+  zoxide init fish | source
+  atuin init fish | source
+  starship init fish | source
+  pyenv init - | source
   set BASE16_SHELL_PATH "$HOME/.config/base16-shell"
   if test -s "$BASE16_SHELL_PATH" -a "$TERM" = "screen-256color"
     source "$BASE16_SHELL_PATH/profile_helper.fish"
@@ -15,6 +14,7 @@ end
 # Aliases
 alias ls=lsd
 alias l=lsd
+alias ll="lsd -l"
 alias la="lsd -a"
 alias lh="lsd -hla"
 alias sshpi="ssh pi@raspberrypi.local"
@@ -41,6 +41,22 @@ alias cat="bat"
 alias zj="zellij"
 alias alt="alacritty-themes"
 
+function gc
+  command git clone "$1"
+end
+
+alias tm="tmux attach || tmux new -s work"
+alias gi="git init"
+alias gs="git status"
+alias gl="git log --stat --pretty=oneline --graph --date=short"
+# alias gg="gitg &"
+alias ga="git add --all"
+alias gr="git remote"
+alias gf="git fetch"
+alias gpl="git pull"
+alias gp="git push"
+alias gpm="git push origin master"
+
 abbr --add jrnl " jrnl"
 
 set -U fish_greeting
@@ -56,11 +72,6 @@ set -x PATH $PATH $HOME/.local/bin
 set -x PATH $PATH $HOME/.local/lib/python3.10/site-packages
 
 
-# CLI inits
-zoxide init fish | source
-atuin init fish | source
-starship init fish | source
-pyenv init - | source
 #pyenv virtualenv-init - | source
 
 # bind to ctrl-r in normal and insert mode, add any other bindings you want here too
