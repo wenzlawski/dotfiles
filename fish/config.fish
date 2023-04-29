@@ -33,7 +33,7 @@ alias git-repos="open 'https://github.com/wenzlawski?tab=repositories'"
 alias git-me="open 'https://github.com/wenzlawski'"
 alias sb="search bing"
 alias sg="search google"
-alias ch=z
+alias h=z
 alias brew="env PATH=(string replace (pyenv root)/shims '' \"\$PATH\") brew"
 alias nvd="neovide"
 alias g="git"
