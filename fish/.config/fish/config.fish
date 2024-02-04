@@ -33,7 +33,6 @@ set -x PATH $PATH /usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS/
 
 set -x FZF_DEFAULT_COMMAND 'fd --type file --follow --hidden --exclude .git --color=always'
 set -x FZF_CTRL_T_COMMAND $FZF_DEFAULT_COMMAND
-set -x OPENAI_API_KEY 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
 
 
 #pyenv virtualenv-init - | source
