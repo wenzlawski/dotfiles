@@ -1,0 +1,1 @@
+{"title":"Tab to LCTRL when held, Tab when pressed","rules":[{"description":"Tab to LCTRL when held, Tab when pressed","manipulators":[{"from":{"key_code":"tab"},"to":[{"key_code":"left_control","modifiers":[],"lazy":true}],"to_if_alone":[{"key_code":"tab"}],"type":"basic"}]}]}

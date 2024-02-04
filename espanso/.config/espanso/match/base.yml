@@ -1,0 +1,31 @@
+# espanso match file
+
+# For a complete introduction, visit the official docs at: https://espanso.org/docs/
+
+# You can use this file to define the base matches (aka snippets)
+# that will be available in every application when using espanso.
+
+# Matches are substitution rules: when you type the "trigger" string
+# it gets replaced by the "replace" string.
+matches:
+  - trigger: ";br"
+    replace: "Best regards,\nMarc Wenzlawski"
+  - trigger: ";today"
+    replace: "{{date}}"
+    vars:
+      - name: date
+        type: date
+        params:
+          format: "%d/%m/%Y"
+  - trigger: ";greet"
+    form: |
+      Hey [[name]],
+      Happy Birthday!
+  - trigger: ";clip"
+    replace: "{{clipboard}}"
+    vars:
+      -
+        name: clipboard
+        type: clipboard
+  - trigger: ";tr"
+    replace: "- trigger: \n  replace: "

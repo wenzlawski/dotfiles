@@ -1,0 +1,5 @@
+toggle_key: OFF
+search_shortcut: off
+backend: Inject
+key_delay: 0
+inject_delay: 0
