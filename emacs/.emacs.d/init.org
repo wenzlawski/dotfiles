@@ -1503,7 +1503,7 @@ copy.
   (:map projectile-command-map ("b" . consult-project-buffer))
   :config
   (setq projectile-project-search-path
-	'("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects"))
+	'("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles"))
   (projectile-global-mode 1))
 #+end_src
 *** quickrun

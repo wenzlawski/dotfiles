@@ -208,14 +208,21 @@
 	("s" . tab-switcher))
   (:map help-map
         ("t" . nil)
+	("W" . woman)
+	("t t" . consult-theme)
+	("t c" . centered-cursor-mode)
+	("t h" . hl-line-mode)
+	("t v" . variable-pitch-mode)
+	("t f" . visual-fill-column-mode)
+	("t l" . visual-line-mode)
         ("t t" . consult-theme)
         ("t c" . centered-cursor-mode)
         ("t h" . hl-line-mode)
         ("t v" . variable-pitch-mode)
         ("t f" . visual-fill-column-mode)
         ("t l" . visual-line-mode))
-;;  (:map dired-mode-map
-;;	("K" . dired-kill-subdir))
+  ;;  (:map dired-mode-map
+  ;;	("K" . dired-kill-subdir))
   (:map completion-list-mode-map
 	("e" . switch-to-minibuffer)))
 
@@ -877,7 +884,7 @@ This function can be used as the value of the user option
   (:map projectile-command-map ("b" . consult-project-buffer))
   :config
   (setq projectile-project-search-path
-	'("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects"))
+	'("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles"))
   (projectile-global-mode 1))
 
   (use-package quickrun)
