@@ -122,12 +122,14 @@
     :hook (writeroom-mode . mw/writeroom-mode-hook))
   (use-package centered-cursor-mode)
 
-  (defun mw/spacious-padding-reset ()
-    "reset the spacious padding and modeline formats"
-    (interactive)
-    (spacious-padding-mode 1))
+(defun mw/spacious-padding-reset ()
+  "reset the spacious padding and modeline formats"
+  (interactive)
+  (spacious-padding-mode 1))
 
-  (use-package spacious-padding)
+(use-package spacious-padding
+  :config
+  (spacious-padding-mode))
 
   (use-package pulsar
     :config
@@ -173,7 +175,9 @@
   (setq frame-inhibit-implied-resize t)
   (setq scroll-margin 0)
   (setq scroll-conservatively 5)
-  (setq frame-title-format '("" "what the %b"))
+  ;;(setq frame-title-format '("" "what the %b"))
+  (setq frame-title-format '("" ""))
+  (setq ns-use-proxy-icon nil)
   (setq cursor-type t)
   (setq blink-cursor-delay 1)
   (setq blink-cursor-interval 1)
@@ -394,7 +398,7 @@
                             " "
                             prot-modeline-misc-info
                             " "))))))
-(prot-modeline-subtle-mode)
+;;(prot-modeline-subtle-mode)
 
 (use-package hide-mode-line
   :bind (:map help-map ("t m" . hide-mode-line-mode)))
@@ -498,9 +502,7 @@ This function can be used as the value of the user option
 (use-package consult
   :after org
   :config
-  (consult-customize
-   consult-notes
-   :preview-key "M-.")
+  (consult-customize consult-notes :preview-key "M-.")
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :bind
   ([remap Info-search] . consult-info)

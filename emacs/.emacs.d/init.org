@@ -1,5 +1,4 @@
 #+title: GNU Emacs configuration
-
 #+author: Marc Wenzlawski
 #+email: marcwenzlawski@gmail.com
 #+language: en
@@ -406,13 +405,15 @@ between it: [[https://ogbe.net/blog/toggle-serif][Variable-width Serif Fonts whe
 *** spacious padding
 
 #+begin_src elisp
-  (defun mw/spacious-padding-reset ()
-    "reset the spacious padding and modeline formats"
-    (interactive)
-    (spacious-padding-mode 1))
+(defun mw/spacious-padding-reset ()
+  "reset the spacious padding and modeline formats"
+  (interactive)
+  (spacious-padding-mode 1))
 
-  (use-package spacious-padding)
-    #+end_src
+(use-package spacious-padding
+  :config
+  (spacious-padding-mode))
+#+end_src
 *** pulsar
 
 #+begin_src elisp
@@ -473,7 +474,9 @@ between it: [[https://ogbe.net/blog/toggle-serif][Variable-width Serif Fonts whe
   (setq frame-inhibit-implied-resize t)
   (setq scroll-margin 0)
   (setq scroll-conservatively 5)
-  (setq frame-title-format '("" "what the %b"))
+  ;;(setq frame-title-format '("" "what the %b"))
+  (setq frame-title-format '("" ""))
+  (setq ns-use-proxy-icon nil)
   (setq cursor-type t)
   (setq blink-cursor-delay 1)
   (setq blink-cursor-interval 1)
@@ -824,7 +827,7 @@ http://www.gonsie.com/blorg/modeline.html
                             " "
                             prot-modeline-misc-info
                             " "))))))
-(prot-modeline-subtle-mode)
+;;(prot-modeline-subtle-mode)
 #+end_src
 
 *** hide mode line
@@ -951,9 +954,7 @@ This function can be used as the value of the user option
 (use-package consult
   :after org
   :config
-  (consult-customize
-   consult-notes
-   :preview-key "M-.")
+  (consult-customize consult-notes :preview-key "M-.")
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :bind
   ([remap Info-search] . consult-info)
