@@ -5,7 +5,6 @@
 #+startup: overview indent
 #+property: header-args :results none :tangle yes
 
-
 This is the new config, based in part on the organisation of prot's org file.
 
 * Inspiration
@@ -351,6 +350,12 @@ with a daemon.
 
   (use-package modus-themes
     :config
+    (setq modus-themes-common-palette-overrides 
+      '((bg-mode-line-active bg-dim)
+        (fg-mode-line-active fg-dim)
+        (border-mode-line-active bg-dim)
+	  (bg-mode-line-inactive bg-main)
+	  (border-mode-line-inactive unspecified)))
     (setq modus-themes-mode-line 'borderless))
 #+end_src
 
@@ -475,8 +480,8 @@ between it: [[https://ogbe.net/blog/toggle-serif][Variable-width Serif Fonts whe
   (setq scroll-margin 0)
   (setq scroll-conservatively 5)
   ;;(setq frame-title-format '("" "what the %b"))
-  (setq frame-title-format '("" ""))
-  (setq ns-use-proxy-icon nil)
+  (setq frame-title-format "\n")
+  (setq ns-use-proxy-icon t)
   (setq cursor-type t)
   (setq blink-cursor-delay 1)
   (setq blink-cursor-interval 1)
@@ -488,7 +493,7 @@ between it: [[https://ogbe.net/blog/toggle-serif][Variable-width Serif Fonts whe
   (setq prescient-history-length 1000)
   (setq tab-always-indent 'complete)
   (setq completion-cycle-threshold nil)
-  (setq abbrev-file-name "~/.config/doom/abbrev_defs")
+  (setq abbrev-file-name "~/.emacs.d/abbrev_defs")
   (setq xref-search-program 'ripgrep)
   (setq delete-by-moving-to-trash t)
   (setq uniquify-buffer-name-style 'forward)
@@ -1608,6 +1613,10 @@ magit, and forge, magit-gitflow, magit-todos, github-review
 ** Org
 *** defaults
 
+CAPTURE-refile.org
+*Capture*
+*Org Select*
+
 #+begin_src elisp
 (defun mw/org-setup-hook ()
   "Setup org mode hook"
@@ -1618,6 +1627,13 @@ magit, and forge, magit-gitflow, magit-todos, github-review
   (setq fill-column 78))
 
 (use-package org
+  ;; :custom
+  ;; (display-buffer-alist
+  ;;  (append display-buffer-alist
+  ;; 	   '(("^\\(CAPTURE-.+\\)$\\|\\*\\(?:Capture\\|Org Select\\)\\*"
+  ;; 	      (display-buffer-below-selected display-buffer-at-bottom)
+  ;; 	      (inhibit-same-window . t)
+  ;; 	      (window-height . )))))
   :config
   (setq org-directory "~/Dropbox/Org/")
   (setq org-agenda-files '("projects.org" "daily.org" "refile.org" "future.org"))
@@ -1636,6 +1652,7 @@ magit, and forge, magit-gitflow, magit-todos, github-review
   (setq org-goto-max-level 5)
   (setq org-blank-before-new-entry '((heading . auto) (plain-list-item .) auto))
   (add-to-list 'org-babel-load-languages '(shell . t))
+  (setq org-src-window-setup 'current-window)
   (setq org-capture-templates
         '(("r" "refile" entry (file "~/Dropbox/Org/refile.org") "* %^{Title} %^g\n%U\n\n%?" :prepend t :empty-lines-after 1)
    	  ("t" "today" entry (file+olp+datetree "~/Dropbox/Org/daily.org") "* %^{Title}\n\n%?")

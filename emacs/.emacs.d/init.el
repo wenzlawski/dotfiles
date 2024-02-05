@@ -102,6 +102,12 @@
 
   (use-package modus-themes
     :config
+    (setq modus-themes-common-palette-overrides 
+      '((bg-mode-line-active bg-dim)
+        (fg-mode-line-active fg-dim)
+        (border-mode-line-active bg-dim)
+	  (bg-mode-line-inactive bg-main)
+	  (border-mode-line-inactive unspecified)))
     (setq modus-themes-mode-line 'borderless))
 
   (use-package poet-theme
@@ -176,8 +182,8 @@
   (setq scroll-margin 0)
   (setq scroll-conservatively 5)
   ;;(setq frame-title-format '("" "what the %b"))
-  (setq frame-title-format '("" ""))
-  (setq ns-use-proxy-icon nil)
+  (setq frame-title-format "\n")
+  (setq ns-use-proxy-icon t)
   (setq cursor-type t)
   (setq blink-cursor-delay 1)
   (setq blink-cursor-interval 1)
@@ -189,7 +195,7 @@
   (setq prescient-history-length 1000)
   (setq tab-always-indent 'complete)
   (setq completion-cycle-threshold nil)
-  (setq abbrev-file-name "~/.config/doom/abbrev_defs")
+  (setq abbrev-file-name "~/.emacs.d/abbrev_defs")
   (setq xref-search-program 'ripgrep)
   (setq delete-by-moving-to-trash t)
   (setq uniquify-buffer-name-style 'forward)
@@ -961,6 +967,13 @@ This function can be used as the value of the user option
   (setq fill-column 78))
 
 (use-package org
+  ;; :custom
+  ;; (display-buffer-alist
+  ;;  (append display-buffer-alist
+  ;; 	   '(("^\\(CAPTURE-.+\\)$\\|\\*\\(?:Capture\\|Org Select\\)\\*"
+  ;; 	      (display-buffer-below-selected display-buffer-at-bottom)
+  ;; 	      (inhibit-same-window . t)
+  ;; 	      (window-height . )))))
   :config
   (setq org-directory "~/Dropbox/Org/")
   (setq org-agenda-files '("projects.org" "daily.org" "refile.org" "future.org"))
@@ -979,6 +992,7 @@ This function can be used as the value of the user option
   (setq org-goto-max-level 5)
   (setq org-blank-before-new-entry '((heading . auto) (plain-list-item .) auto))
   (add-to-list 'org-babel-load-languages '(shell . t))
+  (setq org-src-window-setup 'current-window)
   (setq org-capture-templates
         '(("r" "refile" entry (file "~/Dropbox/Org/refile.org") "* %^{Title} %^g\n%U\n\n%?" :prepend t :empty-lines-after 1)
    	  ("t" "today" entry (file+olp+datetree "~/Dropbox/Org/daily.org") "* %^{Title}\n\n%?")
