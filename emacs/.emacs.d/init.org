@@ -159,7 +159,6 @@ New frames are instructed to call
 (mw/avoid-initial-flash-of-light)
 #+end_src
 
-
 * The =init.el= file
 ** Create emacs backups in separate dict
 
@@ -1633,6 +1632,7 @@ CAPTURE-refile.org
   (setq fill-column 78))
 
 (use-package org
+  :pin manual
   ;; :custom
   ;; (display-buffer-alist
   ;;  (append display-buffer-alist
@@ -1669,7 +1669,7 @@ CAPTURE-refile.org
   :bind
   ("C-x c" . org-capture)
   (:map org-mode-map
-        ("C-c C-." . org-timestamp-inactive)
+        ("C-c C-." . org-time-stamp-inactive)
         ("C-c a" . org-agenda)
         ("C-c e" . org-emphasize))
   :custom-face
