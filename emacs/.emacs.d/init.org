@@ -781,8 +781,9 @@ buffer, one always gets the error 'end-of-buffer' and nothing happens. Beware.
 ** window
 *** Transpose frame
 
-#+begin_src elisp :tangle no
-  (load! "lisp/transpose-frame.el")
+#+begin_src elisp
+(use-package transpose-frame
+  :straight (:host github :repo "emacsorphanage/transpose-frame"))
 #+end_src
 
 ** modeline
@@ -1324,11 +1325,12 @@ common lisp / scheme / racket
 **** c/c++
 **** typst
 
-#+begin_src elisp :tangle no
-  (use-package typst-ts-mode
-    :straight (:host sourcehut :repo "meow_king/typst-ts-mode")
-    :custom
-    (typst-ts-mode-watch-options "--open"))
+#+begin_src elisp
+(use-package typst-ts-mode
+  :straight (:host sourcehut :repo "meow_king/typst-ts-mode")
+  :mode ("\\.typ\\'" . typst-ts-mode)
+  :custom
+  (typst-ts-mode-watch-options "--open"))
 #+end_src
 *** flycheck
 #+begin_src elisp
@@ -1423,31 +1425,35 @@ common lisp / scheme / racket
 *** tree-sitter
 [[https://www.masteringemacs.org/article/how-to-get-started-tree-sitter]]
 #+begin_src elisp
-  (setq treesit-language-source-alist
-        '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-          (rust "https://github.com/tree-sitter/tree-sitter-rust")
-          (regex "https://github.com/tree-sitter/tree-sitter-regex")
-          (julia "https://github.com/tree-sitter/tree-sitter-julia")
-          (r "https://github.com/r-lib/tree-sitter-r")
-          (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-          (cmake "https://github.com/uyha/tree-sitter-cmake")
-          (css "https://github.com/tree-sitter/tree-sitter-css")
-          (go "https://github.com/tree-sitter/tree-sitter-go")
-          (html "https://github.com/tree-sitter/tree-sitter-html")
-          (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-          (json "https://github.com/tree-sitter/tree-sitter-json")
-          (make "https://github.com/alemuller/tree-sitter-make")
-          (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-          (python "https://github.com/tree-sitter/tree-sitter-python")
-          (toml "https://github.com/tree-sitter/tree-sitter-toml")
-          (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-          (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-          (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-  (setq treesit-font-lock-level 4)
+(setq treesit-language-source-alist
+      '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+        (rust "https://github.com/tree-sitter/tree-sitter-rust")
+        (regex "https://github.com/tree-sitter/tree-sitter-regex")
+        (julia "https://github.com/tree-sitter/tree-sitter-julia")
+        (r "https://github.com/r-lib/tree-sitter-r")
+        (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+        (cmake "https://github.com/uyha/tree-sitter-cmake")
+        (css "https://github.com/tree-sitter/tree-sitter-css")
+        (go "https://github.com/tree-sitter/tree-sitter-go")
+        (html "https://github.com/tree-sitter/tree-sitter-html")
+        (javascript "https://github.com/tree-sitter/tree-sitter-javascript"
+		    "master" "src")
+        (json "https://github.com/tree-sitter/tree-sitter-json")
+        (make "https://github.com/alemuller/tree-sitter-make")
+        (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+        (python "https://github.com/tree-sitter/tree-sitter-python")
+        (toml "https://github.com/tree-sitter/tree-sitter-toml")
+        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master"
+	     "tsx/src")
+        (typescript "https://github.com/tree-sitter/tree-sitter-typescript"
+		    "master" "typescript/src")
+	(typst "https://github.com/uben0/tree-sitter-typst")
+        (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+(setq treesit-font-lock-level 4)
 
-  (use-package treesit-auto
-    :config
-    (global-treesit-auto-mode))
+(use-package treesit-auto
+  :config
+  (global-treesit-auto-mode))
 #+end_src
 *** formatting
 formatting package used it format-all [[https://github.com/lassik/emacs-format-all-the-code][lassik/emacs-format-all-the-code:]]
@@ -1509,7 +1515,7 @@ copy.
   (:map projectile-command-map ("b" . consult-project-buffer))
   :config
   (setq projectile-project-search-path
-	'("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles"))
+	'("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles" "~/Dropbox/repos"))
   (projectile-global-mode 1))
 #+end_src
 *** quickrun
@@ -1650,7 +1656,7 @@ CAPTURE-refile.org
   (setq org-special-ctrl-a/e t)
   (setq org-outline-path-complete-in-steps nil)
   (setq org-goto-max-level 5)
-  (setq org-blank-before-new-entry '((heading . auto) (plain-list-item .) auto))
+  (setq org-blank-before-new-entry '((heading . auto) (plain-list-item . auto)))
   (add-to-list 'org-babel-load-languages '(shell . t))
   (setq org-src-window-setup 'current-window)
   (setq org-capture-templates

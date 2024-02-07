@@ -362,6 +362,9 @@
 (use-package scratch
     :straight (:host codeberg :repo "emacs-weirdware/scratch" :files ("*.el")))
 
+(use-package transpose-frame
+  :straight (:host github :repo "emacsorphanage/transpose-frame"))
+
   (require 'prot-modeline)
   (defun prot-modeline-subtle-activate ()
     "Run prot-modeline-subtle-mode with 1"
@@ -752,6 +755,12 @@ This function can be used as the value of the user option
     (setq julia-snail-extensions '(repl-history formatter))
     :hook (julia-mode . julia-snail-mode))
 
+(use-package typst-ts-mode
+  :straight (:host sourcehut :repo "meow_king/typst-ts-mode")
+  :mode ("\\.typ\\'" . typst-ts-mode)
+  :custom
+  (typst-ts-mode-watch-options "--open"))
+
   (use-package flycheck)
 
   (use-package flyspell-correct
@@ -830,31 +839,35 @@ This function can be used as the value of the user option
       ;; Please note ispell-extra-args contains ACTUAL parameters passed to aspell
       (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")))))
 
-  (setq treesit-language-source-alist
-        '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-          (rust "https://github.com/tree-sitter/tree-sitter-rust")
-          (regex "https://github.com/tree-sitter/tree-sitter-regex")
-          (julia "https://github.com/tree-sitter/tree-sitter-julia")
-          (r "https://github.com/r-lib/tree-sitter-r")
-          (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-          (cmake "https://github.com/uyha/tree-sitter-cmake")
-          (css "https://github.com/tree-sitter/tree-sitter-css")
-          (go "https://github.com/tree-sitter/tree-sitter-go")
-          (html "https://github.com/tree-sitter/tree-sitter-html")
-          (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-          (json "https://github.com/tree-sitter/tree-sitter-json")
-          (make "https://github.com/alemuller/tree-sitter-make")
-          (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-          (python "https://github.com/tree-sitter/tree-sitter-python")
-          (toml "https://github.com/tree-sitter/tree-sitter-toml")
-          (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-          (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-          (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-  (setq treesit-font-lock-level 4)
+(setq treesit-language-source-alist
+      '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+        (rust "https://github.com/tree-sitter/tree-sitter-rust")
+        (regex "https://github.com/tree-sitter/tree-sitter-regex")
+        (julia "https://github.com/tree-sitter/tree-sitter-julia")
+        (r "https://github.com/r-lib/tree-sitter-r")
+        (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+        (cmake "https://github.com/uyha/tree-sitter-cmake")
+        (css "https://github.com/tree-sitter/tree-sitter-css")
+        (go "https://github.com/tree-sitter/tree-sitter-go")
+        (html "https://github.com/tree-sitter/tree-sitter-html")
+        (javascript "https://github.com/tree-sitter/tree-sitter-javascript"
+		    "master" "src")
+        (json "https://github.com/tree-sitter/tree-sitter-json")
+        (make "https://github.com/alemuller/tree-sitter-make")
+        (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+        (python "https://github.com/tree-sitter/tree-sitter-python")
+        (toml "https://github.com/tree-sitter/tree-sitter-toml")
+        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master"
+	     "tsx/src")
+        (typescript "https://github.com/tree-sitter/tree-sitter-typescript"
+		    "master" "typescript/src")
+	(typst "https://github.com/uben0/tree-sitter-typst")
+        (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+(setq treesit-font-lock-level 4)
 
-  (use-package treesit-auto
-    :config
-    (global-treesit-auto-mode))
+(use-package treesit-auto
+  :config
+  (global-treesit-auto-mode))
 
 (use-package format-all
   :commands format-all-mode
@@ -892,7 +905,7 @@ This function can be used as the value of the user option
   (:map projectile-command-map ("b" . consult-project-buffer))
   :config
   (setq projectile-project-search-path
-	'("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles"))
+	'("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles" "~/Dropbox/repos"))
   (projectile-global-mode 1))
 
   (use-package quickrun)
