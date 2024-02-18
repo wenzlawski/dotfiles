@@ -302,7 +302,7 @@
 
 (use-package vterm
   :bind
-  ("C-c l t" . vterm)
+  ("C-c t" . vterm)
   :config
   (setq vterm-shell "/usr/local/bin/fish"))
 
@@ -980,6 +980,7 @@ This function can be used as the value of the user option
   (setq fill-column 78))
 
 (use-package org
+  :pin manual
   ;; :custom
   ;; (display-buffer-alist
   ;;  (append display-buffer-alist
@@ -1003,7 +1004,7 @@ This function can be used as the value of the user option
   (setq org-special-ctrl-a/e t)
   (setq org-outline-path-complete-in-steps nil)
   (setq org-goto-max-level 5)
-  (setq org-blank-before-new-entry '((heading . auto) (plain-list-item .) auto))
+  (setq org-blank-before-new-entry '((heading . auto) (plain-list-item . auto)))
   (add-to-list 'org-babel-load-languages '(shell . t))
   (setq org-src-window-setup 'current-window)
   (setq org-capture-templates
@@ -1016,7 +1017,7 @@ This function can be used as the value of the user option
   :bind
   ("C-x c" . org-capture)
   (:map org-mode-map
-        ("C-c C-." . org-timestamp-inactive)
+        ("C-c C-." . org-time-stamp-inactive)
         ("C-c a" . org-agenda)
         ("C-c e" . org-emphasize))
   :custom-face
@@ -1185,10 +1186,13 @@ This function can be used as the value of the user option
 
 (use-package org-web-tools)
 
+(use-package notmuch)
+
+(use-package elfeed)
 (use-package elfeed-org
   :after elfeed
   :config
-  (setq rmh-elfeed-org-files '("~/Dropbox/Org/feeds.org"))
+  (setq rmh-elfeed-org-files '("~/.emacs.d/feeds.org"))
   (setq elfeed-search-title-max-width 100)
   (elfeed-org))
 
@@ -1336,9 +1340,9 @@ This function can be used as the value of the user option
 
 (use-package calibredb
   :bind
-  ("C-c l c" . calibredb)
-  ("C-c l C-c" . mw/refresh-calibre-bib)
-  ("C-c l C" . calibredb-consult-read)
+  ("C-c j c" . calibredb)
+  ("C-c j C-c" . mw/refresh-calibre-bib)
+  ("C-c j C" . calibredb-consult-read)
   :config
   (setq calibredb-root-dir "~/Dropbox/Calibre Library")
   (setq calibredb-db-dir (expand-file-name "metadata.db" calibredb-root-dir))
@@ -1410,7 +1414,7 @@ This function can be used as the value of the user option
 (use-package speed-type)
 
 (use-package fireplace
-  :bind ("C-c l f" . fireplace))
+  :bind ("C-c j f" . fireplace))
 
 (use-package gptel)
 

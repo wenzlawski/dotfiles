@@ -654,7 +654,7 @@ Making menus in avy. really cool
 #+begin_src elisp
 (use-package vterm
   :bind
-  ("C-c l t" . vterm)
+  ("C-c t" . vterm)
   :config
   (setq vterm-shell "/usr/local/bin/fish"))
 #+end_src
@@ -1943,79 +1943,25 @@ Literature folder as destination, the file is created, but is empty.
 #+end_src
 
 ** email
-*** mu4e
-
-#+begin_src elisp :tangle no
-;; assumed Maildir layout
-;; ~/Maildir/Account0/{Inbox,Sent,Trash}
-;; ~/Maildir/Account1/{Inbox,Sent,Trash}
-;; where Account0 is context name
-(defun my-make-mu4e-context (context-name full-name mail-address signature)
-  "Return a mu4e context named CONTEXT-NAME with :match-func matching
-    folder name CONTEXT-NAME in Maildir. The context's `user-mail-address',
-    `user-full-name' and `mu4e-compose-signature' is set to MAIL-ADDRESS
-    FULL-NAME and SIGNATURE respectively.
-    Special folders are set to context specific folders."
-  (let ((dir-name (concat "/" context-name)))
-    (make-mu4e-context
-     :name context-name
-     ;; we match based on the maildir of the message
-     ;; this matches maildir /Arkham and its sub-directories
-     :match-func
-     `(lambda (msg)
-        (when msg
-          (string-match-p
-           ,(concat "^" dir-name)
-           (mu4e-message-field msg :maildir))))
-     :vars
-     `((user-mail-address    . ,mail-address)
-       (user-full-name       . ,full-name)
-       (mu4e-sent-folder     . ,(concat dir-name "/Sent"))
-       (mu4e-drafts-folder   . ,(concat dir-name "/Drafts"))
-       (mu4e-trash-folder    . ,(concat dir-name "/Trash"))
-       (mu4e-refile-folder   . ,(concat dir-name "/Archive"))
-       (mu4e-compose-signature . ,signature)))))
-;;Fixing duplicate UID errors when using mbsync and mu4e
-(setq mu4e-change-filenames-when-moving t)
-
-(setq mu4e-contexts
-      `(,(my-make-mu4e-context
-          "account0" "marc"
-          "marc.wenzlawski@icloud.com" "marc from emacs")))
-
-(setq mu4e-get-mail-command "mbsync icloud")
-
-;; Most of the time, I merely want mu4e to re-index my local maildir (because
-;; I'm running mbsync as a cron job). However, sometimes I want to fetch mails
-;; immediately. Do this by changing the meaning of a prefix for
-;; mu4e-update-mail-and-index (bound to "U").
-;;
-;; A prefix usually means run in the background, but I don't think I ever want
-;; that. Change things so a prefix means to call mbsync.
-(defun rjs/mu4e-update-mail-and-index (orig-fun prefix &rest args)
-  (interactive "P")
-  (if prefix (funcall orig-fun nil) (mu4e-update-index)))
-
-(advice-add 'mu4e-update-mail-and-index
-            :around #'rjs/mu4e-update-mail-and-index)
-
-;;Fixing duplicate UID errors when using mbsync and mu4e
-(setq mu4e-change-filenames-when-moving t)
-#+end_src
-
 *** email
 either mu4e or notmuch. currently swaying on the side of mu4e since the spam
 protection on notmuch was hacky. or maybe that was just me.
 
 also org-msg
+*** notmuch
+#+begin_src elisp
+(use-package notmuch)
+  
+#+end_src
 ** web
 *** elfeed
 
 #+begin_src elisp
+(use-package elfeed)
 (use-package elfeed-org
   :after elfeed
   :config
-  (setq rmh-elfeed-org-files '("~/Dropbox/Org/feeds.org"))
+  (setq rmh-elfeed-org-files '("~/.emacs.d/feeds.org"))
   (setq elfeed-search-title-max-width 100)
   (elfeed-org))
 #+end_src
@@ -2239,9 +2185,9 @@ Emacs epub reader.
 
 (use-package calibredb
   :bind
-  ("C-c l c" . calibredb)
-  ("C-c l C-c" . mw/refresh-calibre-bib)
-  ("C-c l C" . calibredb-consult-read)
+  ("C-c j c" . calibredb)
+  ("C-c j C-c" . mw/refresh-calibre-bib)
+  ("C-c j C" . calibredb-consult-read)
   :config
   (setq calibredb-root-dir "~/Dropbox/Calibre Library")
   (setq calibredb-db-dir (expand-file-name "metadata.db" calibredb-root-dir))
@@ -2350,11 +2296,12 @@ document similarity notes
 *** fireplace
 #+begin_src elisp
 (use-package fireplace
-  :bind ("C-c l f" . fireplace))
+  :bind ("C-c j f" . fireplace))
 #+end_src
 *** elfeed
 #+begin_src elisp :tangle no
-(use-package elfeed)
+(use-package elfeed
+  :bind ("C-c j e" . elfeed))
 #+end_src
 *** chatgpt
 #+begin_src elisp

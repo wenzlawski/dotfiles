@@ -41,9 +41,3 @@ set -x FZF_CTRL_T_COMMAND $FZF_DEFAULT_COMMAND
 bind \cr _atuin_search
 bind -M insert \cr _atuin_search
 
-# pnpm
-set -gx PNPM_HOME "/Users/mw/Library/pnpm"
-if not string match -q -- $PNPM_HOME $PATH
-  set -gx PATH "$PNPM_HOME" $PATH
-end
-# pnpm end

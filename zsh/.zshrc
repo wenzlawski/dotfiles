@@ -38,13 +38,6 @@ export PATH=$HOME/.local/bin:$PATH
 export PATH=/usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS:$PATH
 export PATH=$HOME/.cargo/bin:$PATH
 
-# pnpm
-export PNPM_HOME="/Users/marcwenzlawski/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-
 eval "$(zoxide init zsh)"
 
 # pnpm end
