@@ -191,7 +191,8 @@
   (setq history-length 100)
   (setq initial-scratch-message ";; scratchy scratch")
   (setq visual-fill-column-center-text t)
-  (setq fill-column 78)
+  (setq-default fill-column 80)
+  (setq fill-column 80)
   (setq prescient-history-length 1000)
   (setq tab-always-indent 'complete)
   (setq completion-cycle-threshold nil)
@@ -476,14 +477,14 @@ This function can be used as the value of the user option
   ;; completion categories.
   (setq mct-completion-blocklist '(notmuch-mua-new-mail notmuch-mua-prompt-for-sender))
   (setq mct-completion-passlist
-        '( consult-buffer consult-location embark-keybinding consult-notes consult-fd
+        '( consult-buffer consult-location embark-keybinding consult-notes consult-fd mw/consult-notes-other-window
 	   citar-denote-dwim citar-open citar-denote-open-note consult-project-buffer
 	   consult-buffer-other-tab projectile-find-file
 	   projectile-find-file-other-frame
 	   projectile-find-file-other-window projectile-switch-to-buffer
 	   projectile-switch-to-buffer-other-window
 	   projectile-switch-to-buffer-other-frame
-	   projectile-recentf org-cite-insert citar-dwim
+	   projectile-recentf org-cite-insert citar-dwim yas-choose-value
            imenu select-frame-by-name switch-to-buffer))
   (setq mct-remove-shadowed-file-names t)
   (setq mct-completion-window-size (cons #'mct-frame-height-third 1))
@@ -511,7 +512,7 @@ This function can be used as the value of the user option
 (use-package consult
   :after org
   :config
-  (consult-customize consult-notes :preview-key "M-.")
+  (consult-customize consult-notes mw/consult-notes-other-window :preview-key "M-.")
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :bind
   ([remap Info-search] . consult-info)
@@ -611,11 +612,18 @@ This function can be used as the value of the user option
           (org-narrow-to-subtree)
           (org-fold-show-subtree)))))
 
+(defun mw/consult-notes-other-window ()
+  "Open a note in another window"
+  (interactive)
+  (let ((consult--buffer-display #'switch-to-buffer-other-window))
+    (consult-notes)))
+
 (use-package consult-notes
   :after consult denote
   :bind
   ("C-c n o" . consult-notes)
   ("C-c n X" . consult-notes-search-in-all-notes)
+  ("C-c n 4 o" . mw/consult-notes-other-window)
   :config
   (setq consult-notes-file-dir-sources
       '(("Org"             ?o "~/Dropbox/Org/")))
@@ -1031,6 +1039,11 @@ This function can be used as the value of the user option
 ;;   (setq org-babel-default-header-args:sh '((:results . "output")))
 ;;   (setq org-babel-default-header-args:shell '((:results . "output"))))
 
+(use-package ox-hugo
+  :ensure t   ;Auto-install the package from Melpa
+  :pin melpa  ;`package-archives' should already have ("melpa" . "https://melpa.org/packages/")
+  :after ox)
+
 (use-package org-remark
   :bind (;; :bind keyword also implicitly defers org-remark itself.
          ;; Keybindings before :map is set for global-map.
@@ -1340,9 +1353,9 @@ This function can be used as the value of the user option
 
 (use-package calibredb
   :bind
-  ("C-c j c" . calibredb)
-  ("C-c j C-c" . mw/refresh-calibre-bib)
-  ("C-c j C" . calibredb-consult-read)
+  ("C-c d" . calibredb)
+  ("C-c C-d" . mw/refresh-calibre-bib)
+  ("C-c D" . calibredb-consult-read)
   :config
   (setq calibredb-root-dir "~/Dropbox/Calibre Library")
   (setq calibredb-db-dir (expand-file-name "metadata.db" calibredb-root-dir))
@@ -1413,8 +1426,7 @@ This function can be used as the value of the user option
 
 (use-package speed-type)
 
-(use-package fireplace
-  :bind ("C-c j f" . fireplace))
+(use-package fireplace)
 
 (use-package gptel)
 
@@ -1438,7 +1450,7 @@ This function can be used as the value of the user option
   :hook (pdf-view-mode . pdf-view-themed-minor-mode)
   :bind
   (:map pdf-view-mode-map
-  ("C-c d" . mw/pdf-view-open-externally)
+  ("C-c C-o" . mw/pdf-view-open-externally)
   ("C-c C-r r" . mw/pdf-view-themed-minor-mode-refresh)
   ("c" . mw/pdf-view-current-page)
   ("C-c C-n" . org-noter)))
