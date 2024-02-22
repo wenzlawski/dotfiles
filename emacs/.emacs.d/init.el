@@ -110,6 +110,18 @@
 	  (border-mode-line-inactive unspecified)))
     (setq modus-themes-mode-line 'borderless))
 
+(use-package timu-macos-theme
+  :straight (:host github :repo "emacsmirror/timu-macos-theme")
+  :init
+  (setq timu-macos-flavour (symbol-name ns-system-appearance))
+  :bind (:map help-map ("t s" . timu-macos-toggle-dark-light)))
+
+;; (defun mw/apply-theme-change (appearance)
+;;   "Load theme, taking current system APPEARANCE into consideration."
+;;   (interactive)
+;;   (customize-set-variable 'timu-macos-flavour (symbol-name appearance))
+;;   (load-theme 'timu-macos t))
+
   (use-package poet-theme
     :config
     (setq poet-theme-variable-pitch-multiplier 1.6)

@@ -360,17 +360,18 @@ with a daemon.
 
 **** Use the MacOS-like theme, with auto-dark
 
-#+begin_src elisp :tangle no
-  (use-package timu-macos-theme
-    :init
-    (setq timu-macos-flavour (symbol-name ns-system-appearance))
-    :bind (("C-` t s" . timu-macos-toggle-dark-light)))
+#+begin_src elisp
+(use-package timu-macos-theme
+  :straight (:host github :repo "emacsmirror/timu-macos-theme")
+  :init
+  (setq timu-macos-flavour (symbol-name ns-system-appearance))
+  :bind (:map help-map ("t s" . timu-macos-toggle-dark-light)))
 
-  (defun mw/apply-theme-change (appearance)
-    "Load theme, taking current system APPEARANCE into consideration."
-    (interactive)
-    (customize-set-variable 'timu-macos-flavour (symbol-name appearance))
-    (load-theme 'timu-macos t))
+;; (defun mw/apply-theme-change (appearance)
+;;   "Load theme, taking current system APPEARANCE into consideration."
+;;   (interactive)
+;;   (customize-set-variable 'timu-macos-flavour (symbol-name appearance))
+;;   (load-theme 'timu-macos t))
 #+end_src
 
 **** Use poet theme
