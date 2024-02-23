@@ -12,7 +12,7 @@ local wf = hs.window.filter
 
 -- on system theme change event, change hammerspoon console to dark mode
 
-dm = require("darkmode")
+dm = require("darkmode", ((((())))))
 
 dm.addHandler(function(dm2)
 	print("darkmode changed to " .. tostring(dm2))

@@ -174,7 +174,19 @@
   (default-text-scale-mode))
 
 (use-package rainbow-delimiters
-  :hook prog-mode)
+  :custom-face
+  (rainbow-delimiters-depth-1-face ((t (:foreground "#F1CB02"))))
+  (rainbow-delimiters-depth-2-face ((t (:foreground "#DA70D6"))))
+  (rainbow-delimiters-depth-3-face ((t (:foreground "#189FFF"))))
+  ;; (rainbow-delimiters-depth-4-face ((t (:foreground "#F1CB02"))))
+  ;; (rainbow-delimiters-depth-5-face ((t (:foreground "#F1CB02"))))
+  ;; (rainbow-delimiters-depth-6-face ((t (:foreground "#F1CB02"))))
+  ;; (rainbow-delimiters-depth-7-face ((t (:foreground "#F1CB02"))))
+  ;; (rainbow-delimiters-depth-8-face ((t (:foreground "#F1CB02"))))
+  ;; (rainbow-delimiters-depth-9-face ((t (:foreground "#F1CB02"))))
+  :hook prog-mode
+  :custom
+  (rainbow-delimiters-max-face-count 3))
 
   (setq user-full-name "Marc Wenzlawski"
         user-mail-address "marcwenzlawski@gmail.com")
@@ -228,7 +240,7 @@
   (show-paren-mode)
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
   :custom-face
-  (show-paren-match ((t (:background "DarkMagenta" :underline nil :foreground nil))))
+  (show-paren-match ((t (:background nil :underline nil :foreground nil :inverse-video t))))
   :bind
   ("C-x C-l" . nil)
   ("C-x C-S-l" . downcase-region)
@@ -1018,8 +1030,9 @@ This function can be used as the value of the user option
   ;; 	      (inhibit-same-window . t)
   ;; 	      (window-height . )))))
   :config
+  (setf (cdr (assoc 'file org-link-frame-setup)) 'find-file)
   (setq org-directory "~/Dropbox/Org/")
-  (setq org-agenda-files '("projects.org" "daily.org" "refile.org" "future.org"))
+  (setq org-agenda-files '("daily.org" "refile.org" "future.org"))
   ;;(setq org-todo-keywords '((sequence "TODO" "IN-PROGRESS" "WAITING") "DONE"))
   (setq org-hide-emphasis-markers t)
   (setq org-latex-compiler "xelatex")
@@ -1043,15 +1056,15 @@ This function can be used as the value of the user option
   :hook
   (org-mode . auto-fill-mode)
   (org-mode . visual-line-mode)
-  :bind
+  :bind*
   ("C-x c" . org-capture)
   (:map org-mode-map
         ("C-c C-." . org-time-stamp-inactive)
         ("C-c a" . org-agenda)
-        ("C-c e" . org-emphasize))
+        ("C-c e" . org-emphasize)
+        ("C-c &" . org-mark-ring-goto))
   :custom-face
-  (org-document-title ((t (:height 1.7))))
-  )
+  (org-document-title ((t (:height 1.7)))))
 
 
 ;; (use-package ob-shell
