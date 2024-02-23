@@ -929,7 +929,7 @@ This function can be used as the value of the user option
 	  (define-key map (kbd "n") 'yas-new-snippet)
 	  (define-key map (kbd "v") 'yas-visit-snippet-file)
 	  map))
-  :hook ((prog-mode org-mode) . yas-minor-mode)
+  :hook (prog-mode . yas-minor-mode)
   :bind-keymap ("C-c s" . yas-minor-mode-map))
 
 (use-package project)
@@ -1020,6 +1020,19 @@ This function can be used as the value of the user option
   (auto-fill-mode 1)
   (setq fill-column 78))
 
+(defun mw/org-open-at-point-other-window ()
+  "Open at point other window"
+  (interactive)
+  (let ((org-link-frame-setup (append '((file . find-file-other-window)) org-link-frame-setup)))
+    (org-open-at-point)))
+
+(defun mw/org-open-at-point-other-frame ()
+  "Open at point other frame"
+  (interactive)
+  (let ((org-link-frame-setup (append '((file . find-file-other-frame)) org-link-frame-setup)))
+    (org-open-at-point)))
+
+
 (use-package org
   :pin manual
   ;; :custom
@@ -1056,13 +1069,14 @@ This function can be used as the value of the user option
   :hook
   (org-mode . auto-fill-mode)
   (org-mode . visual-line-mode)
-  :bind*
+  :bind
   ("C-x c" . org-capture)
   (:map org-mode-map
         ("C-c C-." . org-time-stamp-inactive)
         ("C-c a" . org-agenda)
-        ("C-c e" . org-emphasize)
-        ("C-c &" . org-mark-ring-goto))
+	      ("C-c 4 C-o" . mw/org-open-at-point-other-window)
+	      ("C-c 5 C-o" . mw/org-open-at-point-other-frame)
+        ("C-c e" . org-emphasize))
   :custom-face
   (org-document-title ((t (:height 1.7)))))
 
