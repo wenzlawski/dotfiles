@@ -5,8 +5,6 @@
 #+startup: overview indent
 #+property: header-args :results none :tangle yes
 
-This is the new config, based in part on the organisation of prot's org file.
-
 * Inspiration
 - [[https://github.com/jacmoe/.doom.d/blob/master/config.el][.doom.d/config.el at master · jacmoe/.doom.d]]
 - [[https://irreal.org/blog/][Irreal]]
@@ -289,14 +287,15 @@ Containing all package and other configuration
 *** Theme
 
 #+begin_src elisp
-  (setq custom-safe-themes t)
+(setq custom-safe-themes t)
+(defalias 'mw/apply-theme-change 'mw/timu-theme-change)
 
-  (add-to-list 'ns-system-appearance-change-functions 'mw/apply-theme-change)
-  ;; (add-to-list 'after-make-frame-functions '(lambda (_)
-  ;; (my/apply-theme-change ns-system-appearance))) ;; DOES NOT WORK
-  (push '(lambda (_) (mw/apply-theme-change ns-system-appearance)) (cdr (last after-make-frame-functions)))
-  (use-package ef-themes)
-  (use-package color-theme-modern)
+(add-to-list 'ns-system-appearance-change-functions 'mw/apply-theme-change)
+;; (add-to-list 'after-make-frame-functions '(lambda (_)
+;; (my/apply-theme-change ns-system-appearance))) ;; DOES NOT WORK
+(push '(lambda (_) (mw/apply-theme-change ns-system-appearance)) (cdr (last after-make-frame-functions)))
+(use-package ef-themes)
+(use-package color-theme-modern)
 #+end_src
 
 **** Use default theme, light and dark, and automatically switch between them.
@@ -306,24 +305,24 @@ has to be done for every new frame, so we have to hook into the
 does not work, so we have to append it.
 
 #+begin_src elisp :tangle no
-  (defun mw/theme-default-light ()
-    "Set the default theme to light"
-    (interactive)
-    (set-foreground-color "black")
-    (set-background-color "white"))
+(defun mw/theme-default-light ()
+  "Set the default theme to light"
+  (interactive)
+  (set-foreground-color "black")
+  (set-background-color "white"))
 
-  (defun mw/theme-default-dark ()
-    "Set the default theme to dark"
-    (interactive)
-    (set-foreground-color "white")
-    (set-background-color "black"))
+(defun mw/theme-default-dark ()
+  "Set the default theme to dark"
+  (interactive)
+  (set-foreground-color "white")
+  (set-background-color "black"))
 
-  (defun mw/apply-theme-change (appearance)
-    "Load theme, taking current system APPEARANCE into consideration."
-    (mapc #'disable-theme custom-enabled-themes)
-    (pcase appearance
-      ('light (mw/theme-default-light))
-      ('dark  (mw/theme-default-dark))))
+(defun mw/default-theme-change (appearance)
+  "Load theme, taking current system APPEARANCE into consideration."
+  (mapc #'disable-theme custom-enabled-themes)
+  (pcase appearance
+    ('light (mw/theme-default-light))
+    ('dark  (mw/theme-default-dark))))
 #+end_src
 
 **** Use package auto-dark with modus-vivendi and modus-operandi
@@ -331,31 +330,31 @@ Problem with auto-dark is that setting (auto-dark-mode t) in the config errors
 with a daemon.
 
 #+begin_src elisp
-  (defun mw/theme-default-light ()
-    "Set the default theme to light"
-    (interactive)
-    (load-theme 'modus-operandi-tinted t))
+(defun mw/theme-default-light ()
+  "Set the default theme to light"
+  (interactive)
+  (load-theme 'modus-operandi-tinted t))
 
-  (defun mw/theme-default-dark ()
-    "Set the default theme to dark"
-    (interactive)
-    (load-theme 'modus-vivendi-tritanopia t))
+(defun mw/theme-default-dark ()
+  "Set the default theme to dark"
+  (interactive)
+  (load-theme 'modus-vivendi-tritanopia t))
 
-  (defun mw/apply-theme-change (appearance)
-    "Load theme, taking current system APPEARANCE into consideration."
-    (pcase appearance
-      ('light (mw/theme-default-light))
-      ('dark  (mw/theme-default-dark))))
+(defun mw/modus-theme-change (appearance)
+  "Load theme, taking current system APPEARANCE into consideration."
+  (pcase appearance
+    ('light (mw/theme-default-light))
+    ('dark  (mw/theme-default-dark))))
 
-  (use-package modus-themes
-    :config
-    (setq modus-themes-common-palette-overrides 
-      '((bg-mode-line-active bg-dim)
-        (fg-mode-line-active fg-dim)
-        (border-mode-line-active bg-dim)
+(use-package modus-themes
+  :config
+  (setq modus-themes-common-palette-overrides
+	'((bg-mode-line-active bg-dim)
+          (fg-mode-line-active fg-dim)
+          (border-mode-line-active bg-dim)
 	  (bg-mode-line-inactive bg-main)
 	  (border-mode-line-inactive unspecified)))
-    (setq modus-themes-mode-line 'borderless))
+  (setq modus-themes-mode-line 'borderless))
 #+end_src
 
 **** Use the MacOS-like theme, with auto-dark
@@ -367,11 +366,11 @@ with a daemon.
   (setq timu-macos-flavour (symbol-name ns-system-appearance))
   :bind (:map help-map ("t s" . timu-macos-toggle-dark-light)))
 
-;; (defun mw/apply-theme-change (appearance)
-;;   "Load theme, taking current system APPEARANCE into consideration."
-;;   (interactive)
-;;   (customize-set-variable 'timu-macos-flavour (symbol-name appearance))
-;;   (load-theme 'timu-macos t))
+(defun mw/timu-theme-change (appearance)
+  "Load theme, taking current system APPEARANCE into consideration."
+  (interactive)
+  (customize-set-variable 'timu-macos-flavour (symbol-name appearance))
+  (load-theme 'timu-macos t))
 #+end_src
 
 **** Use poet theme
@@ -501,12 +500,19 @@ between it: [[https://ogbe.net/blog/toggle-serif][Variable-width Serif Fonts whe
   (setq window-combination-resize t)
   (setq x-stretch-cursor t)
   (setq large-file-warning-threshold 100000000)
+  (setq exec-path (append exec-path '("~/.cargo/bin")))
+  (setq show-paren-delay 0)
+  (setq show-paren-when-point-inside-paren t)
+  (setq show-paren-when-point-in-periphery t)
   (pixel-scroll-precision-mode)
   (delete-selection-mode)
   (fringe-mode '(0 . 0))
   (blink-cursor-mode)
   (recentf-mode)
+  (show-paren-mode)
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
+  :custom-face
+  (show-paren-match ((t (:background "DarkMagenta" :underline nil :foreground nil))))
   :bind
   ("C-x C-l" . nil)
   ("C-x C-S-l" . downcase-region)
@@ -1470,7 +1476,9 @@ in doom it is heavily modified, so check out what thats all about:
 - region formatting
 - other
 
-#+begin_src elisp
+the problem here is that I have not found a way to make it recognize treesitter modes.
+
+#+begin_src elisp :tangle no
 (use-package format-all
   :commands format-all-mode
   :hook prog-mode
@@ -1478,7 +1486,19 @@ in doom it is heavily modified, so check out what thats all about:
   (:map prog-mode-map
 	("C-c f" . format-all-region-or-buffer))
   :config
-  (setq-default format-all-formatters '(("Python" (black)))))
+  (setq-default format-all-formatters
+		'(("Python" (black))
+		  ("Lua-Ts"    (stylua)))))
+#+end_src
+
+Using [[https://github.com/radian-software/apheleia][apheleia]] might solve this as it has a mode alist. apheleia actually has
+support for treesitter modes integrated.
+
+#+begin_src elisp
+(use-package apheleia
+  :bind (:map prog-mode-map ("C-c f" . apheleia-format-buffer))
+  :config
+  (apheleia-global-mode))
 #+end_src
 
 *** eldoc
@@ -1542,6 +1562,13 @@ copy.
 
 (use-package jsonrpc
   :pin gnu-elpa)
+#+end_src
+*** lua
+#+begin_src elisp
+(use-package lua-mode)
+(use-package lua-ts-mode
+  :hook (lua-ts-mode . (lambda () (setq tab-width 2)))
+  :straight (:host github :repo "emacsmirror/lua-ts-mode" :files ("*.el")))
 #+end_src
 ** search
 *** grep

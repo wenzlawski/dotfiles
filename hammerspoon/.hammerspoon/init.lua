@@ -12,32 +12,50 @@ local wf = hs.window.filter
 
 -- on system theme change event, change hammerspoon console to dark mode
 
-dm = require "darkmode"
+dm = require("darkmode")
+
 dm.addHandler(function(dm2)
-    print("darkmode changed to " .. tostring(dm2))
-    if dm2 == true then
-        hs.console.darkMode(true)
-        hs.console.outputBackgroundColor { white = 0 }
-        hs.console.consoleCommandColor { white = 1 }
-    else
-        hs.console.darkMode(false)
-        hs.console.outputBackgroundColor { white = 1 }
-        hs.console.consoleCommandColor { white = 0 }
-    end
+	print("darkmode changed to " .. tostring(dm2))
+	if dm2 == true then
+		hs.console.darkMode(true)
+		hs.console.outputBackgroundColor({ white = 0 })
+		hs.console.consoleCommandColor({ white = 1 })
+	else
+		hs.console.darkMode(false)
+		hs.console.outputBackgroundColor({ white = 1 })
+		hs.console.consoleCommandColor({ white = 0 })
+	end
 end)
 
 -----------------------
 
 -- make a shortcut to F16 that opens a dialog box to ask whether to put the computer to sleep, it can be cancelled with ESC, and accepted with <Enter>
 
-hs.hotkey.bind({}, 'F10', function()
-    local res = hs.dialog.textPrompt("Sleep", "Are you sure you want to put the computer to sleep?", "Cancel", "Sleep",
-        "informational")
-    -- force focus on the dialog box
-    hs.application.frontmostApplication():activate(true)
-    if res == "Sleep" then
-        hs.caffeinate.systemSleep()
-    end
+hs.hotkey.bind({ "ctrl", "alt" }, "=", function()
+	local res = hs.dialog.blockAlert("Are you sure you want to put the computer to sleep?", "", "Sleep", "Cancel")
+	-- force focus on the dialog box
+	--hs.application.frontmostApplication():activate(true)
+	if res == "Sleep" then
+		hs.caffeinate.systemSleep()
+	end
+end)
+
+---------------------
+
+-- on system color change, switch between light and dark wallpaper.
+
+dm.addHandler(function(dm2)
+	if dm2 == true then
+		wallpaper = "Black.png"
+	else
+		wallpaper = "Silver.png"
+	end
+	logger.d("wallpaper: " .. wallpaper)
+	hs.execute(
+		'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/'
+			.. wallpaper
+			.. "\" as POSIX file'"
+	)
 end)
 
 ---------------------
@@ -76,7 +94,5 @@ end)
 -- end)
 
 ---------------------
-
-
 
 logger.d("SUCCESSFULLY RAN init.lua")

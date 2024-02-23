@@ -75,40 +75,41 @@
 
   (setq custom-safe-themes t)
 
-  (setq custom-safe-themes t)
+(setq custom-safe-themes t)
+(defalias 'mw/apply-theme-change 'mw/timu-theme-change)
 
-  (add-to-list 'ns-system-appearance-change-functions 'mw/apply-theme-change)
-  ;; (add-to-list 'after-make-frame-functions '(lambda (_)
-  ;; (my/apply-theme-change ns-system-appearance))) ;; DOES NOT WORK
-  (push '(lambda (_) (mw/apply-theme-change ns-system-appearance)) (cdr (last after-make-frame-functions)))
-  (use-package ef-themes)
-  (use-package color-theme-modern)
+(add-to-list 'ns-system-appearance-change-functions 'mw/apply-theme-change)
+;; (add-to-list 'after-make-frame-functions '(lambda (_)
+;; (my/apply-theme-change ns-system-appearance))) ;; DOES NOT WORK
+(push '(lambda (_) (mw/apply-theme-change ns-system-appearance)) (cdr (last after-make-frame-functions)))
+(use-package ef-themes)
+(use-package color-theme-modern)
 
-  (defun mw/theme-default-light ()
-    "Set the default theme to light"
-    (interactive)
-    (load-theme 'modus-operandi-tinted t))
+(defun mw/theme-default-light ()
+  "Set the default theme to light"
+  (interactive)
+  (load-theme 'modus-operandi-tinted t))
 
-  (defun mw/theme-default-dark ()
-    "Set the default theme to dark"
-    (interactive)
-    (load-theme 'modus-vivendi-tritanopia t))
+(defun mw/theme-default-dark ()
+  "Set the default theme to dark"
+  (interactive)
+  (load-theme 'modus-vivendi-tritanopia t))
 
-  (defun mw/apply-theme-change (appearance)
-    "Load theme, taking current system APPEARANCE into consideration."
-    (pcase appearance
-      ('light (mw/theme-default-light))
-      ('dark  (mw/theme-default-dark))))
+(defun mw/modus-theme-change (appearance)
+  "Load theme, taking current system APPEARANCE into consideration."
+  (pcase appearance
+    ('light (mw/theme-default-light))
+    ('dark  (mw/theme-default-dark))))
 
-  (use-package modus-themes
-    :config
-    (setq modus-themes-common-palette-overrides 
-      '((bg-mode-line-active bg-dim)
-        (fg-mode-line-active fg-dim)
-        (border-mode-line-active bg-dim)
+(use-package modus-themes
+  :config
+  (setq modus-themes-common-palette-overrides
+	'((bg-mode-line-active bg-dim)
+          (fg-mode-line-active fg-dim)
+          (border-mode-line-active bg-dim)
 	  (bg-mode-line-inactive bg-main)
 	  (border-mode-line-inactive unspecified)))
-    (setq modus-themes-mode-line 'borderless))
+  (setq modus-themes-mode-line 'borderless))
 
 (use-package timu-macos-theme
   :straight (:host github :repo "emacsmirror/timu-macos-theme")
@@ -116,11 +117,11 @@
   (setq timu-macos-flavour (symbol-name ns-system-appearance))
   :bind (:map help-map ("t s" . timu-macos-toggle-dark-light)))
 
-;; (defun mw/apply-theme-change (appearance)
-;;   "Load theme, taking current system APPEARANCE into consideration."
-;;   (interactive)
-;;   (customize-set-variable 'timu-macos-flavour (symbol-name appearance))
-;;   (load-theme 'timu-macos t))
+(defun mw/timu-theme-change (appearance)
+  "Load theme, taking current system APPEARANCE into consideration."
+  (interactive)
+  (customize-set-variable 'timu-macos-flavour (symbol-name appearance))
+  (load-theme 'timu-macos t))
 
   (use-package poet-theme
     :config
@@ -215,12 +216,19 @@
   (setq window-combination-resize t)
   (setq x-stretch-cursor t)
   (setq large-file-warning-threshold 100000000)
+  (setq exec-path (append exec-path '("~/.cargo/bin")))
+  (setq show-paren-delay 0)
+  (setq show-paren-when-point-inside-paren t)
+  (setq show-paren-when-point-in-periphery t)
   (pixel-scroll-precision-mode)
   (delete-selection-mode)
   (fringe-mode '(0 . 0))
   (blink-cursor-mode)
   (recentf-mode)
+  (show-paren-mode)
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
+  :custom-face
+  (show-paren-match ((t (:background "DarkMagenta" :underline nil :foreground nil))))
   :bind
   ("C-x C-l" . nil)
   ("C-x C-S-l" . downcase-region)
@@ -889,14 +897,10 @@ This function can be used as the value of the user option
   :config
   (global-treesit-auto-mode))
 
-(use-package format-all
-  :commands format-all-mode
-  :hook prog-mode
-  :bind
-  (:map prog-mode-map
-	("C-c f" . format-all-region-or-buffer))
+(use-package apheleia
+  :bind (:map prog-mode-map ("C-c f" . apheleia-format-buffer))
   :config
-  (setq-default format-all-formatters '(("Python" (black)))))
+  (apheleia-global-mode))
 
   (use-package eldoc
     :config
@@ -940,6 +944,11 @@ This function can be used as the value of the user option
 
 (use-package jsonrpc
   :pin gnu-elpa)
+
+(use-package lua-mode)
+(use-package lua-ts-mode
+  :hook (lua-ts-mode . (lambda () (setq tab-width 2)))
+  :straight (:host github :repo "emacsmirror/lua-ts-mode" :files ("*.el")))
 
 (use-package grep
   :config
