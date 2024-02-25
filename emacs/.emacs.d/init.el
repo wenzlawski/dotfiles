@@ -319,6 +319,7 @@
 
 (use-package dtrt-indent
   :config
+  (add-to-list 'dtrt-indent-hook-mapping-list '(lua-ts-mode lua lua-ts-indent-offset))
   (dtrt-indent-global-mode))
 
 (use-package gcmh
@@ -1019,7 +1020,7 @@ This function can be used as the value of the user option
   :config
   (setq lua-indent-level 3))
 (use-package lua-ts-mode
-  :hook (lua-ts-mode . (lambda nil ((setq tab-width 3))))
+  :hook (lua-ts-mode . (lambda nil (setq tab-width 3)))
   :config
   (setq lua-ts-indent-offset 3)
   :straight (:host sourcehut :repo "johnmuhl/lua-ts-mode" :files ("*.el")))
