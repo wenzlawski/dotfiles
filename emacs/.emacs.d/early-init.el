@@ -89,9 +89,9 @@ New frames are instructed to call
 `prot-emacs-re-enable-frame-theme'."
   (when (mw/theme-gsettings-dark-p)
     (set-face-attribute 'default nil :background "#000000"
-			:foreground "#ffffff")
+                        :foreground "#ffffff")
     (set-face-attribute 'mode-line nil :background "#000000"
-			:foreground "#ffffff" :box 'unspecified)))
+                        :foreground "#ffffff" :box 'unspecified)))
 
 (setq mode-line-format nil)
 (mw/avoid-initial-flash-of-light)
