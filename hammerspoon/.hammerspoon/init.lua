@@ -12,7 +12,7 @@ local wf = hs.window.filter
 
 -- on system theme change event, change hammerspoon console to dark mode
 
-dm = require("darkmode", ((((())))))
+local dm = require("darkmode")
 
 dm.addHandler(function(dm2)
 	print("darkmode changed to " .. tostring(dm2))
@@ -45,10 +45,9 @@ end)
 -- on system color change, switch between light and dark wallpaper.
 
 dm.addHandler(function(dm2)
+	local wallpaper = "Silver.png"
 	if dm2 == true then
 		wallpaper = "Black.png"
-	else
-		wallpaper = "Silver.png"
 	end
 	logger.d("wallpaper: " .. wallpaper)
 	hs.execute(
@@ -58,7 +57,43 @@ dm.addHandler(function(dm2)
 	)
 end)
 
+-- on system wake check if dark mode is enabled and set the wallpaper accordingly
+
+hs.caffeinate.watcher
+	.new(function(event)
+		if event == hs.caffeinate.watcher.systemDidWake then
+			if
+				hs.osascript.applescript(
+					'tell application "System Events" to tell appearance preferences to get dark mode'
+				) == "true"
+			then
+				hs.execute(
+					'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/Black.png" as POSIX file\''
+				)
+			else
+				hs.execute(
+					'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/Silver.png" as POSIX file\''
+				)
+			end
+		end
+	end)
+	:start()
+
 ---------------------
+
+-- on system color change, switch spotify colors with spicetify
+dm.addHandler(function(dm2)
+	if dm2 == true then
+		logger.d("dark mode")
+		hs.execute("spicetify config current_theme Ziro", true)
+		hs.execute("spicetify config color_scheme gray-dark", true)
+	else
+		logger.d("light mode")
+		hs.execute("spicetify config current_theme Ziro", true)
+		hs.execute("spicetify config color_scheme gray-light", true)
+	end
+	hs.execute("spicetify apply", true)
+end)
 
 -- watch the directory ~/Dropbox/denote/vault/.import for new files and call the script ~/Dropbox/denote/.import/move.sh individually on every new file. New files are anything but .sh files.
 -- file creation events are fired multiple times for the same file by the OS, so we need to filter them out. only fire on itemCreated flag
