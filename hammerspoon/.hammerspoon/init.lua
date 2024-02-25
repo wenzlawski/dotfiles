@@ -42,8 +42,22 @@ end)
 
 ---------------------
 
--- on system color change, switch between light and dark wallpaper.
+function autoSetWallpaper()
+	if
+		hs.osascript.applescript('tell application "System Events" to tell appearance preferences to get dark mode')
+		== "true"
+	then
+		hs.execute(
+			'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/Silver.png" as POSIX file\''
+		)
+	else
+		hs.execute(
+			'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/Black.png" as POSIX file\''
+		)
+	end
+end
 
+-- on system color change, switch between light and dark wallpaper.
 dm.addHandler(function(dm2)
 	local wallpaper = "Silver.png"
 	if dm2 == true then
@@ -58,26 +72,16 @@ dm.addHandler(function(dm2)
 end)
 
 -- on system wake check if dark mode is enabled and set the wallpaper accordingly
-
 hs.caffeinate.watcher
 	.new(function(event)
 		if event == hs.caffeinate.watcher.systemDidWake then
-			if
-				hs.osascript.applescript(
-					'tell application "System Events" to tell appearance preferences to get dark mode'
-				) == "true"
-			then
-				hs.execute(
-					'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/Black.png" as POSIX file\''
-				)
-			else
-				hs.execute(
-					'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/Silver.png" as POSIX file\''
-				)
-			end
+			autoSetWallpaper()
 		end
 	end)
 	:start()
+
+-- add a menubar item to change the wallpaper
+hs.menubar.new(true, "wallpaper"):setClickCallback(autoSetWallpaper):setTitle("wp")
 
 ---------------------
 
@@ -94,6 +98,59 @@ dm.addHandler(function(dm2)
 	end
 	hs.execute("spicetify apply", true)
 end)
+
+---------------------
+
+-- make a gui for selecting a spiceify theme it will have one dropdown to select
+-- the theme, another for selecting the color scheme, and a button to apply the
+-- changes
+
+function spicetify_change_theme()
+	local theme_paths = hs.fnutils.split(hs.execute("ls -d ~/.config/spicetify/Themes/*/"), "\n")
+
+	local choices = {}
+	for k, v in pairs(theme_paths) do
+		if string.len(v) > 0 then
+			local last = string.match(v, "/(%w+)/$")
+			table.insert(choices, { ["text"] = last, ["path"] = v })
+		end
+	end
+
+	logger.d("text: " .. choices[1]["text"])
+	local chooser = hs.chooser
+		.new(function(event)
+			if event == nil then
+				return
+			end
+			logger.d(event["text"])
+			local schemes, status = hs.execute("rg -N -r '\\$1' '^\\[(.+)\\]$' " .. event["path"] .. "color.ini", true)
+
+			local scheme_l = hs.fnutils.split(schemes, "\n")
+
+			local choices = {}
+			for k, v in pairs(scheme_l) do
+				if string.len(v) > 0 then
+					table.insert(choices, { ["text"] = v })
+				end
+			end
+
+			local chooser2 = hs.chooser
+				.new(function(n)
+					if n == nil then
+						return
+					end
+					hs.execute("spicetify config current_theme " .. event["text"], true)
+					hs.execute("spicetify config color_scheme " .. n["text"], true)
+					hs.execute("spicetify apply", true)
+				end)
+				:choices(choices)
+				:show()
+		end)
+		:choices(choices)
+		:show()
+end
+
+hs.menubar.new(true, "sp"):setClickCallback(spicetify_change_theme):setTitle("sp")
 
 -- watch the directory ~/Dropbox/denote/vault/.import for new files and call the script ~/Dropbox/denote/.import/move.sh individually on every new file. New files are anything but .sh files.
 -- file creation events are fired multiple times for the same file by the OS, so we need to filter them out. only fire on itemCreated flag
