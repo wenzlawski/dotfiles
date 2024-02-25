@@ -362,11 +362,15 @@ with a daemon.
           (agenda-date . (variable-pitch regular 1.3))))
   (setq modus-themes-to-toggle '(modus-operandi modus-vivendi))
   (setq modus-vivendi-palette-overrides
-        '((bg-main "#1E1E1E")
-          (bg-dim "#3E3E3E")))
+        '((bg-main "#1A1A1A")
+          (bg-dim "#0E0E0E")
+          (fg-main "#E2E2E2")
+          (fg-dim "#999999")))
   (setq modus-operandi-palette-overrides
-        '((bg-main "#F0F0F0")
-          (bg-dim "#D8D8D8")))
+        '((bg-main "#E9E9E9")
+          (bg-dim "#DCDCDC")
+          (fg-main "#2C2C2C")
+          (fg-dim "#8B8B8B")))
   (setq modus-themes-common-palette-overrides
         '((cursor magenta-cooler)
           (prose-done cyan-cooler)
@@ -1113,6 +1117,27 @@ register and make a shortcut to jump back to it. *Is it possible to unite the
 emacs and org mark rings?*
 
 #+begin_src elisp
+(use-package consult-notes
+  :after consult denote
+  :bind
+  ("C-c n o" . consult-notes)
+  ("C-c n X" . consult-notes-search-in-all-notes)
+  ("C-c n 4 o" . mw/consult-notes-other-window)
+  :config
+  (setq consult-notes-file-dir-sources
+      '(("Org"             ?o "~/Dropbox/Org/")))
+  (setq consult-notes-org-headings-files '("~/Dropbox/Org/"))
+  ;;(consult-notes-org-headings-mode)
+  (when (locate-library "denote")
+    (setq consult-notes-denote-display-id nil)
+    (consult-notes-denote-mode))
+
+  ;; search only for text files in denote dir
+  (setq consult-notes-denote-files-function (function denote-directory-text-only-files)))
+#+end_src
+
+**** custom functions
+#+begin_src elisp :tangle no
 (defun consult-notes-my-embark-function (cand)
   "Do something with CAND"
   (interactive "fNote: ")
@@ -1168,23 +1193,66 @@ emacs and org mark rings?*
   (let ((consult--buffer-display #'switch-to-buffer-other-window))
     (consult-notes)))
 
-(use-package consult-notes
-  :after consult denote
-  :bind
-  ("C-c n o" . consult-notes)
-  ("C-c n X" . consult-notes-search-in-all-notes)
-  ("C-c n 4 o" . mw/consult-notes-other-window)
-  :config
-  (setq consult-notes-file-dir-sources
-      '(("Org"             ?o "~/Dropbox/Org/")))
-  (setq consult-notes-org-headings-files '("~/Dropbox/Org/"))
-  ;;(consult-notes-org-headings-mode)
-  (when (locate-library "denote")
-    (setq consult-notes-denote-display-id nil)
-    (consult-notes-denote-mode))
+#+end_src
+**** truncating the long titles
 
-  ;; search only for text files in denote dir
-  (setq consult-notes-denote-files-function (function denote-directory-text-only-files)))
+this does work functionally, however not practically. We need to autoload this
+when `consult-notes` is called.
+
+#+begin_src elisp :tangle no
+(eval-after-load 'consult-notes
+  (progn
+    (defcustom consult-notes-denote-truncate-title nil
+      "Truncate the preview of the note."
+      :group 'consult-notes-denote
+      :type 'boolean)
+
+    (defcustom consult-notes-denote-max-title-length 50
+      "Maximum length of the note title."
+      :group 'consult-notes-denote
+      :type 'integer)
+
+    (defconst consult-notes-denote--source
+      (list :name     (propertize "Denote notes" 'face 'consult-notes-sep)
+            :narrow   ?d
+            :category consult-notes-category
+            :annotate #'consult-notes-denote--annotate
+            :items    (lambda ()
+                        (let* ((max-width 0)
+                               (cands (mapcar (lambda (f)
+                                                (let* ((id (denote-retrieve-filename-identifier f))
+                                                       (title-1 (or (denote-retrieve-title-value f (denote-filetype-heuristics f)) (denote-retrieve-filename-title f)))
+                                                       (title (if consult-notes-denote-display-id
+                                                                  (concat id " " title-1)
+                                                                title-1))
+                                                       (dir (file-relative-name (file-name-directory f) denote-directory))
+                                                       (keywords (denote-extract-keywords-from-path f)))
+                                                  ;; truncate title
+                                                  (when consult-notes-denote-truncate-title
+                                                    (setq title (s-truncate consult-notes-denote-max-title-length title)))
+                                                  (let ((current-width (string-width title)))
+                                                    (when (> current-width max-width)
+                                                      (setq max-width (+ 5 current-width))))
+                                                  (propertize title 'denote-path f 'denote-keywords keywords)))
+                                              (funcall consult-notes-denote-files-function))))
+                          (mapcar (lambda (c)
+                                    (let* ((keywords (get-text-property 0 'denote-keywords c))
+                                           (path (get-text-property 0 'denote-path c))
+                                           (dirs (directory-file-name (file-relative-name (file-name-directory path) denote-directory))))
+                                      (concat c
+                                              ;; align keywords
+                                              (propertize " " 'display `(space :align-to (+ left ,(+ 2 max-width))))
+                                              (format "%18s"
+                                                      (if keywords
+                                                          (concat (propertize "#" 'face 'consult-notes-name)
+                                                                  (propertize (mapconcat 'identity keywords " ") 'face 'consult-notes-name))
+                                                        ""))
+                                              (when consult-notes-denote-dir (format "%18s" (propertize (concat "/" dirs) 'face 'consult-notes-name))))))
+                                  cands)))
+            ;; Custom preview
+            :state  #'consult-notes-denote--state
+            ;; Create new note on match fail
+            :new     #'consult-notes-denote--new-note))))
 #+end_src
 
 *** consult-projectile
@@ -2401,7 +2469,7 @@ Emacs epub reader.
   (citar-denote-subdir "citar")
   (citar-denote-keyword "bib")
   (citar-denote-use-bib-keywords nil)
-  (citar-denote-title-format "title")
+  (citar-denote-title-format "author-year-title")
   (citar-denote-title-format-authors 1)
   (citar-denote-title-format-andstr "and")
   :init

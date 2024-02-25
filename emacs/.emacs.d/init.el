@@ -617,61 +617,6 @@ This function can be used as the value of the user option
   (setq exec-path (append exec-path '("/usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS/")))
   (consult-recoll-embark-setup))
 
-(defun consult-notes-my-embark-function (cand)
-  "Do something with CAND"
-  (interactive "fNote: ")
-  (message cand))
-
-(defun mw/consult-notes--on-file (file)
-  (let ((consult-notes-org-headings-files (list file)))
-    (consult-notes)))
-
-(defun mw/consult-notes--menu ()
-  (let* ((curr-buf buffer-file-name)
-         (avy-keys '(?a ?p ?b ?r ?f ?j ?c ?t))
-         (file (avy-menu "*select notes*"
-                         '("Select file"
-                           (""
-                            ("All"      . "~/Dropbox/Org/")
-                            ("People"   . "~/Dropbox/Org/people.org")
-                            ("Books"    . "~/Dropbox/Org/books.org")
-                            ("Refile"   . "~/Dropbox/Org/refile.org")
-                            ("Projects" . "~/Dropbox/Org/projects.org")
-                            ("Config"  . "~/.config/doom/config.org")
-                            ("This file" . curr-buf))))))
-    (if (symbolp file)
-        (eval file))
-    file))
-
-(defun mw/consult-notes-org-insert-link ()
-  (interactive)
-  (let ((file (mw/consult-notes--menu)))
-    (if (stringp file)
-        (progn (if (equal major-mode 'org-mode)
-                   (progn (org-mark-ring-push)
-                          (mw/consult-notes--on-file file)
-                          (org-store-link nil t)
-                          (org-mark-ring-goto)
-                          (org-insert-all-links nil "" " "))
-                 (mw/consult-notes--on-file file))))))
-
-
-(defun mw/consult-notes-menu ()
-  (interactive)
-  (let ((file (mw/consult-notes--menu)))
-    (if (stringp file)
-        (progn
-          (if (equal major-mode 'org-mode) (org-mark-ring-push))
-          (mw/consult-notes--on-file file)
-          (org-narrow-to-subtree)
-          (org-fold-show-subtree)))))
-
-(defun mw/consult-notes-other-window ()
-  "Open a note in another window"
-  (interactive)
-  (let ((consult--buffer-display #'switch-to-buffer-other-window))
-    (consult-notes)))
-
 (use-package consult-notes
   :after consult denote
   :bind
@@ -1517,7 +1462,7 @@ This function can be used as the value of the user option
   (citar-denote-subdir "citar")
   (citar-denote-keyword "bib")
   (citar-denote-use-bib-keywords nil)
-  (citar-denote-title-format "title")
+  (citar-denote-title-format "author-year-title")
   (citar-denote-title-format-authors 1)
   (citar-denote-title-format-andstr "and")
   :init
