@@ -76,7 +76,7 @@
   (setq custom-safe-themes t)
 
 (setq custom-safe-themes t)
-(defalias 'mw/apply-theme-change 'mw/timu-theme-change)
+(defalias 'mw/apply-theme-change 'mw/modus-theme-change)
 
 (add-to-list 'ns-system-appearance-change-functions 'mw/apply-theme-change)
 ;; (add-to-list 'after-make-frame-functions '(lambda (_)
@@ -88,12 +88,12 @@
 (defun mw/theme-default-light ()
   "Set the default theme to light"
   (interactive)
-  (load-theme 'modus-operandi-tinted t))
+  (load-theme 'modus-operandi t))
 
 (defun mw/theme-default-dark ()
   "Set the default theme to dark"
   (interactive)
-  (load-theme 'modus-vivendi-tritanopia t))
+  (load-theme 'modus-vivendi t))
 
 (defun mw/modus-theme-change (appearance)
   "Load theme, taking current system APPEARANCE into consideration."
@@ -103,19 +103,63 @@
 
 (use-package modus-themes
   :config
+  (setq modus-themes-custom-auto-reload nil
+        modus-themes-to-toggle '(modus-operandi modus-vivendi)
+        modus-themes-mixed-fonts nil
+        modus-themes-variable-pitch-ui nil
+        modus-themes-italic-constructs nil
+        modus-themes-bold-constructs nil
+        modus-themes-org-blocks nil
+        modus-themes-completions '((t . (extrabold)))
+        modus-themes-prompts nil
+        modus-themes-headings
+        '((agenda-structure . (variable-pitch light 2.2))
+          (agenda-date . (variable-pitch regular 1.3))))
+  (setq modus-themes-to-toggle '(modus-operandi modus-vivendi))
+  (setq modus-vivendi-palette-overrides
+        '((bg-main "#1E1E1E")
+          (bg-dim "#3E3E3E")))
+  (setq modus-operandi-palette-overrides
+        '((bg-main "#F0F0F0")
+          (bg-dim "#D8D8D8")))
   (setq modus-themes-common-palette-overrides
-	'((bg-mode-line-active bg-dim)
+        '((cursor magenta-cooler)
+          (prose-done cyan-cooler)
+          (prose-tag fg-dim)
+          (modus-themes-completion-selected bg-dim)
+          (prose-table fg-main)
+          (bg-region bg-sage)
+          (fg-region unspecified)
+          (name blue-warmer)
+          (fg-heading-2 blue-faint)
+          (fg-heading-3 magenta-faint)
+          (fg-heading-4 blue-faint)
+          (fg-heading-5 magenta-faint)
+          (fg-heading-6 blue-faint)
+          (fg-heading-7 magenta-faint)
+          (fg-heading-8 blue-faint)
+          (identifier magenta-faint)
+          (keybind magenta-cooler)
+          (accent-0 magenta-cooler)
+          (accent-1 cyan-cooler)
+          (accent-2 blue-warmer)
+          (accent-3 red-cooler)
+          (bg-completion bg-dim)
+          (bg-mode-line-active bg-dim)
           (fg-mode-line-active fg-dim)
+          (bg-paren-match bg-magenta-intense)
           (border-mode-line-active bg-dim)
-	  (bg-mode-line-inactive bg-main)
-	  (border-mode-line-inactive unspecified)))
+          (bg-mode-line-inactive bg-main)
+          (border-mode-line-inactive unspecified)))
   (setq modus-themes-mode-line 'borderless))
 
 (use-package timu-macos-theme
   :straight (:host github :repo "emacsmirror/timu-macos-theme")
   :init
   (setq timu-macos-flavour (symbol-name ns-system-appearance))
-  :bind (:map help-map ("t s" . timu-macos-toggle-dark-light)))
+  :bind (:map help-map
+              ("t" . nil)
+              ("t s" . timu-macos-toggle-dark-light)))
 
 (defun mw/timu-theme-change (appearance)
   "Load theme, taking current system APPEARANCE into consideration."
@@ -128,18 +172,18 @@
     (setq poet-theme-variable-pitch-multiplier 1.6)
     (setq poet-theme-variable-headers nil))
 
-  (add-to-list 'default-frame-alist '(font . "Iosevka Comfy-18"))
+(add-to-list 'default-frame-alist '(font . "Iosevka Comfy-18"))
 
-  (defun mw/writeroom-mode-hook ()
-    "Custom behaviours for `writeroom-mode'."
-    (if writeroom-mode
-        (progn (centered-cursor-mode 1)
-               (display-line-numbers-mode 0))
-      (centered-cursor-mode 0)))
+(defun mw/writeroom-mode-hook ()
+  "Custom behaviours for `writeroom-mode'."
+  (if writeroom-mode
+      (progn (centered-cursor-mode 1)
+             (display-line-numbers-mode 0))
+    (centered-cursor-mode 0)))
 
-  (use-package writeroom-mode
-    :hook (writeroom-mode . mw/writeroom-mode-hook))
-  (use-package centered-cursor-mode)
+(use-package writeroom-mode
+  :hook (writeroom-mode . mw/writeroom-mode-hook))
+(use-package centered-cursor-mode)
 
 (defun mw/spacious-padding-reset ()
   "reset the spacious padding and modeline formats"
@@ -175,9 +219,9 @@
 
 (use-package rainbow-delimiters
   :custom-face
-  (rainbow-delimiters-depth-1-face ((t (:foreground "#F1CB02"))))
-  (rainbow-delimiters-depth-2-face ((t (:foreground "#DA70D6"))))
-  (rainbow-delimiters-depth-3-face ((t (:foreground "#189FFF"))))
+  (rainbow-delimiters-depth-1-face ((t (:foreground "#D19A66"))))
+  (rainbow-delimiters-depth-2-face ((t (:foreground "#C678DD"))))
+  (rainbow-delimiters-depth-3-face ((t (:foreground "#56B6C2"))))
   ;; (rainbow-delimiters-depth-4-face ((t (:foreground "#F1CB02"))))
   ;; (rainbow-delimiters-depth-5-face ((t (:foreground "#F1CB02"))))
   ;; (rainbow-delimiters-depth-6-face ((t (:foreground "#F1CB02"))))
@@ -200,7 +244,7 @@
   (setq shell-file-name (executable-find "zsh"))
   (setq confirm-kill-emacs 'yes-or-no-p)
   (setq redisplay-dont-pause t)
-  (setq line-spacing 0.15)
+  (setq-default line-spacing 0.1)
   (setq sentence-end-double-space nil)
   (setq require-final-newline t)
   (setq frame-inhibit-implied-resize t)
@@ -217,7 +261,6 @@
   (setq initial-scratch-message ";; scratchy scratch")
   (setq visual-fill-column-center-text t)
   (setq-default fill-column 80)
-  (setq fill-column 80)
   (setq prescient-history-length 1000)
   (setq tab-always-indent 'complete)
   (setq completion-cycle-threshold nil)
@@ -228,10 +271,11 @@
   (setq window-combination-resize t)
   (setq x-stretch-cursor t)
   (setq large-file-warning-threshold 100000000)
-  (setq exec-path (append exec-path '("~/.cargo/bin")))
+  (setq exec-path (append exec-path '("~/.cargo/bin" "~/.pyenv/shims/")))
   (setq show-paren-delay 0)
   (setq show-paren-when-point-inside-paren t)
   (setq show-paren-when-point-in-periphery t)
+  (setq-default electric-indent-inhibit t)
   (pixel-scroll-precision-mode)
   (delete-selection-mode)
   (fringe-mode '(0 . 0))
@@ -240,24 +284,24 @@
   (show-paren-mode)
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
   :custom-face
-  (show-paren-match ((t (:background nil :underline nil :foreground nil :inverse-video t))))
+  (show-paren-match ((t (:underline nil :inverse-video nil))))
   :bind
   ("C-x C-l" . nil)
   ("C-x C-S-l" . downcase-region)
   ("C-c o" .  occur)
   ("C-x M-k" . kill-this-buffer)
   (:map tab-prefix-map
-	("h" . tab-bar-mode)
-	("s" . tab-switcher))
+        ("h" . tab-bar-mode)
+        ("s" . tab-switcher))
   (:map help-map
         ("t" . nil)
-	("W" . woman)
-	("t t" . consult-theme)
-	("t c" . centered-cursor-mode)
-	("t h" . hl-line-mode)
-	("t v" . variable-pitch-mode)
-	("t f" . visual-fill-column-mode)
-	("t l" . visual-line-mode)
+        ("W" . woman)
+        ("t t" . consult-theme)
+        ("t c" . centered-cursor-mode)
+        ("t h" . hl-line-mode)
+        ("t v" . variable-pitch-mode)
+        ("t f" . visual-fill-column-mode)
+        ("t l" . visual-line-mode)
         ("t t" . consult-theme)
         ("t c" . centered-cursor-mode)
         ("t h" . hl-line-mode)
@@ -265,13 +309,17 @@
         ("t f" . visual-fill-column-mode)
         ("t l" . visual-line-mode))
   ;;  (:map dired-mode-map
-  ;;	("K" . dired-kill-subdir))
+  ;;    ("K" . dired-kill-subdir))
   (:map completion-list-mode-map
-	("e" . switch-to-minibuffer)))
+        ("e" . switch-to-minibuffer)))
 
-  (use-package editorconfig
-    :config
-    (editorconfig-mode 1))
+(use-package editorconfig
+  :config
+  (editorconfig-mode))
+
+(use-package dtrt-indent
+  :config
+  (dtrt-indent-global-mode))
 
 (use-package gcmh
   :config
@@ -497,36 +545,9 @@ This function can be used as the value of the user option
 (setq completion-show-inline-help nil)
 (setq completions-max-height 15)
 (setq completions-header-format (propertize "%s candidates:\n" 'face 'font-lock-comment-face))
-(bind-key "e" #'switch-to-minibuffer 'completion-list-mode-map)
-(bind-key "<return>" #'minibuffer-force-complete-and-exit 'minibuffer-mode-map)
-(bind-key "C-<return>" #'minibuffer-tcomplete-and-exit 'minibuffer-mode-map)
-
-(use-package mct
-  :demand t
-  :config
-  (setq mct-hide-completion-mode-line t)
-  ;; The blocklist and passlist accept either commands/functions or
-  ;; completion categories.
-  (setq mct-completion-blocklist '(notmuch-mua-new-mail notmuch-mua-prompt-for-sender))
-  (setq mct-completion-passlist
-        '( consult-buffer consult-location embark-keybinding consult-notes consult-fd mw/consult-notes-other-window
-	   citar-denote-dwim citar-open citar-denote-open-note consult-project-buffer
-	   consult-buffer-other-tab projectile-find-file
-	   projectile-find-file-other-frame
-	   projectile-find-file-other-window projectile-switch-to-buffer
-	   projectile-switch-to-buffer-other-window
-	   projectile-switch-to-buffer-other-frame
-	   projectile-recentf org-cite-insert citar-dwim yas-choose-value
-           imenu select-frame-by-name switch-to-buffer))
-  (setq mct-remove-shadowed-file-names t)
-  (setq mct-completion-window-size (cons #'mct-frame-height-third 1))
-  (setq mct-persist-dynamic-completion t)
-  (setq mct-live-completion t)
-  (setq mct-minimum-input 5)
-  (setq mct-live-update-delay 0.0)
-  (setq completions-sort #'mct-sort-by-alpha-length)
-
-  (mct-mode 1))
+;;(bind-key "e" #'switch-to-minibuffer 'completion-list-mode-map)
+;;(bind-key "<return>" #'minibuffer-force-complete-and-exit 'minibuffer-mode-map)
+;;(bind-key "C-<return>" #'minibuffer-tcomplete-and-exit 'minibuffer-mode-map)
 
 (use-package marginalia
   :init
@@ -575,15 +596,15 @@ This function can be used as the value of the user option
   ;; Isearch integration
   ("M-s e" . consult-isearch-history)
   (:map project-prefix-map
-	("b" . consult-project-buffer))
+        ("b" . consult-project-buffer))
   (:map isearch-mode-map
-	("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
-	("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
-	("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
-	("M-s L" . consult-line-multi))            ;; needed by consult-line to detect isearch
+        ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+        ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+        ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+        ("M-s L" . consult-line-multi))            ;; needed by consult-line to detect isearch
   (:map minibuffer-local-map
-	("M-s" . consult-history)                 ;; orig. next-matching-history-element
-	("M-r" . consult-history))
+        ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+        ("M-r" . consult-history))
 
   (:map org-mode-map
         ("C-c h" . consult-org-heading)))
@@ -668,12 +689,49 @@ This function can be used as the value of the user option
   ;; search only for text files in denote dir
   (setq consult-notes-denote-files-function (function denote-directory-text-only-files)))
 
+;; Adapted from vertico-reverse
+(defun vertico-bottom--display-candidates (lines)
+  "Display LINES in bottom."
+  (move-overlay vertico--candidates-ov (point-min) (point-min))
+  (unless (eq vertico-resize t)
+    (setq lines (nconc (make-list (max 0 (- vertico-count (length lines))) "\n") lines)))
+  (let ((string (apply #'concat lines)))
+    (add-face-text-property 0 (length string) 'default 'append string)
+    (overlay-put vertico--candidates-ov 'before-string string)
+    (overlay-put vertico--candidates-ov 'after-string nil))
+  (vertico--resize-window (length lines)))
+
+;; Enable vertico
+(use-package vertico
+  :bind (:map vertico-map
+              ("C-c C-n" . vertico-quick-jump))
+  :custom-face
+  ;;(vertico-current ((t (:background "slate"))))
+  :init (vertico-mode)
+  ;;(advice-add #'vertico--display-candidates :override #'vertico-bottom--display-candidates)
+  (setq vertico-scroll-margin 0)       ;; Different scroll margin
+  (setq vertico-count 10)
+  (setq vertico-resize 'grow-only))
+;;(setq vertico-count-format '("" . "")))
+
+(use-package savehist
+  :init
+  (savehist-mode))
+
+(use-package vertico-multiform
+  :after vertico
+  :init
+  (vertico-multiform-mode)
+  (setq vertico-multiform-commands
+        '((consult-ripgrep buffer)
+          (consult-buffer flat))))
+
 (use-package eglot
   :bind
   (:map eglot-mode-map
-	("C-c e q" . eglot-shutdown)
-	("C-c e Q" . eglot-shutdown-all)
-	("C-c e l" . eglot-list-connections))
+        ("C-c e q" . eglot-shutdown)
+        ("C-c e Q" . eglot-shutdown-all)
+        ("C-c e l" . eglot-list-connections))
   :custom-face
   (eglot-highlight-symbol-face ((t (:background "LightSkyBlue4")))))
 (use-package eglot-jl)
@@ -681,21 +739,21 @@ This function can be used as the value of the user option
 (use-package pyenv-mode
   :init
   (setq pyenv-mode-map
-	(let ((map (make-sparse-keymap)))
-	  map))
+        (let ((map (make-sparse-keymap)))
+          map))
   :hook python-ts-mode python-mode
   :bind
   (:map python-ts-mode-map
-	("C-c C-s" . pyenv-mode-set)
-	("C-c C-u" . pyenv-mode-unset)))
+        ("C-c C-s" . pyenv-mode-set)
+        ("C-c C-u" . pyenv-mode-unset)))
 (use-package poetry
   :bind
   (:map python-ts-mode-map
-	("C-c C-b" . poetry)))
+        ("C-c C-b" . poetry)))
 (use-package python-pytest
   :bind
   (:map python-ts-mode-map
-	("C-c C-n" . python-pytest-dispatch)))
+        ("C-c C-n" . python-pytest-dispatch)))
 
   (use-package ess
     :defer t
@@ -891,17 +949,17 @@ This function can be used as the value of the user option
         (go "https://github.com/tree-sitter/tree-sitter-go")
         (html "https://github.com/tree-sitter/tree-sitter-html")
         (javascript "https://github.com/tree-sitter/tree-sitter-javascript"
-		    "master" "src")
+                    "master" "src")
         (json "https://github.com/tree-sitter/tree-sitter-json")
         (make "https://github.com/alemuller/tree-sitter-make")
         (markdown "https://github.com/ikatyang/tree-sitter-markdown")
         (python "https://github.com/tree-sitter/tree-sitter-python")
         (toml "https://github.com/tree-sitter/tree-sitter-toml")
         (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master"
-	     "tsx/src")
+             "tsx/src")
         (typescript "https://github.com/tree-sitter/tree-sitter-typescript"
-		    "master" "typescript/src")
-	(typst "https://github.com/uben0/tree-sitter-typst")
+                    "master" "typescript/src")
+        (typst "https://github.com/uben0/tree-sitter-typst")
         (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 (setq treesit-font-lock-level 4)
 
@@ -924,11 +982,11 @@ This function can be used as the value of the user option
   (use-package yasnippet-snippets)
   (yas-reload-all)
   (setq yas-minor-mode-map
-	(let ((map (make-sparse-keymap)))
-	  (define-key map (kbd "s") 'yas-insert-snippet)
-	  (define-key map (kbd "n") 'yas-new-snippet)
-	  (define-key map (kbd "v") 'yas-visit-snippet-file)
-	  map))
+        (let ((map (make-sparse-keymap)))
+          (define-key map (kbd "s") 'yas-insert-snippet)
+          (define-key map (kbd "n") 'yas-new-snippet)
+          (define-key map (kbd "v") 'yas-visit-snippet-file)
+          map))
   :hook (prog-mode . yas-minor-mode)
   :bind-keymap ("C-c s" . yas-minor-mode-map))
 
@@ -941,7 +999,7 @@ This function can be used as the value of the user option
   (:map projectile-command-map ("b" . consult-project-buffer))
   :config
   (setq projectile-project-search-path
-	'("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles" "~/Dropbox/repos"))
+        '("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles" "~/Dropbox/repos"))
   (projectile-global-mode 1))
 
   (use-package quickrun)
@@ -957,10 +1015,14 @@ This function can be used as the value of the user option
 (use-package jsonrpc
   :pin gnu-elpa)
 
-(use-package lua-mode)
+(use-package lua-mode
+  :config
+  (setq lua-indent-level 3))
 (use-package lua-ts-mode
-  :hook (lua-ts-mode . (lambda () (setq tab-width 2)))
-  :straight (:host github :repo "emacsmirror/lua-ts-mode" :files ("*.el")))
+  :hook (lua-ts-mode . (lambda nil ((setq tab-width 3))))
+  :config
+  (setq lua-ts-indent-offset 3)
+  :straight (:host sourcehut :repo "johnmuhl/lua-ts-mode" :files ("*.el")))
 
 (use-package grep
   :config
@@ -979,7 +1041,7 @@ This function can be used as the value of the user option
   ("M-s r" . rg-menu)
   ("C-c n f R" . search-denote)
   (:map isearch-mode-map
-	("M-s g" . rg-isearch-menu)))
+        ("M-s g" . rg-isearch-menu)))
 
   (use-package wgrep)
 
@@ -992,7 +1054,7 @@ This function can be used as the value of the user option
   :straight (:host codeberg :repo "fourier/loccur")
   :bind
   (:map isearch-mode-map
-	("M-s l" . loccus-isearch)))
+        ("M-s l" . loccus-isearch)))
 
 (use-package diredfl)
 (use-package fd-dired)
@@ -1038,10 +1100,10 @@ This function can be used as the value of the user option
   ;; :custom
   ;; (display-buffer-alist
   ;;  (append display-buffer-alist
-  ;; 	   '(("^\\(CAPTURE-.+\\)$\\|\\*\\(?:Capture\\|Org Select\\)\\*"
-  ;; 	      (display-buffer-below-selected display-buffer-at-bottom)
-  ;; 	      (inhibit-same-window . t)
-  ;; 	      (window-height . )))))
+  ;;       '(("^\\(CAPTURE-.+\\)$\\|\\*\\(?:Capture\\|Org Select\\)\\*"
+  ;;          (display-buffer-below-selected display-buffer-at-bottom)
+  ;;          (inhibit-same-window . t)
+  ;;          (window-height . )))))
   :config
   (setf (cdr (assoc 'file org-link-frame-setup)) 'find-file)
   (setq org-directory "~/Dropbox/Org/")
@@ -1064,18 +1126,20 @@ This function can be used as the value of the user option
   (setq org-src-window-setup 'current-window)
   (setq org-capture-templates
         '(("r" "refile" entry (file "~/Dropbox/Org/refile.org") "* %^{Title} %^g\n%U\n\n%?" :prepend t :empty-lines-after 1)
-   	  ("t" "today" entry (file+olp+datetree "~/Dropbox/Org/daily.org") "* %^{Title}\n\n%?")
+          ("t" "today" entry (file+olp+datetree "~/Dropbox/Org/daily.org") "* %^{Title}\n\n%?")
           ("j" "Journal" entry (file+olp+datetree "~/Dropbox/Org/journal.org") "* %U %^{Title}\n%i\n\n%?")))
   :hook
   (org-mode . auto-fill-mode)
-  (org-mode . visual-line-mode)
+  (org-nmode . visual-line-mode)
   :bind
   ("C-x c" . org-capture)
   (:map org-mode-map
         ("C-c C-." . org-time-stamp-inactive)
         ("C-c a" . org-agenda)
-	      ("C-c 4 C-o" . mw/org-open-at-point-other-window)
-	      ("C-c 5 C-o" . mw/org-open-at-point-other-frame)
+              ("C-c 4 C-o" . mw/org-open-at-point-other-window)
+              ("C-c 4 o" . mw/org-open-at-point-other-window)
+              ("C-c 5 C-o" . mw/org-open-at-point-other-frame)
+              ("C-c 5 o" . mw/org-open-at-point-other-frame)
         ("C-c e" . org-emphasize))
   :custom-face
   (org-document-title ((t (:height 1.7)))))
@@ -1224,7 +1288,7 @@ This function can be used as the value of the user option
           org-mac-link-skim-app-p t)
     :bind
     (:map org-mode-map
-	  ("C-c L" . mw/org-mac-link-get-link))))
+          ("C-c L" . mw/org-mac-link-get-link))))
 
 (use-package org-noter
   :bind
@@ -1431,11 +1495,11 @@ This function can be used as the value of the user option
   (setq citar-select-multiple nil)
   :bind
   (:map org-mode-map :package org
-	("C-c b" . #'org-cite-insert)
-	("C-c B" . citar-dwim))
+        ("C-c b" . #'org-cite-insert)
+        ("C-c B" . citar-dwim))
   (:map citar-map :package citar
-	("x" . mw/citar-toggle-multiple)
-	("a" . consult-recoll))
+        ("x" . mw/citar-toggle-multiple)
+        ("a" . consult-recoll))
   :bind-keymap
   ("C-c c" . citar-map))
 
@@ -1460,13 +1524,13 @@ This function can be used as the value of the user option
   ;; Bind all available commands
   :bind
   (:map citar-map
-	("c" . citar-create-note)
-	("N" . citar-denote-open-note)
-	("d" . citar-denote-dwim)
-	("E" . citar-denote-open-reference-entry)
-	("s" . citar-denote-find-reference)
-	("S" . citar-denote-find-citation)
-	("i" . citar-denote-link-reference)))
+        ("c" . citar-create-note)
+        ("N" . citar-denote-open-note)
+        ("d" . citar-denote-dwim)
+        ("E" . citar-denote-open-reference-entry)
+        ("s" . citar-denote-find-reference)
+        ("S" . citar-denote-find-citation)
+        ("i" . citar-denote-link-reference)))
 
 (use-package ebib
   :config
@@ -1515,15 +1579,15 @@ This function can be used as the value of the user option
   :after pdf-tools
   :bind
   (:map pdf-annot-minor-mode-map
-	("a D" . pdf-annot-delete)
-	("a a" . pdf-annot-attachment-dired)
-	("a h" . pdf-annot-add-highlight-markup-annotation)
-	("a l" . pdf-annot-list-annotations)
-	("a m" . pdf-annot-add-markup-annotation)
-	("a o" . pdf-annot-add-strikeout-markup-annotation)
-	("a s" . pdf-annot-add-squiggly-markup-annotation)
-	("a t" . pdf-annot-add-text-annotation)
-	("a u" . pdf-annot-add-underline-markup-annotation)))
+        ("a D" . pdf-annot-delete)
+        ("a a" . pdf-annot-attachment-dired)
+        ("a h" . pdf-annot-add-highlight-markup-annotation)
+        ("a l" . pdf-annot-list-annotations)
+        ("a m" . pdf-annot-add-markup-annotation)
+        ("a o" . pdf-annot-add-strikeout-markup-annotation)
+        ("a s" . pdf-annot-add-squiggly-markup-annotation)
+        ("a t" . pdf-annot-add-text-annotation)
+        ("a u" . pdf-annot-add-underline-markup-annotation)))
 
 (defun enable-all-commands ()
   "Enable all commands, reporting on which were disabled."
