@@ -45,7 +45,7 @@ end)
 function autoSetWallpaper()
 	if
 		hs.osascript.applescript('tell application "System Events" to tell appearance preferences to get dark mode')
-		== "true"
+		== true
 	then
 		logger.d("dark mode")
 		hs.execute(
