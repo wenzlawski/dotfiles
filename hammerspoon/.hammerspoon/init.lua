@@ -43,10 +43,9 @@ end)
 ---------------------
 
 function autoSetWallpaper()
-	if
+	local _, darkmode =
 		hs.osascript.applescript('tell application "System Events" to tell appearance preferences to get dark mode')
-		== true
-	then
+	if darkmode == "true" then
 		logger.d("dark mode")
 		hs.execute(
 			'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/Black.png" as POSIX file\''
