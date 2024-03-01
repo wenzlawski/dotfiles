@@ -43,7 +43,7 @@ end)
 ---------------------
 
 function autoSetWallpaper()
-	local _, darkmode =
+	local darkmode =
 		hs.execute("osascript -e 'tell application \"System Events\" to tell appearance preferences to get dark mode'")
 	if darkmode == true then
 		logger.d("dark mode")
