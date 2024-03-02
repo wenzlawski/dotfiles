@@ -43,9 +43,13 @@ end)
 ---------------------
 
 function autoSetWallpaper()
-	local darkmode =
+	local darkmode, out, out2 =
 		hs.execute("osascript -e 'tell application \"System Events\" to tell appearance preferences to get dark mode'")
-	if darkmode == true then
+	logger.d("darkmode: " .. tostring(darkmode))
+	logger.d("darkmode-b: " .. tostring(darkmode == true))
+	logger.d("out: " .. tostring(out))
+	logger.d("out2: " .. out2)
+	if darkmode then
 		logger.d("dark mode")
 		hs.execute(
 			'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/Black.png" as POSIX file\''
@@ -142,6 +146,10 @@ function spicetify_change_theme()
 					end
 					hs.execute("spicetify config current_theme " .. event["text"], true)
 					hs.execute("spicetify config color_scheme " .. n["text"], true)
+					local _, status3 = hs.execute("spicetify apply", true)
+					if status3 == nil then
+						hs.execute("spicetify update", true)
+					end
 					hs.execute("spicetify apply", true)
 				end)
 				:choices(choices)
