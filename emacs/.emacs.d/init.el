@@ -593,7 +593,7 @@ This function can be used as the value of the user option
   ("M-s c" . consult-locate)
   ("M-s g" . consult-grep)
   ("M-s G" . consult-git-grep)
-  ("M-s r" . consult-ripgrep)
+  ("M-s R" . consult-ripgrep)
   ("M-s l" . consult-line)
   ("M-s L" . consult-line-multi)
   ("M-s k" . consult-keep-lines)
@@ -1533,7 +1533,7 @@ Argument BOOK-ALIST ."
                                              'mouse-face 'calibredb-mouse-face
                                              'help-echo (format "Filter with this author: %s" author)
                                              'keymap author-map))
-                               (split-string author "&") "&") (calibredb-author-width) :left)
+                               (split-string author "&" t "\s+") " & ") (calibredb-author-width) :left)
      (calibredb-format-column (mapconcat
                                (lambda (tag)
                                  (propertize tag

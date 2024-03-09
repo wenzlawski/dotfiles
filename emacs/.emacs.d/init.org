@@ -1062,7 +1062,7 @@ This function can be used as the value of the user option
   ("M-s c" . consult-locate)
   ("M-s g" . consult-grep)
   ("M-s G" . consult-git-grep)
-  ("M-s r" . consult-ripgrep)
+  ("M-s R" . consult-ripgrep)
   ("M-s l" . consult-line)
   ("M-s L" . consult-line-multi)
   ("M-s k" . consult-keep-lines)
@@ -1724,7 +1724,7 @@ copy.
   :config
   (setq grep-program "rg"))
 #+end_src
-*** rg
+*** ripgrep - rg
 [[https://rgel.readthedocs.io/en/latest/configuration.html][Configuration — rg.el 2.3.0 documentation]]
 #+begin_src elisp
 (use-package rg
