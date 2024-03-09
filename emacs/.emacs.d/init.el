@@ -930,15 +930,15 @@ This function can be used as the value of the user option
 (use-package yasnippet
   :init
   (use-package yasnippet-snippets)
+  ;; (setq yas-minor-mode-map
+  ;;       (let ((map (make-sparse-keymap)))
+  ;;         (define-key map (kbd "s") 'yas-insert-snippet)
+  ;;         (define-key map (kbd "n") 'yas-new-snippet)
+  ;;         (define-key map (kbd "v") 'yas-visit-snippet-file)
+  ;;         map))
   (yas-reload-all)
-  (setq yas-minor-mode-map
-        (let ((map (make-sparse-keymap)))
-          (define-key map (kbd "s") 'yas-insert-snippet)
-          (define-key map (kbd "n") 'yas-new-snippet)
-          (define-key map (kbd "v") 'yas-visit-snippet-file)
-          map))
-  :hook (prog-mode . yas-minor-mode)
-  :bind-keymap ("C-c s" . yas-minor-mode-map))
+  :hook (prog-mode . yas-minor-mode))
+  ;; :bind-keymap ("C-c s" . yas-minor-mode-map))
 
 (use-package project)
 

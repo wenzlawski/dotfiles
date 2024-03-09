@@ -1657,19 +1657,20 @@ also [[https://github.com/abo-abo/auto-yasnippet][abo-abo/auto-yasnippet: quickl
 
 doom has its own snippets library, look into whether that would be useful to
 copy.
+
 #+begin_src elisp
 (use-package yasnippet
   :init
   (use-package yasnippet-snippets)
+  ;; (setq yas-minor-mode-map
+  ;;       (let ((map (make-sparse-keymap)))
+  ;;         (define-key map (kbd "s") 'yas-insert-snippet)
+  ;;         (define-key map (kbd "n") 'yas-new-snippet)
+  ;;         (define-key map (kbd "v") 'yas-visit-snippet-file)
+  ;;         map))
   (yas-reload-all)
-  (setq yas-minor-mode-map
-        (let ((map (make-sparse-keymap)))
-          (define-key map (kbd "s") 'yas-insert-snippet)
-          (define-key map (kbd "n") 'yas-new-snippet)
-          (define-key map (kbd "v") 'yas-visit-snippet-file)
-          map))
-  :hook (prog-mode . yas-minor-mode)
-  :bind-keymap ("C-c s" . yas-minor-mode-map))
+  :hook (prog-mode . yas-minor-mode))
+  ;; :bind-keymap ("C-c s" . yas-minor-mode-map))
 #+end_src
 
 *** projects
