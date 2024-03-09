@@ -44,12 +44,13 @@ end)
 
 function autoSetWallpaper()
 	local darkmode, out, out2 =
-		hs.execute("osascript -e 'tell application \"System Events\" to tell appearance preferences to get dark mode'")
+		hs.execute("osascript -e 'tell application \"System Events\" to tell appearance preferences to get dark mode'") -- darkmode appears as a string. "true" or "false".
+	local darkmode = tostring(darkmode):gsub("%s+", "")
 	logger.d("darkmode: " .. tostring(darkmode))
-	logger.d("darkmode-b: " .. tostring(darkmode == true))
+	logger.d("darkmode-b: " .. tostring(darkmode))
 	logger.d("out: " .. tostring(out))
 	logger.d("out2: " .. out2)
-	if darkmode then
+	if darkmode == "true" then
 		logger.d("dark mode")
 		hs.execute(
 			'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/Black.png" as POSIX file\''
