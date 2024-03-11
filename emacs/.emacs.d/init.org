@@ -686,17 +686,27 @@ functionality.
 *** avy
 
 #+begin_src elisp
-  (use-package avy
-    :bind
-    ("C-T" . avy-goto-char)
-    ("C-t" . avy-goto-char-2)
-    ("M-g f" . avy-goto-line)
-    ("M-g w" . avy-goto-word-1)
-    ("M-g e" . avy-goto-word-0)
-    :config
-    (setq avy-background nil)
-    (setq avy-keys '(?a ?r ?s ?t ?g ?m ?n ?e ?i ?o)))
+(use-package avy
+  :bind
+  ("C-T" . avy-goto-char)
+  ("C-t" . avy-goto-char-timer)
+  ("M-g f" . avy-goto-line)
+  ("M-g w" . avy-goto-word-1)
+  ("M-g e" . avy-goto-word-0)
+  :config
+  (setq avy-background nil)
+  (setq avy-dispatch-alist
+        '((?x . avy-action-kill-move)
+          (?X . avy-action-kill-stay)
+          (?h . avy-action-teleport)
+          (?u . avy-action-mark)
+          (?c . avy-action-copy)
+          (?y . avy-action-yank)
+          (?f . avy-action-ispell)
+          (?z . avy-action-zap-to-char)))
+  (setq avy-keys '(?a ?r ?s ?t ?g ?m ?n ?e ?i ?o)))
 #+end_src
+
 **** avy menu
 
 Making menus in avy. really cool
@@ -735,8 +745,12 @@ Making menus in avy. really cool
 (use-package vterm
   :bind
   ("C-c t" . vterm)
+  ("C-c 4 t" . vterm-other-window)
   :config
+  (setq vterm-max-scrollback 10000)
   (setq vterm-shell "/usr/local/bin/fish"))
+
+(use-package multi-vterm)
 #+end_src
 *** shell, eshell
 *** envrc - set buffer-local envs
@@ -856,6 +870,18 @@ buffer, one always gets the error 'end-of-buffer' and nothing happens. Beware.
 #+begin_src elisp
 (use-package scratch
     :straight (:host codeberg :repo "emacs-weirdware/scratch" :files ("*.el")))
+#+end_src
+
+*** pandoc
+
+http://joostkremers.github.io/pandoc-mode/
+
+#+begin_src elisp
+(use-package pandoc-mode
+  :hook ((text-mode doc-view-mode pdf-view-mode) . pandoc-mode)
+  :bind (:map pandoc-mode-map
+	      ("C-c p" . pandoc-main-hydra/body)
+	      ("C-c /" . nil)))
 #+end_src
 ** window
 *** Transpose frame
@@ -1887,8 +1913,9 @@ CAPTURE-refile.org
 *** ox
 #+begin_src elisp
 (use-package ox-hugo
-  :ensure t   ;Auto-install the package from Melpa
   :pin melpa  ;`package-archives' should already have ("melpa" . "https://melpa.org/packages/")
+  :after ox)
+(use-package ox-pandoc
   :after ox)
 
 #+end_src
@@ -2605,14 +2632,14 @@ Argument BOOK-ALIST ."
   ;; Use package defaults
   (citar-open-always-create-notes nil)
   (citar-denote-file-type 'org)
-  (citar-denote-subdir "citar")
+  (citar-denote-subdir t)
   (citar-denote-keyword "bib")
   (citar-denote-use-bib-keywords nil)
   (citar-denote-title-format "author-year-title")
   (citar-denote-title-format-authors 1)
   (citar-denote-title-format-andstr "and")
   :init
-  (citar-denote-mode 1)
+  (citar-denote-mode)
   ;; Bind all available commands
   :bind
   (:map citar-map

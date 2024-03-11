@@ -354,16 +354,25 @@
 
 (use-package tabspaces)
 
-  (use-package avy
-    :bind
-    ("C-T" . avy-goto-char)
-    ("C-t" . avy-goto-char-2)
-    ("M-g f" . avy-goto-line)
-    ("M-g w" . avy-goto-word-1)
-    ("M-g e" . avy-goto-word-0)
-    :config
-    (setq avy-background nil)
-    (setq avy-keys '(?a ?r ?s ?t ?g ?m ?n ?e ?i ?o)))
+(use-package avy
+  :bind
+  ("C-T" . avy-goto-char)
+  ("C-t" . avy-goto-char-timer)
+  ("M-g f" . avy-goto-line)
+  ("M-g w" . avy-goto-word-1)
+  ("M-g e" . avy-goto-word-0)
+  :config
+  (setq avy-background nil)
+  (setq avy-dispatch-alist
+        '((?x . avy-action-kill-move)
+          (?X . avy-action-kill-stay)
+          (?h . avy-action-teleport)
+          (?u . avy-action-mark)
+          (?c . avy-action-copy)
+          (?y . avy-action-yank)
+          (?f . avy-action-ispell)
+          (?z . avy-action-zap-to-char)))
+  (setq avy-keys '(?a ?r ?s ?t ?g ?m ?n ?e ?i ?o)))
 
 (use-package embark
   :bind
@@ -389,8 +398,12 @@
 (use-package vterm
   :bind
   ("C-c t" . vterm)
+  ("C-c 4 t" . vterm-other-window)
   :config
+  (setq vterm-max-scrollback 10000)
   (setq vterm-shell "/usr/local/bin/fish"))
+
+(use-package multi-vterm)
 
   (use-package hydra)
 
@@ -447,6 +460,12 @@
 
 (use-package scratch
     :straight (:host codeberg :repo "emacs-weirdware/scratch" :files ("*.el")))
+
+(use-package pandoc-mode
+  :hook ((text-mode doc-view-mode pdf-view-mode) . pandoc-mode)
+  :bind (:map pandoc-mode-map
+	      ("C-c p" . pandoc-main-hydra/body)
+	      ("C-c /" . nil)))
 
 (use-package transpose-frame
   :straight (:host github :repo "emacsorphanage/transpose-frame"))
@@ -1102,8 +1121,9 @@ This function can be used as the value of the user option
 ;;   (setq org-babel-default-header-args:shell '((:results . "output"))))
 
 (use-package ox-hugo
-  :ensure t   ;Auto-install the package from Melpa
   :pin melpa  ;`package-archives' should already have ("melpa" . "https://melpa.org/packages/")
+  :after ox)
+(use-package ox-pandoc
   :after ox)
 
 (use-package org-remark
@@ -1597,14 +1617,14 @@ Argument BOOK-ALIST ."
   ;; Use package defaults
   (citar-open-always-create-notes nil)
   (citar-denote-file-type 'org)
-  (citar-denote-subdir "citar")
+  (citar-denote-subdir t)
   (citar-denote-keyword "bib")
   (citar-denote-use-bib-keywords nil)
   (citar-denote-title-format "author-year-title")
   (citar-denote-title-format-authors 1)
   (citar-denote-title-format-andstr "and")
   :init
-  (citar-denote-mode 1)
+  (citar-denote-mode)
   ;; Bind all available commands
   :bind
   (:map citar-map
