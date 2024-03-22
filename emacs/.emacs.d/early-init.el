@@ -32,43 +32,43 @@
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 
-  ;; Temporarily increase the garbage collection threshold.  These
-  ;; changes help shave off about half a second of startup time.  The
-  ;; `most-positive-fixnum' is DANGEROUS AS A PERMANENT VALUE.  See the
-  ;; `emacs-startup-hook' a few lines below for what I actually use.
-  (setq gc-cons-threshold most-positive-fixnum
-        gc-cons-percentage 0.6)
+;; Temporarily increase the garbage collection threshold.  These
+;; changes help shave off about half a second of startup time.  The
+;; `most-positive-fixnum' is DANGEROUS AS A PERMANENT VALUE.  See the
+;; `emacs-startup-hook' a few lines below for what I actually use.
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 0.6)
 
-  ;; Same idea as above for the `file-name-handler-alist' and the
-  ;; `vc-handled-backends' with regard to startup speed optimisation.
-  ;; Here I am storing the default value with the intent of restoring it
-  ;; via the `emacs-startup-hook'.
-  (defvar prot-emacs--file-name-handler-alist file-name-handler-alist)
-  (defvar prot-emacs--vc-handled-backends vc-handled-backends)
+;; Same idea as above for the `file-name-handler-alist' and the
+;; `vc-handled-backends' with regard to startup speed optimisation.
+;; Here I am storing the default value with the intent of restoring it
+;; via the `emacs-startup-hook'.
+(defvar prot-emacs--file-name-handler-alist file-name-handler-alist)
+(defvar prot-emacs--vc-handled-backends vc-handled-backends)
 
-  (setq file-name-handler-alist nil
-        vc-handled-backends nil)
+(setq file-name-handler-alist nil
+      vc-handled-backends nil)
 
-  (add-hook 'emacs-startup-hook
-            (lambda ()
-              (setq gc-cons-threshold (* 1024 1024 20)
-                    gc-cons-percentage 0.2
-                    file-name-handler-alist prot-emacs--file-name-handler-alist
-                    vc-handled-backends prot-emacs--vc-handled-backends)))
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq gc-cons-threshold (* 1024 1024 20)
+                  gc-cons-percentage 0.2
+                  file-name-handler-alist prot-emacs--file-name-handler-alist
+                  vc-handled-backends prot-emacs--vc-handled-backends)))
 
-  ;; Initialise installed packages at this early stage, by using the
-  ;; available cache.  I had tried a setup with this set to nil in the
-  ;; early-init.el, but (i) it ended up being slower and (ii) various
-  ;; package commands, like `describe-package', did not have an index of
-  ;; packages to work with, requiring a `package-refresh-contents'.
-  (setq package-enable-at-startup t)
+;; Initialise installed packages at this early stage, by using the
+;; available cache.  I had tried a setup with this set to nil in the
+;; early-init.el, but (i) it ended up being slower and (ii) various
+;; package commands, like `describe-package', did not have an index of
+;; packages to work with, requiring a `package-refresh-contents'.
+(setq package-enable-at-startup t)
 
-  ;; Prevent unwanted runtime builds in gccemacs (native-comp); packages are
-  ;; compiled ahead-of-time when they are installed and site files are compiled
-  ;; when gccemacs is installed.
-  (setq comp-deferred-compilation nil)
+;; Prevent unwanted runtime builds in gccemacs (native-comp); packages are
+;; compiled ahead-of-time when they are installed and site files are compiled
+;; when gccemacs is installed.
+(setq comp-deferred-compilation nil)
 
-  ;;; early-init.el ends here
+;;; early-init.el ends here
 
 ;; This is bound to MacOS. In the future, there should be an OS
 ;; agnostic way of calling these functions. This would be handled by

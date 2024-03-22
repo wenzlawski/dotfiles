@@ -1,60 +1,60 @@
-  (setq warning-minimum-level :emergency)
+(setq warning-minimum-level :emergency)
 
-  (make-directory "~/.emacs_backups/" t)
-  (make-directory "~/.emacs_autosave/" t)
-  (setq auto-save-file-name-transforms '((".*" "~/.emacs_autosave/" t)))
-  (setq backup-directory-alist '(("." . "~/.emacs_backups/")))
+(make-directory "~/.emacs_backups/" t)
+(make-directory "~/.emacs_autosave/" t)
+(setq auto-save-file-name-transforms '((".*" "~/.emacs_autosave/" t)))
+(setq backup-directory-alist '(("." . "~/.emacs_backups/")))
 
-  (setq make-backup-files nil)
-  (setq backup-inhibited nil) ; Not sure if needed, given `make-backup-files'
-  (setq create-lockfiles nil)
+(setq make-backup-files nil)
+(setq backup-inhibited nil) ; Not sure if needed, given `make-backup-files'
+(setq create-lockfiles nil)
 
-  ;; Make native compilation silent and prune its cache.
-  (when (native-comp-available-p)
-    (setq native-comp-async-report-warnings-errors 'silent) ; Emacs 28 with native compilation
-    (setq native-compile-prune-cache t)) ; Emacs 29
+;; Make native compilation silent and prune its cache.
+(when (native-comp-available-p)
+  (setq native-comp-async-report-warnings-errors 'silent) ; Emacs 28 with native compilation
+  (setq native-compile-prune-cache t)) ; Emacs 29
 
-  ;; Disable the damn thing by making it disposable.
-  (setq custom-file (make-temp-file "emacs-custom-"))
+;; Disable the damn thing by making it disposable.
+(setq custom-file (make-temp-file "emacs-custom-"))
 
-  (setq disabled-command-function nil)
+(setq disabled-command-function nil)
 
 ;; Always start with *scratch*
 ;;(setq initial-buffer-choice t)
 
-  (mapc
-   (lambda (string)
-     (add-to-list 'load-path (locate-user-emacs-file string)))
-   '("site-lisp" "mw-emacs-modules"))
+(mapc
+ (lambda (string)
+   (add-to-list 'load-path (locate-user-emacs-file string)))
+ '("site-lisp" "mw-emacs-modules"))
 
   ;;;; Packages
 
-  (require 'package)
+(require 'package)
 
-  (setq package-vc-register-as-project nil) ; Emacs 30
+(setq package-vc-register-as-project nil) ; Emacs 30
 
-  (add-hook 'package-menu-mode-hook #'hl-line-mode)
+(add-hook 'package-menu-mode-hook #'hl-line-mode)
 
-  ;; Also read: <https://protesilaos.com/codelog/2022-05-13-emacs-elpa-devel/>
-  (setq package-archives
-        '(("gnu-elpa" . "https://elpa.gnu.org/packages/")
-          ("gnu-elpa-devel" . "https://elpa.gnu.org/devel/")
-          ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-          ("melpa" . "https://melpa.org/packages/")))
+;; Also read: <https://protesilaos.com/codelog/2022-05-13-emacs-elpa-devel/>
+(setq package-archives
+      '(("gnu-elpa" . "https://elpa.gnu.org/packages/")
+        ("gnu-elpa-devel" . "https://elpa.gnu.org/devel/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+        ("melpa" . "https://melpa.org/packages/")))
 
-  ;; Highest number gets priority (what is not mentioned has priority 0)
-  (setq package-archive-priorities
-        '(("gnu-elpa" . 3)
-          ("melpa" . 2)
-          ("nongnu" . 1)))
+;; Highest number gets priority (what is not mentioned has priority 0)
+(setq package-archive-priorities
+      '(("gnu-elpa" . 3)
+        ("melpa" . 2)
+        ("nongnu" . 1)))
 
-  ;; NOTE 2023-08-21: I build Emacs from source, so I always get the
-  ;; latest version of built-in packages.  However, this is a good
-  ;; solution to set to non-nil if I ever switch to a stable release.
-  (setq package-install-upgrade-built-in nil)
+;; NOTE 2023-08-21: I build Emacs from source, so I always get the
+;; latest version of built-in packages.  However, this is a good
+;; solution to set to non-nil if I ever switch to a stable release.
+(setq package-install-upgrade-built-in nil)
 
-  (require 'use-package-ensure)
-  (setq use-package-always-ensure nil)
+(require 'use-package-ensure)
+(setq use-package-always-ensure nil)
 
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -73,7 +73,7 @@
   (load bootstrap-file nil 'nomessage))
 (straight-use-package 'use-package)
 
-  (setq custom-safe-themes t)
+(setq custom-safe-themes t)
 
 (setq custom-safe-themes t)
 (defalias 'mw/apply-theme-change 'mw/modus-theme-change)
@@ -171,10 +171,10 @@
   (customize-set-variable 'timu-macos-flavour (symbol-name appearance))
   (load-theme 'timu-macos t))
 
-  (use-package poet-theme
-    :config
-    (setq poet-theme-variable-pitch-multiplier 1.6)
-    (setq poet-theme-variable-headers nil))
+(use-package poet-theme
+  :config
+  (setq poet-theme-variable-pitch-multiplier 1.6)
+  (setq poet-theme-variable-headers nil))
 
 (add-to-list 'default-frame-alist '(font . "Iosevka Comfy-18"))
 
@@ -198,26 +198,26 @@
   :config
   (spacious-padding-mode))
 
-  (use-package pulsar
-    :config
-    (setq pulsar-pulse t)
-    (setq pulsar-delay 0.05)
-    (setq pulsar-iterations 10)
-    (setq pulsar-face 'pulsar-magenta)
-    (setq pulsar-highlight-face 'pulsar-yellow)
-    (pulsar-global-mode 1)
-    :hook
-    (xref-after-return . pulsar-pulse-line)
-    (xref-after-jump . pulsar-pulse-line))
+(use-package pulsar
+  :config
+  (setq pulsar-pulse t)
+  (setq pulsar-delay 0.05)
+  (setq pulsar-iterations 10)
+  (setq pulsar-face 'pulsar-magenta)
+  (setq pulsar-highlight-face 'pulsar-yellow)
+  (pulsar-global-mode 1)
+  :hook
+  (xref-after-return . pulsar-pulse-line)
+  (xref-after-jump . pulsar-pulse-line))
 
-  (remove-hook 'xref-after-return-hook 'xref-pulse-momentarily)
-  (remove-hook 'xref-after-jump-hook 'xref-pulse-momentarily)
+(remove-hook 'xref-after-return-hook 'xref-pulse-momentarily)
+(remove-hook 'xref-after-jump-hook 'xref-pulse-momentarily)
 
 (use-package default-text-scale
   :bind
   (:map default-text-scale-mode-map
-  ("s-+" . default-text-scale-increase)
-  ("s-_" . default-text-scale-decrease))
+        ("s-+" . default-text-scale-increase)
+        ("s-_" . default-text-scale-decrease))
   :config
   (default-text-scale-mode))
 
@@ -236,8 +236,8 @@
   :custom
   (rainbow-delimiters-max-face-count 3))
 
-  (setq user-full-name "Marc Wenzlawski"
-        user-mail-address "marcwenzlawski@gmail.com")
+(setq user-full-name "Marc Wenzlawski"
+      user-mail-address "marcwenzlawski@gmail.com")
 
 (use-package emacs
   :config
@@ -330,27 +330,27 @@
   :config
   (gcmh-mode 1))
 
-  (use-package ace-window
-    :config
-    (setq aw-keys '(?a ?r ?s ?t ?g ?m ?n ?e ?i))
-    (setq aw-scope 'frame)
-    (setq aw-reverse-frame-list t)
-    (setq aw-dispatch-alist
-          '((?x aw-delete-window "Delete Window")
-            (?f aw-swap-window "Swap Windows")
-            (?F aw-move-window "Move Window")
-            (?c aw-copy-window "Copy Window")
-            (?j aw-switch-buffer-in-window "Select Buffer")
-            (?p aw-flip-window)
-            (?u aw-switch-buffer-other-window "Switch Buffer Other Window")
-            (?c aw-split-window-fair "Split Fair Window")
-            (?v aw-split-window-vert "Split Vert Window")
-            (?b aw-split-window-horz "Split Horz Window")
-            (?o delete-other-windows "Delete Other Windows")
-            (?? aw-show-dispatch-help)))
-    :bind
-    ("C-x o" . ace-window)
-    ("C-<tab>" . ace-window))
+(use-package ace-window
+  :config
+  (setq aw-keys '(?a ?r ?s ?t ?g ?m ?n ?e ?i))
+  (setq aw-scope 'frame)
+  (setq aw-reverse-frame-list t)
+  (setq aw-dispatch-alist
+        '((?x aw-delete-window "Delete Window")
+          (?f aw-swap-window "Swap Windows")
+          (?F aw-move-window "Move Window")
+          (?c aw-copy-window "Copy Window")
+          (?j aw-switch-buffer-in-window "Select Buffer")
+          (?p aw-flip-window)
+          (?u aw-switch-buffer-other-window "Switch Buffer Other Window")
+          (?c aw-split-window-fair "Split Fair Window")
+          (?v aw-split-window-vert "Split Vert Window")
+          (?b aw-split-window-horz "Split Horz Window")
+          (?o delete-other-windows "Delete Other Windows")
+          (?? aw-show-dispatch-help)))
+  :bind
+  ("C-x o" . ace-window)
+  ("C-<tab>" . ace-window))
 
 (use-package tabspaces)
 
@@ -405,7 +405,7 @@
 
 (use-package multi-vterm)
 
-  (use-package hydra)
+(use-package hydra)
 
 (when (eq system-type 'darwin)
   (use-package ns-auto-titlebar
@@ -415,24 +415,24 @@
     :config
     (osx-trash-setup)))
 
-  (defun mw/highlight-visual-line ()
-    (save-excursion
-      (cons (progn (beginning-of-visual-line) (point))
-            (progn (end-of-visual-line) (point)))))
-  (setq hl-line-range-function 'mw/highlight-visual-line)
+(defun mw/highlight-visual-line ()
+  (save-excursion
+    (cons (progn (beginning-of-visual-line) (point))
+          (progn (end-of-visual-line) (point)))))
+(setq hl-line-range-function 'mw/highlight-visual-line)
 
-  (use-package openwith)
+(use-package openwith)
 
-  (use-package undo-fu)
+(use-package undo-fu)
 
-  (use-package undo-fu-session)
+(use-package undo-fu-session)
 
-  (use-package vundo)
+(use-package vundo)
 
-  (use-package hl-todo)
+(use-package hl-todo)
 
-  (use-package exiftool
-    :defer t)
+(use-package exiftool
+  :defer t)
 
 (use-package bookmark+
   :straight (bookmark+))
@@ -459,7 +459,7 @@
   (setq tab-bar-format '(tab-bar-format-tabs tab-bar-separator)))
 
 (use-package scratch
-    :straight (:host codeberg :repo "emacs-weirdware/scratch" :files ("*.el")))
+  :straight (:host codeberg :repo "emacs-weirdware/scratch" :files ("*.el")))
 
 (use-package pandoc-mode
   :hook ((text-mode doc-view-mode pdf-view-mode) . pandoc-mode)
@@ -480,88 +480,88 @@
   ("C-x 4 o" . flop-frame)
   ("C-x 4 n" . rotate-frame))
 
-  (require 'prot-modeline)
-  (defun prot-modeline-subtle-activate ()
-    "Run prot-modeline-subtle-mode with 1"
-    (interactive)
-    (prot-modeline-subtle-mode 1))
+(require 'prot-modeline)
+(defun prot-modeline-subtle-activate ()
+  "Run prot-modeline-subtle-mode with 1"
+  (interactive)
+  (prot-modeline-subtle-mode 1))
 
-  (setq mode-line-compact nil) ; Emacs 28
-  ;; write a function to do the spacing
-  (defun simple-mode-line-render (left right)
-    "Return a string of `window-width' length.
+(setq mode-line-compact nil) ; Emacs 28
+;; write a function to do the spacing
+(defun simple-mode-line-render (left right)
+  "Return a string of `window-width' length.
     Containing LEFT, and RIGHT aligned respectively."
-    (let ((available-width
-           (- (window-total-width)
-              (+ (length (format-mode-line left))
-                 (length (format-mode-line right))))))
-      (append left
-              (list (format (format "%%%ds" available-width) ""))
-              right)))
-  (setq mode-line-right-align-edge 'right-margin)
-  (setq-default mode-line-format
-                '((:eval
-                   (simple-mode-line-render
-                    (quote ("%e"
-                            prot-modeline-kbd-macro
-                            prot-modeline-narrow
-                            prot-modeline-buffer-status
-                            prot-modeline-input-method
-                            prot-modeline-evil
-                            prot-modeline-buffer-identification
-                            "  "
-                            prot-modeline-major-mode
-                            prot-modeline-process
-                            "  "
-                            prot-modeline-vc-branch
-                            "  "
-                            prot-modeline-eglot
-                            "  "
-                            prot-modeline-flymake))
-                    (quote (
-                            " "
-                            prot-modeline-misc-info
-                            " "))))))
+  (let ((available-width
+         (- (window-total-width)
+            (+ (length (format-mode-line left))
+               (length (format-mode-line right))))))
+    (append left
+            (list (format (format "%%%ds" available-width) ""))
+            right)))
+(setq mode-line-right-align-edge 'right-margin)
+(setq-default mode-line-format
+              '((:eval
+                 (simple-mode-line-render
+                  (quote ("%e"
+                          prot-modeline-kbd-macro
+                          prot-modeline-narrow
+                          prot-modeline-buffer-status
+                          prot-modeline-input-method
+                          prot-modeline-evil
+                          prot-modeline-buffer-identification
+                          "  "
+                          prot-modeline-major-mode
+                          prot-modeline-process
+                          "  "
+                          prot-modeline-vc-branch
+                          "  "
+                          prot-modeline-eglot
+                          "  "
+                          prot-modeline-flymake))
+                  (quote (
+                          " "
+                          prot-modeline-misc-info
+                          " "))))))
 ;;(prot-modeline-subtle-mode)
 
 (use-package hide-mode-line
   :bind (:map help-map ("t m" . hide-mode-line-mode)))
 
-  (use-package corfu
-    ;; Optional customizations
-    :custom
-    (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-    ;; (corfu-auto nil)               ;; Enable auto completion
-    ;; (corfu-separator ?\s)          ;; Orderless field separator
-    ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-    (corfu-quit-no-match 'separator) ;; Never quit, even if there is no match
-    ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-    ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-    ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+(use-package corfu
+  ;; Optional customizations
+  :custom
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  ;; (corfu-auto nil)               ;; Enable auto completion
+  ;; (corfu-separator ?\s)          ;; Orderless field separator
+  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  (corfu-quit-no-match 'separator) ;; Never quit, even if there is no match
+  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
-    ;; Enable Corfu only for certain modes.
-    ;; :hook ((prog-mode . corfu-mode)
-    ;;        (shell-mode . corfu-mode)
-    ;;        (eshell-mode . corfu-mode))
+  ;; Enable Corfu only for certain modes.
+  ;; :hook ((prog-mode . corfu-mode)
+  ;;        (shell-mode . corfu-mode)
+  ;;        (eshell-mode . corfu-mode))
 
-    ;; Recommended: Enable Corfu globally.  This is recommended since Dabbrev can
-    ;; be used globally (M-/).  See also the customization variable
-    ;; `global-corfu-modes' to exclude certain modes.
-    :init
-    (global-corfu-mode))
+  ;; Recommended: Enable Corfu globally.  This is recommended since Dabbrev can
+  ;; be used globally (M-/).  See also the customization variable
+  ;; `global-corfu-modes' to exclude certain modes.
+  :init
+  (global-corfu-mode))
 
-  ;; Use Dabbrev with Corfu!
-  (use-package dabbrev
-    ;; Swap M-/ and C-M-/
-    :bind (("M-/" . dabbrev-completion)
-           ("C-M-/" . dabbrev-expand))
-    :config
-    (add-to-list 'dabbrev-ignored-buffer-regexps "\\` ")
-    ;; Since 29.1, use `dabbrev-ignored-buffer-regexps' on older.
-    (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
-    (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode))
-  (use-package cape)
+;; Use Dabbrev with Corfu!
+(use-package dabbrev
+  ;; Swap M-/ and C-M-/
+  :bind (("M-/" . dabbrev-completion)
+         ("C-M-/" . dabbrev-expand))
+  :config
+  (add-to-list 'dabbrev-ignored-buffer-regexps "\\` ")
+  ;; Since 29.1, use `dabbrev-ignored-buffer-regexps' on older.
+  (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
+  (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode))
+(use-package cape)
 
 (defun mw/sort-by-length (elements)
   "Sort ELEMENTS by minibuffer history, else return them unsorted.
@@ -658,7 +658,7 @@ This function can be used as the value of the user option
   ("C-c n 4 o" . mw/consult-notes-other-window)
   :config
   (setq consult-notes-file-dir-sources
-      '(("Org"             ?o "~/Dropbox/Org/")))
+        '(("Org"             ?o "~/Dropbox/Org/")))
   (setq consult-notes-org-headings-files '("~/Dropbox/Org/"))
   ;;(consult-notes-org-headings-mode)
   (when (locate-library "denote")
@@ -789,103 +789,103 @@ This function can be used as the value of the user option
   (:map python-ts-mode-map
         ("C-c C-n" . python-pytest-dispatch)))
 
-  (use-package ess
-    :defer t
-    :config
-    (setq ess-eval-visibly 'nowait)
-    (setq ess-use-company 'nil)
-    (setq ess-R-font-lock-keywords
-          '((ess-R-fl-keyword:keywords . t)
-            (ess-R-fl-keyword:constants . t)
-            (ess-R-fl-keyword:modifiers . t)
-            (ess-R-fl-keyword:fun-defs . t)
-            (ess-R-fl-keyword:assign-ops . t)
-            (ess-R-fl-keyword:%op% . t)
-            (ess-fl-keyword:fun-calls . t)
-            (ess-fl-keyword:numbers . t)
-            (ess-fl-keyword:operators . t)
-            (ess-fl-keyword:delimiters . t)
-            (ess-fl-keyword:= . t)
-            (ess-R-fl-keyword:F&T . t))))
+(use-package ess
+  :defer t
+  :config
+  (setq ess-eval-visibly 'nowait)
+  (setq ess-use-company 'nil)
+  (setq ess-R-font-lock-keywords
+        '((ess-R-fl-keyword:keywords . t)
+          (ess-R-fl-keyword:constants . t)
+          (ess-R-fl-keyword:modifiers . t)
+          (ess-R-fl-keyword:fun-defs . t)
+          (ess-R-fl-keyword:assign-ops . t)
+          (ess-R-fl-keyword:%op% . t)
+          (ess-fl-keyword:fun-calls . t)
+          (ess-fl-keyword:numbers . t)
+          (ess-fl-keyword:operators . t)
+          (ess-fl-keyword:delimiters . t)
+          (ess-fl-keyword:= . t)
+          (ess-R-fl-keyword:F&T . t))))
 
-  ;; (setq display-buffer-alist
-  ;;       '(("*R Dired"
-  ;;          (display-buffer-reuse-window display-buffer-at-bottom)
-  ;;          (window-width . 0.5)
-  ;;          (window-height . 0.25)
-  ;;          (reusable-frames . nil))
-  ;;         ("*R"
-  ;;          (display-buffer-reuse-window display-buffer-in-side-window)
-  ;;          (side . right)
-  ;;          (slot . -1)
-  ;;          (window-width . 0.5)
-  ;;          (reusable-frames . nil))
-  ;;         ("*Help"
-  ;;          (display-buffer-reuse-window display-buffer-in-side-window)
-  ;;          (side . right)
-  ;;          (slot . 1)
-  ;;          (window-width . 0.5)
-  ;;          (reusable-frames . nil))))
+;; (setq display-buffer-alist
+;;       '(("*R Dired"
+;;          (display-buffer-reuse-window display-buffer-at-bottom)
+;;          (window-width . 0.5)
+;;          (window-height . 0.25)
+;;          (reusable-frames . nil))
+;;         ("*R"
+;;          (display-buffer-reuse-window display-buffer-in-side-window)
+;;          (side . right)
+;;          (slot . -1)
+;;          (window-width . 0.5)
+;;          (reusable-frames . nil))
+;;         ("*Help"
+;;          (display-buffer-reuse-window display-buffer-in-side-window)
+;;          (side . right)
+;;          (slot . 1)
+;;          (window-width . 0.5)
+;;          (reusable-frames . nil))))
 
-  (defvar rutils-show_plot_next_to_r_process t)
+(defvar rutils-show_plot_next_to_r_process t)
 
-  (defun add-pdf-to-rcode(rcomm fname)
-    "add pdf(tmpfile) and dev.off() to R command"
-    (let*  (
-            (newc (concat "pdf('" fname "')\n" rcomm  "\n dev.off()"))
-            )
-      (eval newc)
-      )
+(defun add-pdf-to-rcode(rcomm fname)
+  "add pdf(tmpfile) and dev.off() to R command"
+  (let*  (
+          (newc (concat "pdf('" fname "')\n" rcomm  "\n dev.off()"))
+          )
+    (eval newc)
     )
+  )
 
 
-  (defun rutils-plot-region-or-paragraph()
-    "execute region or paragraph and save tmp plot to pdf. Then open windows to show pdf"
-    (interactive)
-    (let*  (
-            (fname (concat (make-temp-file "plot_") ".pdf"))
-            )
-      (progn
-        (if (use-region-p)
-            (ess-eval-linewise (add-pdf-to-rcode (buffer-substring (region-beginning) (region-end)) fname))
-          (progn (ess-eval-linewise (add-pdf-to-rcode (thing-at-point 'paragraph) fname)))
+(defun rutils-plot-region-or-paragraph()
+  "execute region or paragraph and save tmp plot to pdf. Then open windows to show pdf"
+  (interactive)
+  (let*  (
+          (fname (concat (make-temp-file "plot_") ".pdf"))
           )
-        ;; (with-help-window "*plots*"
-        ;;   (find-ssfile-at-point)
-        ;;   )
-        (if rutils-show_plot_next_to_r_process
-            (ess-switch-to-end-of-ESS)
-          )
-        (if (window-in-direction 'below)
-            (progn
-              (select-window (window-in-direction 'below))
-              (find-file fname)
-              )
+    (progn
+      (if (use-region-p)
+          (ess-eval-linewise (add-pdf-to-rcode (buffer-substring (region-beginning) (region-end)) fname))
+        (progn (ess-eval-linewise (add-pdf-to-rcode (thing-at-point 'paragraph) fname)))
+        )
+      ;; (with-help-window "*plots*"
+      ;;   (find-ssfile-at-point)
+      ;;   )
+      (if rutils-show_plot_next_to_r_process
+          (ess-switch-to-end-of-ESS)
+        )
+      (if (window-in-direction 'below)
           (progn
-            (split-window-below)
             (select-window (window-in-direction 'below))
             (find-file fname)
             )
+        (progn
+          (split-window-below)
+          (select-window (window-in-direction 'below))
+          (find-file fname)
           )
-        ;;(split-window-right)
-        ;;(windmove-right)
         )
+      ;;(split-window-right)
+      ;;(windmove-right)
       )
     )
+  )
 
-  (setq eglot-jl-language-server-project "~/.julia/environments/v1.9")
+(setq eglot-jl-language-server-project "~/.julia/environments/v1.9")
 
-  (use-package vterm)
+(use-package vterm)
 
-  (use-package julia-snail
-    :config
-    (add-to-list 'display-buffer-alist
-                 '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
-    (setq split-height-threshold 15)
-    (setq julia-snail-repl-display-eval-results t)
-    (setq julia-snail-multimedia-enable t)
-    (setq julia-snail-extensions '(repl-history formatter))
-    :hook (julia-mode . julia-snail-mode))
+(use-package julia-snail
+  :config
+  (add-to-list 'display-buffer-alist
+               '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
+  (setq split-height-threshold 15)
+  (setq julia-snail-repl-display-eval-results t)
+  (setq julia-snail-multimedia-enable t)
+  (setq julia-snail-extensions '(repl-history formatter))
+  :hook (julia-mode . julia-snail-mode))
 
 (use-package typst-ts-mode
   :straight (:host sourcehut :repo "meow_king/typst-ts-mode")
@@ -893,83 +893,83 @@ This function can be used as the value of the user option
   :custom
   (typst-ts-mode-watch-options "--open"))
 
-  (use-package flycheck)
+(use-package flycheck)
 
-  (use-package flyspell-correct
-    :after flyspell
-    :bind (:map flyspell-mode-map ("C-," . flyspell-correct-wrapper)))
+(use-package flyspell-correct
+  :after flyspell
+  :bind (:map flyspell-mode-map ("C-," . flyspell-correct-wrapper)))
 
-  (use-package flyspell-correct-avy-menu
-    :after flyspell-correct)
+(use-package flyspell-correct-avy-menu
+  :after flyspell-correct)
 
-  (use-package consult-flyspell
-    :bind (:map flyspell-mode-map ("C-<" . consult-flyspell))
-    :config
-    ;; default settings
-    (setq consult-flyspell-select-function 'flyspell-correct-at-point
-          consult-flyspell-set-point-after-word t
-          consult-flyspell-always-check-buffer nil))
+(use-package consult-flyspell
+  :bind (:map flyspell-mode-map ("C-<" . consult-flyspell))
+  :config
+  ;; default settings
+  (setq consult-flyspell-select-function 'flyspell-correct-at-point
+        consult-flyspell-set-point-after-word t
+        consult-flyspell-always-check-buffer nil))
 
-  (defun flyspell-on-for-buffer-type ()
-    "Enable Flyspell appropriately for the major mode of the current buffer.  Uses `flyspell-prog-mode' for modes derived from `prog-mode', so only strings and comments get checked.  All other buffers get `flyspell-mode' to check all text.  If flyspell is already enabled, does nothing."
-    (interactive)
-    (if (not (symbol-value flyspell-mode)) ; if not already on
-        (progn
-          (if (derived-mode-p 'prog-mode)
-              (progn
-                (message "Flyspell on (code)")
-                (flyspell-prog-mode))
-            ;; else
+(defun flyspell-on-for-buffer-type ()
+  "Enable Flyspell appropriately for the major mode of the current buffer.  Uses `flyspell-prog-mode' for modes derived from `prog-mode', so only strings and comments get checked.  All other buffers get `flyspell-mode' to check all text.  If flyspell is already enabled, does nothing."
+  (interactive)
+  (if (not (symbol-value flyspell-mode)) ; if not already on
+      (progn
+        (if (derived-mode-p 'prog-mode)
             (progn
-              (message "Flyspell on (text)")
-              (flyspell-mode 1)))
-          ;; I tried putting (flyspell-buffer) here but it didn't seem to work
-          )))
+              (message "Flyspell on (code)")
+              (flyspell-prog-mode))
+          ;; else
+          (progn
+            (message "Flyspell on (text)")
+            (flyspell-mode 1)))
+        ;; I tried putting (flyspell-buffer) here but it didn't seem to work
+        )))
 
-  (defun flyspell-toggle ()
-    "Turn Flyspell on if it is off, or off if it is on.  When turning on, it uses `flyspell-on-for-buffer-type' so code-vs-text is handled appropriately."
-    (interactive)
-    (if (symbol-value flyspell-mode)
-        (progn ; flyspell is on, turn it off
-          (message "Flyspell off")
-          (flyspell-mode -1))
-                                          ; else - flyspell is off, turn it on
-      (flyspell-on-for-buffer-type)))
+(defun flyspell-toggle ()
+  "Turn Flyspell on if it is off, or off if it is on.  When turning on, it uses `flyspell-on-for-buffer-type' so code-vs-text is handled appropriately."
+  (interactive)
+  (if (symbol-value flyspell-mode)
+      (progn ; flyspell is on, turn it off
+        (message "Flyspell off")
+        (flyspell-mode -1))
+                                        ; else - flyspell is off, turn it on
+    (flyspell-on-for-buffer-type)))
 
-  ;; not being used, as we are not using ispell dicts
-  (defun mw/switch-dictionary()
-    "UNUSED. Toggle dictionary language between english and german"
-    (interactive)
-    (let* ((dic ispell-current-dictionary)
-           (change (if (string= dic "deutsch8") "english" "deutsch8")))
-      (ispell-change-dictionary change)
-      (message "Dictionary switched from %s to %s" dic change)
-      ))
+;; not being used, as we are not using ispell dicts
+(defun mw/switch-dictionary()
+  "UNUSED. Toggle dictionary language between english and german"
+  (interactive)
+  (let* ((dic ispell-current-dictionary)
+         (change (if (string= dic "deutsch8") "english" "deutsch8")))
+    (ispell-change-dictionary change)
+    (message "Dictionary switched from %s to %s" dic change)
+    ))
 
-  (use-package flyspell
-    :bind (:map help-map ("t s" . flyspell-toggle))
-    :config
-    (cond
-     ;; try hunspell at first
-     ;; if hunspell does NOT exist, use aspell
-     ((executable-find "hunspell")
-      (setq ispell-program-name "hunspell"
-            flyspell-issue-message-flag nil
-            ispell-local-dictionary "en_US")
-      (setq ispell-local-dictionary-alist
-            ;; Please note the list `("-d" "en_US")` contains ACTUAL parameters passed to hunspell
-            ;; You could use `("-d" "en_US,en_US-med")` to check with multiple dictionaries
-            '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_US,de_DE_frami") nil utf-8)))
+(use-package flyspell
+  :bind (:map help-map ("t s" . flyspell-toggle))
+  :config
+  (cond
+   ;; try hunspell at first
+   ;; if hunspell does NOT exist, use aspell
+   ((executable-find "hunspell")
+    (setq ispell-program-name "hunspell"
+          flyspell-issue-message-flag nil
+          ispell-local-dictionary "en_US")
+    (setq ispell-local-dictionary-alist
+          ;; Please note the list `("-d" "en_US")` contains ACTUAL parameters passed to hunspell
+          ;; You could use `("-d" "en_US,en_US-med")` to check with multiple dictionaries
+          '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_US,de_DE_frami") nil utf-8)))
 
-      ;; new variable `ispell-hunspell-dictionary-alist' is defined in Emacs
-      ;; If it's nil, Emacs tries to automatically set up the dictionaries.
-      (when (boundp 'ispell-hunspell-dictionary-alist)
-        (setq ispell-hunspell-dictionary-alist ispell-local-dictionary-alist)))
+    ;; new variable `ispell-hunspell-dictionary-alist' is defined in Emacs
+    ;; If it's nil, Emacs tries to automatically set up the dictionaries.
+    (when (boundp 'ispell-hunspell-dictionary-alist)
+      (setq ispell-hunspell-dictionary-alist ispell-local-dictionary-alist)))
 
-     ((executable-find "aspell")
-      (setq ispell-program-name "aspell")
-      ;; Please note ispell-extra-args contains ACTUAL parameters passed to aspell
-      (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")))))
+   ((executable-find "aspell")
+    (setq ispell-program-name "aspell")
+    ;; Please note ispell-extra-args contains ACTUAL parameters passed to aspell
+    (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")))))
 
 (setq treesit-language-source-alist
       '((bash "https://github.com/tree-sitter/tree-sitter-bash")
@@ -1008,10 +1008,10 @@ This function can be used as the value of the user option
   :config
   (apheleia-global-mode))
 
-  (use-package eldoc
-    :config
-    (setq eldoc-current-idle-delay 0.3))
-  (use-package pos-tip)
+(use-package eldoc
+  :config
+  (setq eldoc-current-idle-delay 0.3))
+(use-package pos-tip)
 
 (use-package yasnippet
   :init
@@ -1024,7 +1024,7 @@ This function can be used as the value of the user option
   ;;         map))
   (yas-reload-all)
   :hook (prog-mode . yas-minor-mode))
-  ;; :bind-keymap ("C-c s" . yas-minor-mode-map))
+;; :bind-keymap ("C-c s" . yas-minor-mode-map))
 
 (use-package tempel
   ;; Require trigger prefix before template name when completing.
@@ -1067,7 +1067,7 @@ This function can be used as the value of the user option
         '("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles" "~/Dropbox/repos"))
   (projectile-global-mode 1))
 
-  (use-package quickrun)
+(use-package quickrun)
 
 (use-package copilot
   :straight (:host github :repo "copilot-emacs/copilot.el" :files ("dist" "*.el"))
@@ -1115,12 +1115,12 @@ This function can be used as the value of the user option
   (:map isearch-mode-map
         ("M-s g" . rg-isearch-menu)))
 
-  (use-package wgrep)
+(use-package wgrep)
 
-  (use-package substitute)
+(use-package substitute)
 
-  (use-package occur-x
-    :hook (occur-mode . turn-on-occur-x-mode))
+(use-package occur-x
+  :hook (occur-mode . turn-on-occur-x-mode))
 
 (use-package loccur
   :straight (:host codeberg :repo "fourier/loccur")
@@ -1132,19 +1132,19 @@ This function can be used as the value of the user option
 (use-package fd-dired)
 (use-package dired-rsync)
 
-  (use-package magit)
+(use-package magit)
 
-  (use-package diff-hl)
+(use-package diff-hl)
 
-  (use-package git-gutter)
+(use-package git-gutter)
 
-  (use-package nerd-icons
-    ;; :custom
-    ;; The Nerd Font you want to use in GUI
-    ;; "Symbols Nerd Font Mono" is the default and is recommended
-    ;; but you can use any other Nerd Font if you want
-    ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
-    )
+(use-package nerd-icons
+  ;; :custom
+  ;; The Nerd Font you want to use in GUI
+  ;; "Symbols Nerd Font Mono" is the default and is recommended
+  ;; but you can use any other Nerd Font if you want
+  ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
+  )
 
 (defun mw/org-setup-hook ()
   "Setup org mode hook"
@@ -1208,10 +1208,10 @@ This function can be used as the value of the user option
   (:map org-mode-map
         ("C-c C-." . org-time-stamp-inactive)
         ("C-c a" . org-agenda)
-              ("C-c 4 C-o" . mw/org-open-at-point-other-window)
-              ("C-c 4 o" . mw/org-open-at-point-other-window)
-              ("C-c 5 C-o" . mw/org-open-at-point-other-frame)
-              ("C-c 5 o" . mw/org-open-at-point-other-frame)
+        ("C-c 4 C-o" . mw/org-open-at-point-other-window)
+        ("C-c 4 o" . mw/org-open-at-point-other-window)
+        ("C-c 5 C-o" . mw/org-open-at-point-other-frame)
+        ("C-c 5 o" . mw/org-open-at-point-other-frame)
         ("C-c e" . org-emphasize))
   :custom-face
   (org-document-title ((t (:height 1.7)))))
@@ -1251,7 +1251,7 @@ This function can be used as the value of the user option
   (setq org-remark-notes-file-name "~/Dropbox/Org/remark.org"
         org-remark-line-minimum-left-margin-width 1
         org-remark-line-heading-title-max-length 70))
-  ;;(use-package org-remark-nov  :after nov  :config (org-remark-nov-mode +1)))
+;;(use-package org-remark-nov  :after nov  :config (org-remark-nov-mode +1)))
 
 (when (eq system-type 'darwin)
   (defun mw/org-mac-link-applescript-librewolf-get-frontmost-url ()
@@ -1506,30 +1506,30 @@ This function can be used as the value of the user option
   (setq visual-fill-column-center-text t)
   :bind
   (:map nov-mode-map
-  ("j" . (lambda () (interactive) (scroll-up 1)))
-  ("k" . (lambda () (interactive) (scroll-down 1)))
-  ("z" . visual-fill-column-mode)
-  ("d" . +lookup/dictionary-definition)
-  ("m" . nil)
-  ("h" . nil)
-  ("y" . org-store-link)
-  ("m p" . mark-paragraph)
-  ("m s" . mw/mark-whole-sentence)
-  ("h m" . org-remark-mark)
-  ("h l" . org-remark-mark-line)
-  ("h o" . org-remark-open)
-  ("h n" . org-remark-next)
-  ("h p" . org-remark-prev)
-  ("h ]" . org-remark-view-next)
-  ("h [" . org-remark-view-prev)
-  ("h r" . org-remark-remove)
-  ("h d" . org-remark-delete)
-  ("h v" . org-remark-view)
-  ("h q" . delete-other-windows)
-  ("C-c t" . mw/toggle-header-line)
-  ("C-c v" . visual-line-mode)
-  ("C-c c" . mw/toggle-cursor-display)
-  ("C-c b" . org-noter))
+        ("j" . (lambda () (interactive) (scroll-up 1)))
+        ("k" . (lambda () (interactive) (scroll-down 1)))
+        ("z" . visual-fill-column-mode)
+        ("d" . +lookup/dictionary-definition)
+        ("m" . nil)
+        ("h" . nil)
+        ("y" . org-store-link)
+        ("m p" . mark-paragraph)
+        ("m s" . mw/mark-whole-sentence)
+        ("h m" . org-remark-mark)
+        ("h l" . org-remark-mark-line)
+        ("h o" . org-remark-open)
+        ("h n" . org-remark-next)
+        ("h p" . org-remark-prev)
+        ("h ]" . org-remark-view-next)
+        ("h [" . org-remark-view-prev)
+        ("h r" . org-remark-remove)
+        ("h d" . org-remark-delete)
+        ("h v" . org-remark-view)
+        ("h q" . delete-other-windows)
+        ("C-c t" . mw/toggle-header-line)
+        ("C-c v" . visual-line-mode)
+        ("C-c c" . mw/toggle-cursor-display)
+        ("C-c b" . org-noter))
   :hook (nov-mode . mw/nov-mode-setup))
 (use-package esxml)
 
@@ -1577,113 +1577,113 @@ This function can be used as the value of the user option
 	      nil)
 	    l)))
 
-(defun calibredb-format-item (book-alist)
-  "Format the candidate string shown in helm or ivy.
+  (defun calibredb-format-item (book-alist)
+    "Format the candidate string shown in helm or ivy.
 Argument BOOK-ALIST ."
-  (let ((id (calibredb-getattr (list book-alist) :id))
-        (title (calibredb-getattr (list book-alist) :book-title))
-        (format (calibredb-getattr (list book-alist) :book-format))
-        (author (calibredb-getattr (list book-alist) :author-sort))
-        (tag (calibredb-getattr (list book-alist) :tag))
-        (comment (calibredb-getattr (list book-alist) :comment))
-        (size (calibredb-getattr (list book-alist) :size))
-        (ids (calibredb-getattr (list book-alist) :ids))
-        (date (calibredb-getattr (list book-alist) :last_modified))
-        (favorite-map (make-sparse-keymap))
-        (tag-map (make-sparse-keymap))
-        (format-map (make-sparse-keymap))
-        (author-map (make-sparse-keymap))
-        (date-map (make-sparse-keymap)))
-    (define-key favorite-map [mouse-1] 'calibredb-favorite-mouse-1)
-    (define-key tag-map [mouse-1] 'calibredb-tag-mouse-1)
-    (define-key format-map [mouse-1] 'calibredb-format-mouse-1)
-    (define-key author-map [mouse-1] 'calibredb-author-mouse-1)
-    (define-key date-map [mouse-1] 'calibredb-date-mouse-1)
-    (if calibredb-detailed-view
-        (setq title (concat title "\n")))
-    (format
-     (if calibredb-detailed-view
-         (let ((num (cond (calibredb-format-all-the-icons 3)
-                          (calibredb-format-icons-in-terminal 3)
-                          ((>= calibredb-id-width 0) calibredb-id-width)
-                          (t 0 ))))
-           (concat
-            "%s%s%s"
-            (calibredb-format-column (format "%sFormat:" (make-string num ? )) (+ 8 num) :left) "%s\n"
-            (calibredb-format-column (format "%sDate:" (make-string num ? )) (+ 8 num) :left) "%s\n"
-            (calibredb-format-column (format "%sAuthor:" (make-string num ? ))  (+ 8 num) :left) "%s\n"
-            (calibredb-format-column (format "%sTag:" (make-string num ? )) (+ 8 num) :left) "%s\n"
-            (calibredb-format-column (format "%sIds:" (make-string num ? )) (+ 8 num) :left) "%s\n"
-            (calibredb-format-column (format "%sComment:" (make-string num ? )) (+ 8 num) :left) "%s\n"
-            (calibredb-format-column (format "%sSize:" (make-string num ? )) (+ 8 num) :left) "%s"))
-       "%s%s%s %s %s %s (%s) %s %s %s")
-     (cond (calibredb-format-all-the-icons
-            (concat (if (fboundp 'all-the-icons-icon-for-file)
-                        (all-the-icons-icon-for-file (calibredb-get-file-path (list book-alist))) "")
-                    " "))
-           (calibredb-format-icons-in-terminal
-            (concat (if (fboundp 'icons-in-terminal-icon-for-file)
-                        (icons-in-terminal-icon-for-file (calibredb-get-file-path (list book-alist) ) :v-adjust 0 :height 1) "")
-                    " "))
-           (calibredb-format-character-icons
-            (concat (calibredb-attach-icon-for (calibredb-get-file-path (list book-alist))) " "))
-           (t ""))
-     (calibredb-format-column (format "%s" (propertize id 'face 'calibredb-id-face 'id id)) calibredb-id-width :left)
-     (calibredb-format-column (format "%s%s"
-                                      (if (s-contains? calibredb-favorite-keyword tag)
-                                          (format "%s " (propertize calibredb-favorite-icon
-                                                                    'face 'calibredb-favorite-face
-                                                                    'mouse-face 'calibredb-mouse-face
-                                                                    'help-echo "Filter the favorite items"
-                                                                    'keymap favorite-map)) "")
-                                      (cond
-                                       ((s-contains? calibredb-archive-keyword tag)
-                                        (propertize title 'face 'calibredb-archive-face))
-                                       ((s-contains? calibredb-highlight-keyword tag)
-                                        (propertize title 'face 'calibredb-highlight-face))
-                                       (t
-                                        (propertize title 'face (calibredb-title-face))))) (calibredb-title-width) :left)
-     (calibredb-format-column (propertize format
-                                          'face 'calibredb-format-face
-                                          'mouse-face 'calibredb-mouse-face
-                                          'help-echo "Filter with this format"
-                                          'keymap format-map) (calibredb-format-width) :left)
-     (calibredb-format-column (propertize (s-left 10 date) 'face 'calibredb-date-face ; only keep YYYY-MM-DD
-                                          'mouse-face 'calibredb-mouse-face
-                                          'help-echo "Filter with this date"
-                                          'keymap date-map) (calibredb-date-width) :left)
-     (calibredb-format-column (mapconcat
-                               (lambda (author)
-                                 (propertize author
-                                             'author author
-                                             'face 'calibredb-author-face
-                                             'mouse-face 'calibredb-mouse-face
-                                             'help-echo (format "Filter with this author: %s" author)
-                                             'keymap author-map))
-                               (split-string author "&" t "\s+") " & ") (calibredb-author-width) :left)
-     (calibredb-format-column (mapconcat
-                               (lambda (tag)
-                                 (propertize tag
-                                             'tag tag
-                                             'face 'calibredb-tag-face
-                                             'mouse-face 'calibredb-mouse-face
-                                             'help-echo (format "Filter with this tag: %s" tag)
-                                             'keymap tag-map))
-                               (split-string tag ",") ",") (calibredb-tag-width) :left)
-     (calibredb-format-column (propertize ids 'face 'calibredb-ids-face) (calibredb-ids-width) :left)
-     (if (stringp comment)
-         (propertize
-          (let ((c (if calibredb-condense-comments (calibredb-condense-comments comment) comment))
-                (w calibredb-comment-width))
-            (cond ((> w 0) (s-truncate w c))
-                  ((= w 0) "")
-                  (t c)))
-          'face 'calibredb-comment-face) "")
-     (format "%s%s"
-             (if calibredb-size-show
-                 (propertize size 'face 'calibredb-size-face) "")
-             (if calibredb-size-show
-                 (propertize "Mb" 'face 'calibredb-size-face) ""))) )))
+    (let ((id (calibredb-getattr (list book-alist) :id))
+          (title (calibredb-getattr (list book-alist) :book-title))
+          (format (calibredb-getattr (list book-alist) :book-format))
+          (author (calibredb-getattr (list book-alist) :author-sort))
+          (tag (calibredb-getattr (list book-alist) :tag))
+          (comment (calibredb-getattr (list book-alist) :comment))
+          (size (calibredb-getattr (list book-alist) :size))
+          (ids (calibredb-getattr (list book-alist) :ids))
+          (date (calibredb-getattr (list book-alist) :last_modified))
+          (favorite-map (make-sparse-keymap))
+          (tag-map (make-sparse-keymap))
+          (format-map (make-sparse-keymap))
+          (author-map (make-sparse-keymap))
+          (date-map (make-sparse-keymap)))
+      (define-key favorite-map [mouse-1] 'calibredb-favorite-mouse-1)
+      (define-key tag-map [mouse-1] 'calibredb-tag-mouse-1)
+      (define-key format-map [mouse-1] 'calibredb-format-mouse-1)
+      (define-key author-map [mouse-1] 'calibredb-author-mouse-1)
+      (define-key date-map [mouse-1] 'calibredb-date-mouse-1)
+      (if calibredb-detailed-view
+          (setq title (concat title "\n")))
+      (format
+       (if calibredb-detailed-view
+           (let ((num (cond (calibredb-format-all-the-icons 3)
+                            (calibredb-format-icons-in-terminal 3)
+                            ((>= calibredb-id-width 0) calibredb-id-width)
+                            (t 0 ))))
+             (concat
+              "%s%s%s"
+              (calibredb-format-column (format "%sFormat:" (make-string num ? )) (+ 8 num) :left) "%s\n"
+              (calibredb-format-column (format "%sDate:" (make-string num ? )) (+ 8 num) :left) "%s\n"
+              (calibredb-format-column (format "%sAuthor:" (make-string num ? ))  (+ 8 num) :left) "%s\n"
+              (calibredb-format-column (format "%sTag:" (make-string num ? )) (+ 8 num) :left) "%s\n"
+              (calibredb-format-column (format "%sIds:" (make-string num ? )) (+ 8 num) :left) "%s\n"
+              (calibredb-format-column (format "%sComment:" (make-string num ? )) (+ 8 num) :left) "%s\n"
+              (calibredb-format-column (format "%sSize:" (make-string num ? )) (+ 8 num) :left) "%s"))
+         "%s%s%s %s %s %s (%s) %s %s %s")
+       (cond (calibredb-format-all-the-icons
+              (concat (if (fboundp 'all-the-icons-icon-for-file)
+                          (all-the-icons-icon-for-file (calibredb-get-file-path (list book-alist))) "")
+                      " "))
+             (calibredb-format-icons-in-terminal
+              (concat (if (fboundp 'icons-in-terminal-icon-for-file)
+                          (icons-in-terminal-icon-for-file (calibredb-get-file-path (list book-alist) ) :v-adjust 0 :height 1) "")
+                      " "))
+             (calibredb-format-character-icons
+              (concat (calibredb-attach-icon-for (calibredb-get-file-path (list book-alist))) " "))
+             (t ""))
+       (calibredb-format-column (format "%s" (propertize id 'face 'calibredb-id-face 'id id)) calibredb-id-width :left)
+       (calibredb-format-column (format "%s%s"
+                                        (if (s-contains? calibredb-favorite-keyword tag)
+                                            (format "%s " (propertize calibredb-favorite-icon
+                                                                      'face 'calibredb-favorite-face
+                                                                      'mouse-face 'calibredb-mouse-face
+                                                                      'help-echo "Filter the favorite items"
+                                                                      'keymap favorite-map)) "")
+                                        (cond
+                                         ((s-contains? calibredb-archive-keyword tag)
+                                          (propertize title 'face 'calibredb-archive-face))
+                                         ((s-contains? calibredb-highlight-keyword tag)
+                                          (propertize title 'face 'calibredb-highlight-face))
+                                         (t
+                                          (propertize title 'face (calibredb-title-face))))) (calibredb-title-width) :left)
+       (calibredb-format-column (propertize format
+                                            'face 'calibredb-format-face
+                                            'mouse-face 'calibredb-mouse-face
+                                            'help-echo "Filter with this format"
+                                            'keymap format-map) (calibredb-format-width) :left)
+       (calibredb-format-column (propertize (s-left 10 date) 'face 'calibredb-date-face ; only keep YYYY-MM-DD
+                                            'mouse-face 'calibredb-mouse-face
+                                            'help-echo "Filter with this date"
+                                            'keymap date-map) (calibredb-date-width) :left)
+       (calibredb-format-column (mapconcat
+                                 (lambda (author)
+                                   (propertize author
+                                               'author author
+                                               'face 'calibredb-author-face
+                                               'mouse-face 'calibredb-mouse-face
+                                               'help-echo (format "Filter with this author: %s" author)
+                                               'keymap author-map))
+                                 (split-string author "&" t "\s+") " & ") (calibredb-author-width) :left)
+       (calibredb-format-column (mapconcat
+                                 (lambda (tag)
+                                   (propertize tag
+                                               'tag tag
+                                               'face 'calibredb-tag-face
+                                               'mouse-face 'calibredb-mouse-face
+                                               'help-echo (format "Filter with this tag: %s" tag)
+                                               'keymap tag-map))
+                                 (split-string tag ",") ",") (calibredb-tag-width) :left)
+       (calibredb-format-column (propertize ids 'face 'calibredb-ids-face) (calibredb-ids-width) :left)
+       (if (stringp comment)
+           (propertize
+            (let ((c (if calibredb-condense-comments (calibredb-condense-comments comment) comment))
+                  (w calibredb-comment-width))
+              (cond ((> w 0) (s-truncate w c))
+                    ((= w 0) "")
+                    (t c)))
+            'face 'calibredb-comment-face) "")
+       (format "%s%s"
+               (if calibredb-size-show
+                   (propertize size 'face 'calibredb-size-face) "")
+               (if calibredb-size-show
+                   (propertize "Mb" 'face 'calibredb-size-face) ""))) )))
 
 (defun mw/citar-toggle-multiple ()
   (interactive)
@@ -1774,11 +1774,11 @@ Argument BOOK-ALIST ."
   :hook (pdf-view-mode . pdf-view-themed-minor-mode)
   :bind
   (:map pdf-view-mode-map
-  ("C-c C-o" . mw/pdf-view-open-externally)
-  ("C-c C-r r" . mw/pdf-view-themed-minor-mode-refresh)
-  ("c" . mw/pdf-view-current-page)
-  ("o" . pdf-outline)
-  ("C-c C-n" . org-noter)))
+        ("C-c C-o" . mw/pdf-view-open-externally)
+        ("C-c C-r r" . mw/pdf-view-themed-minor-mode-refresh)
+        ("c" . mw/pdf-view-current-page)
+        ("o" . pdf-outline)
+        ("C-c C-n" . org-noter)))
 
 (use-package saveplace-pdf-view
   :config
@@ -1821,15 +1821,16 @@ Argument BOOK-ALIST ."
   (set-frame-name "org-capture")
   (add-hook 'org-capture-after-finalize-hook 'mw/post-org-launch-note)
   (letf! ((#'pop-to-buffer #'switch-to-buffer))
-    (interactive)
-    (switch-to-buffer (doom-fallback-buffer))
-    (let ((org-capture-initial initial-input)
-          org-capture-entry)
-      (when (and key (not (string-empty-p key)))
-        (setq org-capture-entry (org-capture-select-template key)))
-      (funcall #'org-capture))
-    )
+         (interactive)
+         (switch-to-buffer (doom-fallback-buffer))
+         (let ((org-capture-initial initial-input)
+               org-capture-entry)
+           (when (and key (not (string-empty-p key)))
+             (setq org-capture-entry (org-capture-select-template key)))
+           (funcall #'org-capture))
+         )
   )
+
 (defun mw/remove-launch-note-hook ()
   (interactive)
   (remove-hook 'org-capture-after-finalize-hook 'mw/post-org-launch-note))
