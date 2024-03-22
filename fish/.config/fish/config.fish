@@ -30,6 +30,7 @@ set -x PATH $PATH $HOME/.local/lib/python3.10/site-packages
 set -x GOHOME $HOME/go
 set -x PATH $PATH $GOHOME/bin
 set -x PATH $PATH /usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS/
+set -x VOLTA_FEATURE_PNPM 1
 
 set -x FZF_DEFAULT_COMMAND 'fd --type file --follow --hidden --exclude .git --color=always'
 set -x FZF_CTRL_T_COMMAND $FZF_DEFAULT_COMMAND
@@ -46,6 +47,17 @@ function vterm_printf;
     end
 end
 
+# bind to ctrl-r in normal and insert mode, add any other bindings you want here too
+bind \cr _atuin_search
+bind -M insert \cr _atuin_search
+
+# pnpm
+set -gx PNPM_HOME "/Users/mw/Library/pnpm"
+if not string match -q -- $PNPM_HOME $PATH
+  set -gx PATH "$PNPM_HOME" $PATH
+end
+# pnpm end
+
 function vterm_prompt_end;
     vterm_printf '51;A'(whoami)'@'(hostname)':'(pwd)
 end
@@ -57,10 +69,5 @@ function fish_prompt --description 'Write out the prompt; do not replace this. I
     printf "%b" (string join "\n" (vterm_old_fish_prompt))
     vterm_prompt_end
 end
-
-#pyenv virtualenv-init - | source
-
-# bind to ctrl-r in normal and insert mode, add any other bindings you want here too
-bind \cr _atuin_search
-bind -M insert \cr _atuin_search
-
+set -gx VOLTA_HOME "$HOME/.volta"
+set -gx PATH "$VOLTA_HOME/bin" $PATH
