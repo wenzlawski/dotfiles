@@ -1139,23 +1139,6 @@ This function can be used as the value of the user option
 
 [[https://github.com/mclear-tools/consult-notes][mclear-tools/consult-notes: Use consult to search notes]]
 
-The problem with calling embark on the org heading, is that it does not
-recognise it in the minibuffer, but acts on the heading from where we are
-calling. That is an internal thing to consult, and we might not be able to fix
-that. What we could do is make our own functions and integrations for it.
-
-I have written some functions to enable me to search and link throughout my
-notes. These functions are bound globally, and work in any mode (inserting
-links is obv only doable from org-mode).
-
-For the insert-link method, we might want to find a method to disable
-previewing to keep some visual consistency. Also, for both methods it would be
-good to implement, or make work the embark integration. This is currently
-being handled by org functions and the org-mark-ring. It would be more
-cross-compatible to use the global mark ring or simply store the point in a
-register and make a shortcut to jump back to it. *Is it possible to unite the
-emacs and org mark rings?*
-
 #+begin_src elisp
 (use-package consult-notes
   :after consult denote
