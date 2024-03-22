@@ -367,8 +367,8 @@ with a daemon.
           (fg-main "#E2E2E2")
           (fg-dim "#999999")))
   (setq modus-operandi-palette-overrides
-        '((bg-main "#E9E9E9")
-          (bg-dim "#DCDCDC")
+        '((bg-main "#F8F8F8")
+          (bg-dim "#EBEBEB")
           (fg-main "#2C2C2C")
           (fg-dim "#8B8B8B")))
   (setq modus-themes-common-palette-overrides
@@ -563,7 +563,7 @@ between it: [[https://ogbe.net/blog/toggle-serif][Variable-width Serif Fonts whe
   (setq window-combination-resize t)
   (setq x-stretch-cursor t)
   (setq large-file-warning-threshold 100000000)
-  (setq exec-path (append exec-path '("~/.cargo/bin" "~/.pyenv/shims/")))
+  ;; (setq exec-path (append exec-path '("~/.cargo/bin" "~/.pyenv/shims/")))
   (setq show-paren-delay 0)
   (setq show-paren-when-point-inside-paren t)
   (setq show-paren-when-point-in-periphery t)
@@ -867,6 +867,7 @@ buffer, one always gets the error 'end-of-buffer' and nothing happens. Beware.
 #+end_src
 
 *** scratch
+
 #+begin_src elisp
 (use-package scratch
     :straight (:host codeberg :repo "emacs-weirdware/scratch" :files ("*.el")))
@@ -883,12 +884,25 @@ http://joostkremers.github.io/pandoc-mode/
 	      ("C-c p" . pandoc-main-hydra/body)
 	      ("C-c /" . nil)))
 #+end_src
+
+*** exec-path-from-shell
+#+begin_src elisp
+(use-package exec-path-from-shell
+  :when (memq window-system '(mac ns x))
+  :config
+  (exec-path-from-shell-initialize))
+#+end_src
 ** window
 *** Transpose frame
 
 #+begin_src elisp
 (use-package transpose-frame
-  :straight (:host github :repo "emacsorphanage/transpose-frame"))
+  :straight (:host github :repo "emacsorphanage/transpose-frame")
+  :bind
+  ("C-x 4 t" . transpose-frame)
+  ("C-x 4 i" . flip-frame)
+  ("C-x 4 o" . flop-frame)
+  ("C-x 4 n" . rotate-frame))
 #+end_src
 
 ** modeline
@@ -1117,7 +1131,7 @@ This function can be used as the value of the user option
 (use-package consult-recoll
   :after citar
   :config
-  (setq exec-path (append exec-path '("/usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS/")))
+  ;; (setq exec-path (append exec-path '("/usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS/")))
   (consult-recoll-embark-setup))
 #+end_src
 
@@ -1163,7 +1177,7 @@ emacs and org mark rings?*
 #+end_src
 
 **** custom functions
-#+begin_src elisp :tangle no
+#+begin_src elisp
 (defun consult-notes-my-embark-function (cand)
   "Do something with CAND"
   (interactive "fNote: ")
@@ -1218,7 +1232,6 @@ emacs and org mark rings?*
   (interactive)
   (let ((consult--buffer-display #'switch-to-buffer-other-window))
     (consult-notes)))
-
 #+end_src
 **** truncating the long titles
 
@@ -1614,6 +1627,7 @@ common lisp / scheme / racket
         (regex "https://github.com/tree-sitter/tree-sitter-regex")
         (julia "https://github.com/tree-sitter/tree-sitter-julia")
         (r "https://github.com/r-lib/tree-sitter-r")
+        (svelte "https://github.com/tree-sitter-grammars/tree-sitter-svelte")
         (elisp "https://github.com/Wilfred/tree-sitter-elisp")
         (cmake "https://github.com/uyha/tree-sitter-cmake")
         (css "https://github.com/tree-sitter/tree-sitter-css")
@@ -1665,7 +1679,8 @@ support for treesitter modes integrated.
 
 #+begin_src elisp
 (use-package apheleia
-  :bind (:map prog-mode-map ("C-c f" . apheleia-format-buffer))
+  :bind
+  (:map prog-mode-map ("C-c f" . apheleia-format-buffer))
   :config
   (apheleia-global-mode))
 #+end_src
@@ -1699,6 +1714,39 @@ copy.
   ;; :bind-keymap ("C-c s" . yas-minor-mode-map))
 #+end_src
 
+*** tempel
+
+#+begin_src elisp
+(use-package tempel
+  ;; Require trigger prefix before template name when completing.
+  ;; :custom
+  ;; (tempel-trigger-prefix "<")
+  :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
+         ("M-*" . tempel-insert))
+  :init
+  ;; Setup completion at point
+  (defun tempel-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'.
+    ;; `tempel-expand' only triggers on exact matches. Alternatively use
+    ;; `tempel-complete' if you want to see all matches, but then you
+    ;; should also configure `tempel-trigger-prefix', such that Tempel
+    ;; does not trigger too often when you don't expect it. NOTE: We add
+    ;; `tempel-expand' *before* the main programming mode Capf, such
+    ;; that it will be tried first.
+    (setq-local completion-at-point-functions
+                (cons #'tempel-expand
+                      completion-at-point-functions)))
+  ;; Optionally make the Tempel templates available to Abbrev,
+  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
+  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
+  ;; (global-tempel-abbrev-mode)
+  :hook
+  ((conf-mode prog-mode text-mode) . tempel-setup-capf))
+
+(use-package tempel-collection
+  :after tempel)
+
+#+end_src
 *** projects
 **** project
 #+begin_src elisp
@@ -1743,6 +1791,21 @@ copy.
   :config
   (setq lua-ts-indent-offset 3)
   :straight (:host sourcehut :repo "johnmuhl/lua-ts-mode" :files ("*.el")))
+#+end_src
+*** awk
+#+begin_src elisp :tangle no
+(use-package awk-ts-mode)
+#+end_src
+*** cc-mode
+#+begin_src elisp
+(use-package cc-mode
+  :hook (awk-mode . (lambda nil (setq tab-width 4))))
+#+end_src
+*** emmet
+#+begin_src elisp
+(use-package emmet-mode
+  :commands (emmet-find-left-bound emmet-transform emmet-reposition-cursor)
+  :hook (html-mode . emmet-mode))
 #+end_src
 ** search
 *** grep
@@ -1917,7 +1980,7 @@ CAPTURE-refile.org
   :after ox)
 (use-package ox-pandoc
   :after ox)
-
+(use-package htmlize)
 #+end_src
 *** org-remark
 Extract video subtitles using https://github.com/yt-dlp and show them in a buffer.
@@ -2226,26 +2289,6 @@ also org-msg
   (which-key-mode 1))
 #+end_src
 
-** Xah-fly-keys
-
-#+begin_src elisp :tangle no
-(use-package xah-fly-keys
-  :init
-  (require 'xah-fly-keys)
-  (xah-fly-keys-set-layout "programmer-dvorak")
-  (xah-fly-keys 1)
-  :config
-  (define-key xah-fly-leader-key-map (kbd ", f") 'org-roam-node-find)
-  (define-key xah-fly-leader-key-map (kbd ", u") 'org-roam-ui-open)
-  (define-key xah-fly-leader-key-map (kbd ", N") 'org-roam-node-insert)
-  (define-key xah-fly-leader-key-map (kbd ", n") 'org-roam-capture)
-  (define-key xah-fly-leader-key-map (kbd ", c") 'org-capture)
-  (define-key xah-fly-leader-key-map (kbd "w b") 'org-babel-execute-maybe)
-  (define-key xah-fly-leader-key-map (kbd ", o") 'org-open-at-point)
-  (define-key xah-fly-leader-key-map (kbd ", b") 'org-mark-ring-goto)
-  (define-key xah-fly-leader-key-map (kbd ", m") 'org-roam-buffer-toggle)
-  (define-key xah-fly-leader-key-map (kbd ", a") 'org-agenda))
-#+end_src
 ** apps
 *** denote
 
@@ -2417,7 +2460,8 @@ Emacs epub reader.
 #+begin_src elisp
 (defun mw/refresh-calibre-bib ()
   (interactive)
-  (shell-command "calibredb catalog ~/cat.bib --fields=title,authors,formats,id,isbn,pubdate,tags,uuid,identifiers" ))
+  (shell-command "calibredb catalog /tmp/cat.bib --fields=title,authors,formats,id,isbn,pubdate,tags,uuid,identifiers" )
+  (shell-command "awk -f ~/.emacs.d/scripts/escape_comma.awk /tmp/cat.bib > ~/cat.bib"))
 
 
 (use-package calibredb
@@ -2429,6 +2473,8 @@ Emacs epub reader.
   (setq calibredb-root-dir "~/Dropbox/Calibre Library")
   (setq calibredb-db-dir (expand-file-name "metadata.db" calibredb-root-dir))
   (setq calibredb-id-width 5)
+  (setq calibredb-title-width 55)
+  (setq calibredb-preferred-format 'pdf)
   (setq calibredb-library-alist '(("~/Dropbox/Calibre Library"))))
 #+end_src
 
@@ -2695,6 +2741,7 @@ document similarity notes
   :after pdf-tools
   :config
   (setq pdf-view-resize-factor 1.05)
+  (setq pdf-view-display-size 'fit-page)
   :mode "\\.pdf\\'"
   :hook (pdf-view-mode . pdf-view-themed-minor-mode)
   :bind
@@ -2702,6 +2749,7 @@ document similarity notes
   ("C-c C-o" . mw/pdf-view-open-externally)
   ("C-c C-r r" . mw/pdf-view-themed-minor-mode-refresh)
   ("c" . mw/pdf-view-current-page)
+  ("o" . pdf-outline)
   ("C-c C-n" . org-noter)))
 
 (use-package saveplace-pdf-view
@@ -2717,7 +2765,8 @@ also get that to work.
 
 #+begin_src elisp
 (use-package pdf-tools
-  :config
+  :hook (pdf-outline-buffer-mode . visual-line-mode)
+  :init
   (pdf-tools-install :no-query))
 
 (use-package pdf-annot
@@ -2841,3 +2890,15 @@ Source: [[https://entangledlogs.com/archives/2021/capturing/][Using Emacsclient 
 
 
 
+** ox-11ty
+
+#+begin_src elisp
+(require 'ox-11ty)
+#+end_src
+
+** svelte-ts-mode
+
+#+begin_src elisp :tangle no
+(eval-after-load 'treesit
+  (require 'svelte-ts-mode))
+#+end_src

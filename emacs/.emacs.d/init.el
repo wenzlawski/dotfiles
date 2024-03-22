@@ -122,8 +122,8 @@
           (fg-main "#E2E2E2")
           (fg-dim "#999999")))
   (setq modus-operandi-palette-overrides
-        '((bg-main "#E9E9E9")
-          (bg-dim "#DCDCDC")
+        '((bg-main "#F8F8F8")
+          (bg-dim "#EBEBEB")
           (fg-main "#2C2C2C")
           (fg-dim "#8B8B8B")))
   (setq modus-themes-common-palette-overrides
@@ -275,7 +275,7 @@
   (setq window-combination-resize t)
   (setq x-stretch-cursor t)
   (setq large-file-warning-threshold 100000000)
-  (setq exec-path (append exec-path '("~/.cargo/bin" "~/.pyenv/shims/")))
+  ;; (setq exec-path (append exec-path '("~/.cargo/bin" "~/.pyenv/shims/")))
   (setq show-paren-delay 0)
   (setq show-paren-when-point-inside-paren t)
   (setq show-paren-when-point-in-periphery t)
@@ -467,8 +467,18 @@
 	      ("C-c p" . pandoc-main-hydra/body)
 	      ("C-c /" . nil)))
 
+(use-package exec-path-from-shell
+  :when (memq window-system '(mac ns x))
+  :config
+  (exec-path-from-shell-initialize))
+
 (use-package transpose-frame
-  :straight (:host github :repo "emacsorphanage/transpose-frame"))
+  :straight (:host github :repo "emacsorphanage/transpose-frame")
+  :bind
+  ("C-x 4 t" . transpose-frame)
+  ("C-x 4 i" . flip-frame)
+  ("C-x 4 o" . flop-frame)
+  ("C-x 4 n" . rotate-frame))
 
   (require 'prot-modeline)
   (defun prot-modeline-subtle-activate ()
@@ -637,7 +647,7 @@ This function can be used as the value of the user option
 (use-package consult-recoll
   :after citar
   :config
-  (setq exec-path (append exec-path '("/usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS/")))
+  ;; (setq exec-path (append exec-path '("/usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS/")))
   (consult-recoll-embark-setup))
 
 (use-package consult-notes
@@ -657,6 +667,61 @@ This function can be used as the value of the user option
 
   ;; search only for text files in denote dir
   (setq consult-notes-denote-files-function (function denote-directory-text-only-files)))
+
+(defun consult-notes-my-embark-function (cand)
+  "Do something with CAND"
+  (interactive "fNote: ")
+  (message cand))
+
+(defun mw/consult-notes--on-file (file)
+  (let ((consult-notes-org-headings-files (list file)))
+    (consult-notes)))
+
+(defun mw/consult-notes--menu ()
+  (let* ((curr-buf buffer-file-name)
+         (avy-keys '(?a ?p ?b ?r ?f ?j ?c ?t))
+         (file (avy-menu "*select notes*"
+                         '("Select file"
+                           (""
+                            ("All"      . "~/Dropbox/Org/")
+                            ("People"   . "~/Dropbox/Org/people.org")
+                            ("Books"    . "~/Dropbox/Org/books.org")
+                            ("Refile"   . "~/Dropbox/Org/refile.org")
+                            ("Projects" . "~/Dropbox/Org/projects.org")
+                            ("Config"  . "~/.config/doom/config.org")
+                            ("This file" . curr-buf))))))
+    (if (symbolp file)
+        (eval file))
+    file))
+
+(defun mw/consult-notes-org-insert-link ()
+  (interactive)
+  (let ((file (mw/consult-notes--menu)))
+    (if (stringp file)
+        (progn (if (equal major-mode 'org-mode)
+                   (progn (org-mark-ring-push)
+                          (mw/consult-notes--on-file file)
+                          (org-store-link nil t)
+                          (org-mark-ring-goto)
+                          (org-insert-all-links nil "" " "))
+                 (mw/consult-notes--on-file file))))))
+
+
+(defun mw/consult-notes-menu ()
+  (interactive)
+  (let ((file (mw/consult-notes--menu)))
+    (if (stringp file)
+        (progn
+          (if (equal major-mode 'org-mode) (org-mark-ring-push))
+          (mw/consult-notes--on-file file)
+          (org-narrow-to-subtree)
+          (org-fold-show-subtree)))))
+
+(defun mw/consult-notes-other-window ()
+  "Open a note in another window"
+  (interactive)
+  (let ((consult--buffer-display #'switch-to-buffer-other-window))
+    (consult-notes)))
 
 ;; Adapted from vertico-reverse
 (defun vertico-bottom--display-candidates (lines)
@@ -912,6 +977,7 @@ This function can be used as the value of the user option
         (regex "https://github.com/tree-sitter/tree-sitter-regex")
         (julia "https://github.com/tree-sitter/tree-sitter-julia")
         (r "https://github.com/r-lib/tree-sitter-r")
+        (svelte "https://github.com/tree-sitter-grammars/tree-sitter-svelte")
         (elisp "https://github.com/Wilfred/tree-sitter-elisp")
         (cmake "https://github.com/uyha/tree-sitter-cmake")
         (css "https://github.com/tree-sitter/tree-sitter-css")
@@ -937,7 +1003,8 @@ This function can be used as the value of the user option
   (global-treesit-auto-mode))
 
 (use-package apheleia
-  :bind (:map prog-mode-map ("C-c f" . apheleia-format-buffer))
+  :bind
+  (:map prog-mode-map ("C-c f" . apheleia-format-buffer))
   :config
   (apheleia-global-mode))
 
@@ -958,6 +1025,35 @@ This function can be used as the value of the user option
   (yas-reload-all)
   :hook (prog-mode . yas-minor-mode))
   ;; :bind-keymap ("C-c s" . yas-minor-mode-map))
+
+(use-package tempel
+  ;; Require trigger prefix before template name when completing.
+  ;; :custom
+  ;; (tempel-trigger-prefix "<")
+  :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
+         ("M-*" . tempel-insert))
+  :init
+  ;; Setup completion at point
+  (defun tempel-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'.
+    ;; `tempel-expand' only triggers on exact matches. Alternatively use
+    ;; `tempel-complete' if you want to see all matches, but then you
+    ;; should also configure `tempel-trigger-prefix', such that Tempel
+    ;; does not trigger too often when you don't expect it. NOTE: We add
+    ;; `tempel-expand' *before* the main programming mode Capf, such
+    ;; that it will be tried first.
+    (setq-local completion-at-point-functions
+                (cons #'tempel-expand
+                      completion-at-point-functions)))
+  ;; Optionally make the Tempel templates available to Abbrev,
+  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
+  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
+  ;; (global-tempel-abbrev-mode)
+  :hook
+  ((conf-mode prog-mode text-mode) . tempel-setup-capf))
+
+(use-package tempel-collection
+  :after tempel)
 
 (use-package project)
 
@@ -992,6 +1088,13 @@ This function can be used as the value of the user option
   :config
   (setq lua-ts-indent-offset 3)
   :straight (:host sourcehut :repo "johnmuhl/lua-ts-mode" :files ("*.el")))
+
+(use-package cc-mode
+  :hook (awk-mode . (lambda nil (setq tab-width 4))))
+
+(use-package emmet-mode
+  :commands (emmet-find-left-bound emmet-transform emmet-reposition-cursor)
+  :hook (html-mode . emmet-mode))
 
 (use-package grep
   :config
@@ -1125,6 +1228,7 @@ This function can be used as the value of the user option
   :after ox)
 (use-package ox-pandoc
   :after ox)
+(use-package htmlize)
 
 (use-package org-remark
   :bind (;; :bind keyword also implicitly defers org-remark itself.
@@ -1431,7 +1535,8 @@ This function can be used as the value of the user option
 
 (defun mw/refresh-calibre-bib ()
   (interactive)
-  (shell-command "calibredb catalog ~/cat.bib --fields=title,authors,formats,id,isbn,pubdate,tags,uuid,identifiers" ))
+  (shell-command "calibredb catalog /tmp/cat.bib --fields=title,authors,formats,id,isbn,pubdate,tags,uuid,identifiers" )
+  (shell-command "awk -f ~/.emacs.d/scripts/escape_comma.awk /tmp/cat.bib > ~/cat.bib"))
 
 
 (use-package calibredb
@@ -1443,6 +1548,8 @@ This function can be used as the value of the user option
   (setq calibredb-root-dir "~/Dropbox/Calibre Library")
   (setq calibredb-db-dir (expand-file-name "metadata.db" calibredb-root-dir))
   (setq calibredb-id-width 5)
+  (setq calibredb-title-width 55)
+  (setq calibredb-preferred-format 'pdf)
   (setq calibredb-library-alist '(("~/Dropbox/Calibre Library"))))
 
 (with-eval-after-load 'calibredb
@@ -1662,6 +1769,7 @@ Argument BOOK-ALIST ."
   :after pdf-tools
   :config
   (setq pdf-view-resize-factor 1.05)
+  (setq pdf-view-display-size 'fit-page)
   :mode "\\.pdf\\'"
   :hook (pdf-view-mode . pdf-view-themed-minor-mode)
   :bind
@@ -1669,6 +1777,7 @@ Argument BOOK-ALIST ."
   ("C-c C-o" . mw/pdf-view-open-externally)
   ("C-c C-r r" . mw/pdf-view-themed-minor-mode-refresh)
   ("c" . mw/pdf-view-current-page)
+  ("o" . pdf-outline)
   ("C-c C-n" . org-noter)))
 
 (use-package saveplace-pdf-view
@@ -1676,7 +1785,8 @@ Argument BOOK-ALIST ."
   (save-place-mode 1))
 
 (use-package pdf-tools
-  :config
+  :hook (pdf-outline-buffer-mode . visual-line-mode)
+  :init
   (pdf-tools-install :no-query))
 
 (use-package pdf-annot
@@ -1727,3 +1837,5 @@ Argument BOOK-ALIST ."
 (defun mw/post-org-launch-note ()
   (mw/remove-launch-note-hook)
   (delete-frame))
+
+(require 'ox-11ty)
