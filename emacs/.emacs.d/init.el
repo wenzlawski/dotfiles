@@ -27,7 +27,7 @@
    (add-to-list 'load-path (locate-user-emacs-file string)))
  '("site-lisp" "mw-emacs-modules"))
 
-  ;;;; Packages
+;;;; Packages
 
 (require 'package)
 
@@ -1767,9 +1767,9 @@ Argument BOOK-ALIST ."
 
 (use-package pdf-view
   :after pdf-tools
-  :config
-  (setq pdf-view-resize-factor 1.05)
-  (setq pdf-view-display-size 'fit-page)
+  :custom
+  (pdf-view-resize-factor 1.05)
+  (pdf-view-display-size 'fit-page)
   :mode "\\.pdf\\'"
   :hook (pdf-view-mode . pdf-view-themed-minor-mode)
   :bind

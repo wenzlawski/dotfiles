@@ -221,7 +221,7 @@ for configuration.
 Here still need to consult the manual for the best defaults for use-package.
 
 #+begin_src emacs-lisp
-  ;;;; Packages
+;;;; Packages
 
 (require 'package)
 
@@ -1495,6 +1495,7 @@ Display a graphic within emacs
 check [[https://docs.doomemacs.org/latest/modules/lang/emacs-lisp/]] for details,
 look into what makes it good in the source files. Also look at spacemacs and
 what it does. Check prots files.
+
 **** julia
 julia mode, julia ts, julia-snail
 #+begin_src elisp
@@ -2737,9 +2738,9 @@ document similarity notes
 
 (use-package pdf-view
   :after pdf-tools
-  :config
-  (setq pdf-view-resize-factor 1.05)
-  (setq pdf-view-display-size 'fit-page)
+  :custom
+  (pdf-view-resize-factor 1.05)
+  (pdf-view-display-size 'fit-page)
   :mode "\\.pdf\\'"
   :hook (pdf-view-mode . pdf-view-themed-minor-mode)
   :bind
@@ -2858,7 +2859,8 @@ Source: [[https://stackoverflow.com/questions/17590784/how-to-let-org-mode-open-
 ** Org Capture frame
 
 We are making an org capture frame that can be called from any application.
-Source: [[https://entangledlogs.com/archives/2021/capturing/][Using Emacsclient + Org Capture + System Keybinds for capturing findings. | Entangled Logs]]
+Source: [[https://entangledlogs.com/archives/2021/capturing/][Using Emacsclient + Org Capture + System Keybinds for capturing
+findings. | Entangled Logs]]
 
 #+begin_src elisp
 (defun mw/launch-note (&optional initial-input key)
