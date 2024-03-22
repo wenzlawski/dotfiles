@@ -652,6 +652,8 @@ This function can be used as the value of the user option
 
 (use-package consult-notes
   :after consult denote
+  :custom-face
+  (consult-notes-sep ((t (:foreground "CornFlowerBlue"))))
   :bind
   ("C-c n o" . consult-notes)
   ("C-c n X" . consult-notes-search-in-all-notes)
