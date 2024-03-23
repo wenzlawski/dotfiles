@@ -374,6 +374,7 @@
 
 (use-package dtrt-indent
   :config
+  (setq dtrt-indent-verbosity 0)
   (add-to-list 'dtrt-indent-hook-mapping-list '(lua-ts-mode lua lua-ts-indent-offset))
   (dtrt-indent-global-mode))
 
@@ -1383,7 +1384,7 @@ This function can be used as the value of the user option
           ("j" "Journal" entry (file+olp+datetree "~/Dropbox/Org/journal.org") "* %U %^{Title}\n%i\n\n%?")))
   :hook
   (org-mode . auto-fill-mode)
-  (org-nmode . visual-line-mode)
+  (org-mode . visual-line-mode)
   :bind
   ("C-x c" . org-capture)
   (:map org-mode-map
@@ -1599,13 +1600,40 @@ This function can be used as the value of the user option
 
 ;; * eww
 
+(defun my/scroll-up-half ()
+  (interactive)
+  (scroll-up-command
+   (floor
+    (- (window-height)
+       next-screen-context-lines)
+    2)))
+
+(defun my/scroll-down-half ()
+  (interactive)
+  (scroll-down-command
+   (floor
+    (- (window-height)
+       next-screen-context-lines)
+    2)))
+
 (use-package eww
   :bind
   ("C-c w" . eww)
+  (:map eww-mode-map
+        ("D" . eww-download)
+        ("d" . my/scroll-up-half)
+        ("u" . my/scroll-down-half)
+        ("U" . eww-up-url))
   :config
+  (setq eww-browse-url-new-window-is-tab nil)
   (setq eww-restore-desktop t)
   (setq eww-desktop-remove-duplicates t)
   (setq eww-header-line-format nil))
+
+(use-package shr
+  :bind
+  (:map shr-map
+        ("u" . nil)))
 
 ;; * shr
 
@@ -1982,6 +2010,15 @@ Argument BOOK-ALIST ."
 
 ;; * pdf-view
 
+(defun my/background-pdf-view-refresh (appearance)
+  (cl-loop for buf in (buffer-list)
+	   collect
+	   (with-current-buffer buf
+	     (when (eq major-mode 'pdf-view-mode)
+	       (my/pdf-view-themed-minor-mode-refresh)))))
+
+(add-to-list 'ns-system-appearance-change-functions 'my/background-pdf-view-refresh)
+
 (defun my/pdf-view-themed-minor-mode-refresh ()
   (interactive)
   (pdf-view-themed-minor-mode 1))
@@ -1994,7 +2031,20 @@ Argument BOOK-ALIST ."
   (interactive)
   (shell-command (concat "open '" buffer-file-name "'")))
 
-
+(use-package pdf-view
+  :after pdf-tools
+  :custom
+  (pdf-view-resize-factor 1.05)
+  (pdf-view-display-size 'fit-page)
+  :mode "\\.pdf\\'"
+  :hook (pdf-view-mode . pdf-view-themed-minor-mode)
+  :bind
+  (:map pdf-view-mode-map
+        ("C-c C-o" . my/pdf-view-open-externally)
+        ("C-c C-r r" . my/pdf-view-themed-minor-mode-refresh)
+        ("c" . my/pdf-view-current-page)
+        ("o" . pdf-outline)
+        ("C-c C-n" . org-noter)))
 
 (use-package saveplace-pdf-view
   :config
@@ -2008,20 +2058,7 @@ Argument BOOK-ALIST ."
   :hook (pdf-outline-buffer-mode . visual-line-mode)
   :config
   (pdf-tools-install :no-query)
-  (use-package pdf-occur)
-  (use-package pdf-view
-    :custom
-    (pdf-view-resize-factor 1.05)
-    (pdf-view-display-size 'fit-page)
-    :mode "\\.pdf\\'"
-    :hook (pdf-view-mode . pdf-view-themed-minor-mode)
-    :bind
-    (:map pdf-view-mode-map
-          ("C-c C-o" . my/pdf-view-open-externally)
-          ("C-c C-r r" . my/pdf-view-themed-minor-mode-refresh)
-          ("c" . my/pdf-view-current-page)
-          ("o" . pdf-outline)
-          ("C-c C-n" . org-noter))))
+  (use-package pdf-occur))
 
 ;; * pdf-annot
 
