@@ -3,9 +3,9 @@
 ;; * Basic settings
 
 (setq warning-minimum-level :emergency)
-  (defun dir-concat (dir file)
-    "join path DIR with filename FILE correctly"
-    (concat (file-name-as-directory dir) file))
+(defun dir-concat (dir file)
+  "join path DIR with filename FILE correctly"
+  (concat (file-name-as-directory dir) file))
 (make-directory "~/.emacs_backups/" t)
 (make-directory "~/.emacs_autosave/" t)
 (setq auto-save-file-name-transforms '((".*" "~/.emacs_autosave/" t)))
@@ -19,19 +19,6 @@
 (when (native-comp-available-p)
   (setq native-comp-async-report-warnings-errors 'silent) ; Emacs 28 with native compilation
   (setq native-compile-prune-cache t)) ; Emacs 29
-
-;; Disable the damn thing by making it disposable.
-(setq custom-file (dir-concat user-emacs-directory "custom.el"))
-
-(setq disabled-command-function nil)
-
-;; Always start with *scratch*
-;;(setq initial-buffer-choice t)
-
-(mapc
- (lambda (string)
-   (add-to-list 'load-path (locate-user-emacs-file string)))
- '("lisp"))
 
 ;; * Packages
 
@@ -84,32 +71,32 @@
 (setq custom-safe-themes t)
 
 (setq custom-safe-themes t)
-(defalias 'mw/apply-theme-change 'mw/modus-theme-change)
+(defalias 'my/apply-theme-change 'my/modus-theme-change)
 
-(add-to-list 'ns-system-appearance-change-functions 'mw/apply-theme-change)
+(add-to-list 'ns-system-appearance-change-functions 'my/apply-theme-change)
 ;; (add-to-list 'after-make-frame-functions '(lambda (_)
 ;; (my/apply-theme-change ns-system-appearance))) ;; DOES NOT WORK
-(push '(lambda (_) (mw/apply-theme-change ns-system-appearance)) (cdr (last after-make-frame-functions)))
+(push '(lambda (_) (my/apply-theme-change ns-system-appearance)) (cdr (last after-make-frame-functions)))
 (use-package ef-themes)
 (use-package color-theme-modern)
 
 ;; * Modus themes
 
-(defun mw/theme-default-light ()
+(defun my/theme-default-light ()
   "Set the default theme to light"
   (interactive)
   (load-theme 'modus-operandi t))
 
-(defun mw/theme-default-dark ()
+(defun my/theme-default-dark ()
   "Set the default theme to dark"
   (interactive)
   (load-theme 'modus-vivendi t))
 
-(defun mw/modus-theme-change (appearance)
+(defun my/modus-theme-change (appearance)
   "Load theme, taking current system APPEARANCE into consideration."
   (pcase appearance
-    ('light (mw/theme-default-light))
-    ('dark  (mw/theme-default-dark))))
+    ('light (my/theme-default-light))
+    ('dark  (my/theme-default-dark))))
 
 (use-package modus-themes
   :config
@@ -177,7 +164,7 @@
               ("t" . nil)
               ("t s" . timu-macos-toggle-dark-light)))
 
-(defun mw/timu-theme-change (appearance)
+(defun my/timu-theme-change (appearance)
   "Load theme, taking current system APPEARANCE into consideration."
   (interactive)
   (customize-set-variable 'timu-macos-flavour (symbol-name appearance))
@@ -194,7 +181,7 @@
 
 ;; * Writroom
 
-(defun mw/writeroom-mode-hook ()
+(defun my/writeroom-mode-hook ()
   "Custom behaviours for `writeroom-mode'."
   (if writeroom-mode
       (progn (centered-cursor-mode 1)
@@ -202,12 +189,12 @@
     (centered-cursor-mode 0)))
 
 (use-package writeroom-mode
-  :hook (writeroom-mode . mw/writeroom-mode-hook))
+  :hook (writeroom-mode . my/writeroom-mode-hook))
 (use-package centered-cursor-mode)
 
 ;; * Spacious padding
 
-(defun mw/spacious-padding-reset ()
+(defun my/spacious-padding-reset ()
   "reset the spacious padding and modeline formats"
   (interactive)
   (spacious-padding-mode 1))
@@ -346,6 +333,31 @@
   (:map completion-list-mode-map
         ("e" . switch-to-minibuffer)))
 
+;; * CUSTOM FILE
+
+(use-package cus-edit
+  :config
+  ;; Get custom-set-variables out of init.el
+  (defvar my/custom-file (dir-concat user-emacs-directory "custom.el"))
+  (setq custom-file my/custom-file)
+
+  (defun my/cus-edit ()
+    (let ((file my/custom-file))
+      (unless (file-exists-p file)
+        (make-empty-file file))
+      (load-file file)))
+  :hook (after-init . my/cus-edit))
+
+(setq disabled-command-function nil)
+
+;; Always start with *scratch*
+;;(setq initial-buffer-choice t)
+
+(mapc
+ (lambda (string)
+   (add-to-list 'load-path (locate-user-emacs-file string)))
+ '("lisp"))
+
 ;; * outline
 
 (use-package outline
@@ -472,11 +484,11 @@
 
 ;; * highlight visual line
 
-(defun mw/highlight-visual-line ()
+(defun my/highlight-visual-line ()
   (save-excursion
     (cons (progn (beginning-of-visual-line) (point))
           (progn (end-of-visual-line) (point)))))
-(setq hl-line-range-function 'mw/highlight-visual-line)
+(setq hl-line-range-function 'my/highlight-visual-line)
 
 ;; * openwith
 
@@ -657,7 +669,7 @@
 
 ;; * completion
 
-(defun mw/sort-by-length (elements)
+(defun my/sort-by-length (elements)
   "Sort ELEMENTS by minibuffer history, else return them unsorted.
 This function can be used as the value of the user option
 `completions-sort'."
@@ -699,7 +711,7 @@ This function can be used as the value of the user option
 (use-package consult
   :after org
   :config
-  (consult-customize consult-notes mw/consult-notes-other-window :preview-key "M-.")
+  (consult-customize consult-notes my/consult-notes-other-window :preview-key "M-.")
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :bind
   ([remap Info-search] . consult-info)
@@ -764,7 +776,7 @@ This function can be used as the value of the user option
   :bind
   ("C-c n o" . consult-notes)
   ("C-c n X" . consult-notes-search-in-all-notes)
-  ("C-c n 4 o" . mw/consult-notes-other-window)
+  ("C-c n 4 o" . my/consult-notes-other-window)
   :config
   (setq consult-notes-file-dir-sources
         '(("Org"             ?o "~/Dropbox/Org/")))
@@ -782,11 +794,11 @@ This function can be used as the value of the user option
   (interactive "fNote: ")
   (message cand))
 
-(defun mw/consult-notes--on-file (file)
+(defun my/consult-notes--on-file (file)
   (let ((consult-notes-org-headings-files (list file)))
     (consult-notes)))
 
-(defun mw/consult-notes--menu ()
+(defun my/consult-notes--menu ()
   (let* ((curr-buf buffer-file-name)
          (avy-keys '(?a ?p ?b ?r ?f ?j ?c ?t))
          (file (avy-menu "*select notes*"
@@ -803,30 +815,30 @@ This function can be used as the value of the user option
         (eval file))
     file))
 
-(defun mw/consult-notes-org-insert-link ()
+(defun my/consult-notes-org-insert-link ()
   (interactive)
-  (let ((file (mw/consult-notes--menu)))
+  (let ((file (my/consult-notes--menu)))
     (if (stringp file)
         (progn (if (equal major-mode 'org-mode)
                    (progn (org-mark-ring-push)
-                          (mw/consult-notes--on-file file)
+                          (my/consult-notes--on-file file)
                           (org-store-link nil t)
                           (org-mark-ring-goto)
                           (org-insert-all-links nil "" " "))
-                 (mw/consult-notes--on-file file))))))
+                 (my/consult-notes--on-file file))))))
 
 
-(defun mw/consult-notes-menu ()
+(defun my/consult-notes-menu ()
   (interactive)
-  (let ((file (mw/consult-notes--menu)))
+  (let ((file (my/consult-notes--menu)))
     (if (stringp file)
         (progn
           (if (equal major-mode 'org-mode) (org-mark-ring-push))
-          (mw/consult-notes--on-file file)
+          (my/consult-notes--on-file file)
           (org-narrow-to-subtree)
           (org-fold-show-subtree)))))
 
-(defun mw/consult-notes-other-window ()
+(defun my/consult-notes-other-window ()
   "Open a note in another window"
   (interactive)
   (let ((consult--buffer-display #'switch-to-buffer-other-window))
@@ -1061,7 +1073,7 @@ This function can be used as the value of the user option
     (flyspell-on-for-buffer-type)))
 
 ;; not being used, as we are not using ispell dicts
-(defun mw/switch-dictionary()
+(defun my/switch-dictionary()
   "UNUSED. Toggle dictionary language between english and german"
   (interactive)
   (let* ((dic ispell-current-dictionary)
@@ -1315,7 +1327,7 @@ This function can be used as the value of the user option
 
 ;; * org
 
-(defun mw/org-setup-hook ()
+(defun my/org-setup-hook ()
   "Setup org mode hook"
   (display-line-numbers-mode 0)
   ;;(smartparens-mode 0)
@@ -1323,13 +1335,13 @@ This function can be used as the value of the user option
   (auto-fill-mode 1)
   (setq fill-column 78))
 
-(defun mw/org-open-at-point-other-window ()
+(defun my/org-open-at-point-other-window ()
   "Open at point other window"
   (interactive)
   (let ((org-link-frame-setup (append '((file . find-file-other-window)) org-link-frame-setup)))
     (org-open-at-point)))
 
-(defun mw/org-open-at-point-other-frame ()
+(defun my/org-open-at-point-other-frame ()
   "Open at point other frame"
   (interactive)
   (let ((org-link-frame-setup (append '((file . find-file-other-frame)) org-link-frame-setup)))
@@ -1377,10 +1389,10 @@ This function can be used as the value of the user option
   (:map org-mode-map
         ("C-c C-." . org-time-stamp-inactive)
         ("C-c a" . org-agenda)
-        ("C-c 4 C-o" . mw/org-open-at-point-other-window)
-        ("C-c 4 o" . mw/org-open-at-point-other-window)
-        ("C-c 5 C-o" . mw/org-open-at-point-other-frame)
-        ("C-c 5 o" . mw/org-open-at-point-other-frame)
+        ("C-c 4 C-o" . my/org-open-at-point-other-window)
+        ("C-c 4 o" . my/org-open-at-point-other-window)
+        ("C-c 5 C-o" . my/org-open-at-point-other-frame)
+        ("C-c 5 o" . my/org-open-at-point-other-frame)
         ("C-c e" . org-emphasize))
   :custom-face
   (org-document-title ((t (:height 1.7)))))
@@ -1434,7 +1446,7 @@ This function can be used as the value of the user option
 ;; * org-mac-link
 
 (when (eq system-type 'darwin)
-  (defun mw/org-mac-link-applescript-librewolf-get-frontmost-url ()
+  (defun my/org-mac-link-applescript-librewolf-get-frontmost-url ()
     "AppleScript to get the links to the frontmost window of the LibreWolf.app."
     (let ((result
            (org-mac-link-do-applescript
@@ -1451,18 +1463,18 @@ This function can be used as the value of the user option
              "return links as string\n"))))
       (car (split-string result "[\r\n]+" t))))
 
-  (defun mw/org-mac-link-librewolf-get-frontmost-url ()
+  (defun my/org-mac-link-librewolf-get-frontmost-url ()
     "Get the link to the frontmost window of the LibreWolf.app."
     (interactive)
     (message "Applescript: Getting Firefox url...")
-    (org-mac-link-paste-applescript-links (mw/org-mac-link-applescript-librewolf-get-frontmost-url)))
+    (org-mac-link-paste-applescript-links (my/org-mac-link-applescript-librewolf-get-frontmost-url)))
 
-  (defun mw/org-mac-link-librewolf-insert-frontmost-url ()
+  (defun my/org-mac-link-librewolf-insert-frontmost-url ()
     "Insert the link to the frontmost window of the LibreWolf.app."
     (interactive)
-    (insert (mw/org-mac-link-librewolf-get-frontmost-url)))
+    (insert (my/org-mac-link-librewolf-get-frontmost-url)))
 
-  (defun mw/org-mac-link-get-link (&optional beg end)
+  (defun my/org-mac-link-get-link (&optional beg end)
     "Prompt for an application to grab a link from.
   When done, go grab the link, and insert it at point. If a region
   is active, that will be the link's description."
@@ -1478,7 +1490,7 @@ This function can be used as the value of the user option
               ("o" "utlook" org-mac-link-outlook-message-insert-selected ,org-mac-link-outlook-app-p)
               ("a" "ddressbook" org-mac-link-addressbook-item-insert-selected ,org-mac-link-addressbook-app-p)
               ("s" "afari" org-mac-link-safari-insert-frontmost-url ,org-mac-link-safari-app-p)
-              ("l" "ibrewolf" mw/org-mac-link-librewolf-insert-frontmost-url ,org-mac-link-librewolf-app-p)
+              ("l" "ibrewolf" my/org-mac-link-librewolf-insert-frontmost-url ,org-mac-link-librewolf-app-p)
               ("v" "imperator" org-mac-link-vimperator-insert-frontmost-url ,org-mac-link-firefox-vimperator-p)
               ("c" "hrome" org-mac-link-chrome-insert-frontmost-url ,org-mac-link-chrome-app-p)
               ("b" "rave" org-mac-link-brave-insert-frontmost-url ,org-mac-link-brave-app-p)
@@ -1542,7 +1554,7 @@ This function can be used as the value of the user option
           org-mac-link-skim-app-p t)
     :bind
     (:map org-mode-map
-          ("C-c L" . mw/org-mac-link-get-link))))
+          ("C-c L" . my/org-mac-link-get-link))))
 
 ;; * org-noter
 
@@ -1555,7 +1567,7 @@ This function can be used as the value of the user option
         ("C-c C-x n k" . org-noter-kill-session)
         ("C-c C-x n s" . org-noter-create-skeleton))
   :config
-  (add-to-list 'org-noter-notes-search-path "/Users/mw/Library/CloudStorage/Dropbox/Org")
+  (add-to-list 'org-noter-notes-search-path "/Users/my/Library/CloudStorage/Dropbox/Org")
   (setq org-noter-default-notes-file-names '("noter.org")
         org-noter-always-create-frame nil
         org-noter-auto-save-last-location t
@@ -1612,7 +1624,7 @@ This function can be used as the value of the user option
 
 ;; * denote
 
-(defun mw/denote-rename-buffer ()
+(defun my/denote-rename-buffer ()
   (interactive)
   (denote-rename-buffer))
 
@@ -1649,12 +1661,12 @@ This function can be used as the value of the user option
   ("C-c n b" . denote-backlinks)
   ("C-c n f f" . denote-find-link)
   ("C-c n f b" . denote-find-backlink)
-  ("C-c n f r" . mw/denote-rg-search)
+  ("C-c n f r" . my/denote-rg-search)
   ("C-c n r" . denote-rename-file)
   ("C-c n R" . denote-rename-file-using-front-matter)
-  ("C-c n C-r" . mw/denote-rename-buffer))
+  ("C-c n C-r" . my/denote-rename-buffer))
 
-(defun mw/denote-rg-search ()
+(defun my/denote-rg-search ()
   "Search org-roam directory using consult-ripgrep. With live-preview."
   (interactive)
   (let ((consult-ripgrep-command "rg --null --ignore-case --type org --line-buffered --color=always --max-columns=500 --no-heading --line-number . -e ARG OPTS"))
@@ -1662,30 +1674,30 @@ This function can be used as the value of the user option
 
 ;; * nov-mode
 
-(defun mw/center-reading-mode ()
+(defun my/center-reading-mode ()
   "Center the text in visual column mode"
   (interactive)
   (visual-fill-column-mode))
 
 ;; TODO make this respeatable, and work with n argument
-(defun mw/mark-whole-sentence ()
+(defun my/mark-whole-sentence ()
   "Mark the whole sentence the cursor is in."
   (interactive)
   (backward-sentence)
   (mark-end-of-sentence nil))
 
-;; (defun mw/nov-font-setup ()
+;; (defun my/nov-font-setup ()
 ;;   (face-remap-add-relative 'variable-pitch :family "ETBembo"))
 
-(defun mw/nov-mode-setup ()
+(defun my/nov-mode-setup ()
   "Set up the nov mode"
-  ;; (mw/nov-font-setup)
+  ;; (my/nov-font-setup)
   (hl-line-mode -1)
   (visual-fill-column-mode 1)
   (visual-line-mode 1)
   (variable-pitch-mode 1))
 
-(defun mw/toggle-header-line ()
+(defun my/toggle-header-line ()
   "Toggle the display of the header line"
   (interactive)
   (if nov-header-line-format
@@ -1693,7 +1705,7 @@ This function can be used as the value of the user option
     (setq nov-header-line-format "%t: %c"))
   (nov-render-document))
 
-(defun mw/toggle-cursor-display ()
+(defun my/toggle-cursor-display ()
   "Toggle between displaying a bar and no cursor"
   (interactive)
   (if cursor-type
@@ -1715,7 +1727,7 @@ This function can be used as the value of the user option
         ("h" . nil)
         ("y" . org-store-link)
         ("m p" . mark-paragraph)
-        ("m s" . mw/mark-whole-sentence)
+        ("m s" . my/mark-whole-sentence)
         ("h m" . org-remark-mark)
         ("h l" . org-remark-mark-line)
         ("h o" . org-remark-open)
@@ -1727,11 +1739,11 @@ This function can be used as the value of the user option
         ("h d" . org-remark-delete)
         ("h v" . org-remark-view)
         ("h q" . delete-other-windows)
-        ("C-c t" . mw/toggle-header-line)
+        ("C-c t" . my/toggle-header-line)
         ("C-c v" . visual-line-mode)
-        ("C-c c" . mw/toggle-cursor-display)
+        ("C-c c" . my/toggle-cursor-display)
         ("C-c b" . org-noter))
-  :hook (nov-mode . mw/nov-mode-setup))
+  :hook (nov-mode . my/nov-mode-setup))
 
 ;; * esxml
 
@@ -1739,7 +1751,7 @@ This function can be used as the value of the user option
 
 ;; * calibredb
 
-(defun mw/refresh-calibre-bib ()
+(defun my/refresh-calibre-bib ()
   (interactive)
   (shell-command "calibredb catalog /tmp/cat.bib --fields=title,authors,formats,id,isbn,pubdate,tags,uuid,identifiers" )
   (shell-command "awk -f ~/.emacs.d/scripts/escape_comma.awk /tmp/cat.bib > ~/cat.bib"))
@@ -1747,7 +1759,7 @@ This function can be used as the value of the user option
 (use-package calibredb
   :bind
   ("C-c d" . calibredb)
-  ("C-c C-d" . mw/refresh-calibre-bib)
+  ("C-c C-d" . my/refresh-calibre-bib)
   ("C-c D" . calibredb-consult-read)
   :config
   (setq calibredb-root-dir "~/Dropbox/Calibre Library")
@@ -1892,7 +1904,7 @@ Argument BOOK-ALIST ."
 
 ;; * citar
 
-(defun mw/citar-toggle-multiple ()
+(defun my/citar-toggle-multiple ()
   (interactive)
   (if citar-select-multiple
       (setq citar-select-multiple nil)
@@ -1916,7 +1928,7 @@ Argument BOOK-ALIST ."
         ("C-c b" . #'org-cite-insert)
         ("C-c B" . citar-dwim))
   (:map citar-map :package citar
-        ("x" . mw/citar-toggle-multiple)
+        ("x" . my/citar-toggle-multiple)
         ("a" . consult-recoll))
   :bind-keymap
   ("C-c c" . citar-map))
@@ -1970,15 +1982,15 @@ Argument BOOK-ALIST ."
 
 ;; * pdf-view
 
-(defun mw/pdf-view-themed-minor-mode-refresh ()
+(defun my/pdf-view-themed-minor-mode-refresh ()
   (interactive)
   (pdf-view-themed-minor-mode 1))
 
-(defun mw/pdf-view-current-page ()
+(defun my/pdf-view-current-page ()
   (interactive)
   (message "%d/%d" (pdf-view-current-page) (pdf-info-number-of-pages)))
 
-(defun mw/pdf-view-open-externally ()
+(defun my/pdf-view-open-externally ()
   (interactive)
   (shell-command (concat "open '" buffer-file-name "'")))
 
@@ -2005,9 +2017,9 @@ Argument BOOK-ALIST ."
     :hook (pdf-view-mode . pdf-view-themed-minor-mode)
     :bind
     (:map pdf-view-mode-map
-          ("C-c C-o" . mw/pdf-view-open-externally)
-          ("C-c C-r r" . mw/pdf-view-themed-minor-mode-refresh)
-          ("c" . mw/pdf-view-current-page)
+          ("C-c C-o" . my/pdf-view-open-externally)
+          ("C-c C-r r" . my/pdf-view-themed-minor-mode-refresh)
+          ("c" . my/pdf-view-current-page)
           ("o" . pdf-outline)
           ("C-c C-n" . org-noter))))
 
@@ -2041,11 +2053,11 @@ Argument BOOK-ALIST ."
           (prin1 symbol)
           (princ "\n")))))))
 
-(defun mw/launch-note (&optional initial-input key)
+(defun my/launch-note (&optional initial-input key)
   (select-frame-set-input-focus (selected-frame))
   (set-frame-size (selected-frame) 80 15)
   (set-frame-name "org-capture")
-  (add-hook 'org-capture-after-finalize-hook 'mw/post-org-launch-note)
+  (add-hook 'org-capture-after-finalize-hook 'my/post-org-launch-note)
   (letf! ((#'pop-to-buffer #'switch-to-buffer))
          (interactive)
          (switch-to-buffer (doom-fallback-buffer))
@@ -2057,12 +2069,12 @@ Argument BOOK-ALIST ."
          )
   )
 
-(defun mw/remove-launch-note-hook ()
+(defun my/remove-launch-note-hook ()
   (interactive)
-  (remove-hook 'org-capture-after-finalize-hook 'mw/post-org-launch-note))
+  (remove-hook 'org-capture-after-finalize-hook 'my/post-org-launch-note))
 
-(defun mw/post-org-launch-note ()
-  (mw/remove-launch-note-hook)
+(defun my/post-org-launch-note ()
+  (my/remove-launch-note-hook)
   (delete-frame))
 
 ;; * ox-11ty
@@ -2076,9 +2088,11 @@ Argument BOOK-ALIST ."
 ;; outline that you see in this document is represented in the Lisp files as
 ;; Org-style collapsible outline headings. See [[*OUTLINE MODE][Outline Mode]].
 
+;; eval:(outline-hide-sublevels 5)
+
 ;; Local Variables:
 ;; outline-regexp: ";; \\*+"
 ;; page-delimiter: ";; \\**"
 ;; eval:(outline-minor-mode 1)
-;; eval:(outline-hide-sublevels 5)
+;; eval:(outline-hide-body)
 ;; End:
