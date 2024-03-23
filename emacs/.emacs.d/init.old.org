@@ -606,6 +606,12 @@ between it: [[https://ogbe.net/blog/toggle-serif][Variable-width Serif Fonts whe
         ("e" . switch-to-minibuffer)))
 #+end_src
 
+*** outline mode
+#+begin_src elisp
+(use-package outline
+  :custom
+  (outline-minor-mode-prefix ""))
+#+end_src
 *** editorconfig
 
 #+begin_src elisp
@@ -1753,6 +1759,8 @@ copy.
 (use-package quickrun)
 #+end_src
 *** copilot
+
+Emacs 
 #+begin_src elisp
 (use-package copilot
   :straight (:host github :repo "copilot-emacs/copilot.el" :files ("dist" "*.el"))
@@ -2702,6 +2710,11 @@ document similarity notes
 (use-package fireplace)
 #+end_src
 *** chatgpt
+
+https://github.com/karthink/gptel
+
+Demo: https://www.youtube.com/watch?v=bsRnh_brggM
+
 #+begin_src elisp
 (use-package gptel)
 #+end_src

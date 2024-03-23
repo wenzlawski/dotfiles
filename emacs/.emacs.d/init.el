@@ -1,7 +1,11 @@
+;; -*- lexical-binding: t; -*-
+
+;; * Basic settings
+
 (setq warning-minimum-level :emergency)
 
 (make-directory "~/.emacs_backups/" t)
-(make-directory "~/.emacs_autosave/" t)
+(me-directory "~/.emacs_autosave/" t)
 (setq auto-save-file-name-transforms '((".*" "~/.emacs_autosave/" t)))
 (setq backup-directory-alist '(("." . "~/.emacs_backups/")))
 
@@ -27,7 +31,7 @@
    (add-to-list 'load-path (locate-user-emacs-file string)))
  '("site-lisp" "mw-emacs-modules"))
 
-;;;; Packages
+;; * Packages
 
 (require 'package)
 
@@ -73,6 +77,8 @@
   (load bootstrap-file nil 'nomessage))
 (straight-use-package 'use-package)
 
+;; * Themes
+
 (setq custom-safe-themes t)
 
 (setq custom-safe-themes t)
@@ -84,6 +90,8 @@
 (push '(lambda (_) (mw/apply-theme-change ns-system-appearance)) (cdr (last after-make-frame-functions)))
 (use-package ef-themes)
 (use-package color-theme-modern)
+
+;; * Modus themes
 
 (defun mw/theme-default-light ()
   "Set the default theme to light"
@@ -157,6 +165,8 @@
           (border-mode-line-inactive unspecified)))
   (setq modus-themes-mode-line 'borderless))
 
+;; * Timu theme
+
 (use-package timu-macos-theme
   :straight (:host github :repo "emacsmirror/timu-macos-theme")
   :init
@@ -171,12 +181,16 @@
   (customize-set-variable 'timu-macos-flavour (symbol-name appearance))
   (load-theme 'timu-macos t))
 
+;; * Poet theme
+
 (use-package poet-theme
   :config
   (setq poet-theme-variable-pitch-multiplier 1.6)
   (setq poet-theme-variable-headers nil))
 
 (add-to-list 'default-frame-alist '(font . "Iosevka Comfy-18"))
+
+;; * Writroom
 
 (defun mw/writeroom-mode-hook ()
   "Custom behaviours for `writeroom-mode'."
@@ -189,6 +203,8 @@
   :hook (writeroom-mode . mw/writeroom-mode-hook))
 (use-package centered-cursor-mode)
 
+;; * Spacious padding
+
 (defun mw/spacious-padding-reset ()
   "reset the spacious padding and modeline formats"
   (interactive)
@@ -197,6 +213,8 @@
 (use-package spacious-padding
   :config
   (spacious-padding-mode))
+
+;; * Pulsar
 
 (use-package pulsar
   :config
@@ -213,6 +231,8 @@
 (remove-hook 'xref-after-return-hook 'xref-pulse-momentarily)
 (remove-hook 'xref-after-jump-hook 'xref-pulse-momentarily)
 
+;; * default-text-scale
+
 (use-package default-text-scale
   :bind
   (:map default-text-scale-mode-map
@@ -220,6 +240,8 @@
         ("s-_" . default-text-scale-decrease))
   :config
   (default-text-scale-mode))
+
+;; * rainbow-delimiters
 
 (use-package rainbow-delimiters
   :custom-face
@@ -236,8 +258,12 @@
   :custom
   (rainbow-delimiters-max-face-count 3))
 
+;; * user details
+
 (setq user-full-name "Marc Wenzlawski"
       user-mail-address "marcwenzlawski@gmail.com")
+
+;; * use-package emacs
 
 (use-package emacs
   :config
@@ -317,18 +343,32 @@
   (:map completion-list-mode-map
         ("e" . switch-to-minibuffer)))
 
+;; * outline
+
+(use-package outline
+  :custom
+  (outline-minor-mode-prefix ""))
+
+;; * editorconfig
+
 (use-package editorconfig
   :config
   (editorconfig-mode))
+
+;; * dtrt-indent
 
 (use-package dtrt-indent
   :config
   (add-to-list 'dtrt-indent-hook-mapping-list '(lua-ts-mode lua lua-ts-indent-offset))
   (dtrt-indent-global-mode))
 
+;; * gcmh
+
 (use-package gcmh
   :config
   (gcmh-mode 1))
+
+;; * ace-window
 
 (use-package ace-window
   :config
@@ -352,7 +392,11 @@
   ("C-x o" . ace-window)
   ("C-<tab>" . ace-window))
 
+;; * tabspaces
+
 (use-package tabspaces)
+
+;; * avy
 
 (use-package avy
   :bind
@@ -373,6 +417,8 @@
           (?f . avy-action-ispell)
           (?z . avy-action-zap-to-char)))
   (setq avy-keys '(?a ?r ?s ?t ?g ?m ?n ?e ?i ?o)))
+
+;; * embark
 
 (use-package embark
   :bind
@@ -395,6 +441,8 @@
 (use-package dash)
 (use-package embark-vc)
 
+;; * vterm
+
 (use-package vterm
   :bind
   ("C-c t" . vterm)
@@ -405,7 +453,11 @@
 
 (use-package multi-vterm)
 
+;; * hydra
+
 (use-package hydra)
+
+;; * ns-auto-titlebar
 
 (when (eq system-type 'darwin)
   (use-package ns-auto-titlebar
@@ -415,29 +467,45 @@
     :config
     (osx-trash-setup)))
 
+;; * highlight visual line
+
 (defun mw/highlight-visual-line ()
   (save-excursion
     (cons (progn (beginning-of-visual-line) (point))
           (progn (end-of-visual-line) (point)))))
 (setq hl-line-range-function 'mw/highlight-visual-line)
 
+;; * openwith
+
 (use-package openwith)
+
+;; * undo-fu
 
 (use-package undo-fu)
 
 (use-package undo-fu-session)
 
+;; * vundo
+
 (use-package vundo)
+
+;; * hl-todo
 
 (use-package hl-todo)
 
+;; * exiftool
+
 (use-package exiftool
   :defer t)
+
+;; * bookmark+
 
 (use-package bookmark+
   :straight (bookmark+))
 
 (setq bookmark-save-flag 1)
+
+;; * helpful
 
 (use-package helpful
   :bind
@@ -449,6 +517,8 @@
   ("C-h C-h" . helpful-at-point)
   ("C-h F" . helpful-function))
 
+;; * tab-bar
+
 (use-package tab-bar
   :custom
   (tab-bar-select-tab-modifiers '(super))
@@ -458,8 +528,12 @@
   (setq tab-bar-tab-hints t)                 ;; show tab numbers
   (setq tab-bar-format '(tab-bar-format-tabs tab-bar-separator)))
 
+;; * scratch
+
 (use-package scratch
   :straight (:host codeberg :repo "emacs-weirdware/scratch" :files ("*.el")))
+
+;; * pandoc-mode
 
 (use-package pandoc-mode
   :hook ((text-mode doc-view-mode pdf-view-mode) . pandoc-mode)
@@ -467,10 +541,14 @@
 	      ("C-c p" . pandoc-main-hydra/body)
 	      ("C-c /" . nil)))
 
+;; * exec-path-from-shell
+
 (use-package exec-path-from-shell
   :when (memq window-system '(mac ns x))
   :config
   (exec-path-from-shell-initialize))
+
+;; * transpose-frame
 
 (use-package transpose-frame
   :straight (:host github :repo "emacsorphanage/transpose-frame")
@@ -479,6 +557,8 @@
   ("C-x 4 i" . flip-frame)
   ("C-x 4 o" . flop-frame)
   ("C-x 4 n" . rotate-frame))
+
+;; * modeline
 
 (require 'prot-modeline)
 (defun prot-modeline-subtle-activate ()
@@ -524,8 +604,12 @@
                           " "))))))
 ;;(prot-modeline-subtle-mode)
 
+;; * hide-mode-line
+
 (use-package hide-mode-line
   :bind (:map help-map ("t m" . hide-mode-line-mode)))
+
+;; * corfu
 
 (use-package corfu
   ;; Optional customizations
@@ -551,6 +635,8 @@
   :init
   (global-corfu-mode))
 
+;; * dabbrev
+
 ;; Use Dabbrev with Corfu!
 (use-package dabbrev
   ;; Swap M-/ and C-M-/
@@ -561,7 +647,12 @@
   ;; Since 29.1, use `dabbrev-ignored-buffer-regexps' on older.
   (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
   (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode))
+
+;; * cape
+
 (use-package cape)
+
+;; * completion
 
 (defun mw/sort-by-length (elements)
   "Sort ELEMENTS by minibuffer history, else return them unsorted.
@@ -583,9 +674,13 @@ This function can be used as the value of the user option
 ;;(bind-key "<return>" #'minibuffer-force-complete-and-exit 'minibuffer-mode-map)
 ;;(bind-key "C-<return>" #'minibuffer-tcomplete-and-exit 'minibuffer-mode-map)
 
+;; * marginalia
+
 (use-package marginalia
   :init
   (marginalia-mode))
+
+;; * orderless
 
 (use-package orderless
   :init
@@ -595,6 +690,8 @@ This function can be used as the value of the user option
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
+
+;; * consult
 
 (use-package consult
   :after org
@@ -642,13 +739,20 @@ This function can be used as the value of the user option
 
   (:map org-mode-map
         ("C-c h" . consult-org-heading)))
+
+;; ** consult-flycheck
+
 (use-package consult-flycheck)
+
+;; ** consult-frecoll
 
 (use-package consult-recoll
   :after citar
   :config
   ;; (setq exec-path (append exec-path '("/usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS/")))
   (consult-recoll-embark-setup))
+
+;; ** consult-notes
 
 (use-package consult-notes
   :after consult denote
@@ -725,6 +829,18 @@ This function can be used as the value of the user option
   (let ((consult--buffer-display #'switch-to-buffer-other-window))
     (consult-notes)))
 
+;; ** consult-flyspell
+
+(use-package consult-flyspell
+  :bind (:map flyspell-mode-map ("C-<" . consult-flyspell))
+  :config
+  ;; default settings
+  (setq consult-flyspell-select-function 'flyspell-correct-at-point
+        consult-flyspell-set-point-after-word t
+        consult-flyspell-always-check-buffer nil))
+
+;; * vertico
+
 ;; Adapted from vertico-reverse
 (defun vertico-bottom--display-candidates (lines)
   "Display LINES in bottom."
@@ -750,10 +866,6 @@ This function can be used as the value of the user option
   (setq vertico-resize 'grow-only))
 ;;(setq vertico-count-format '("" . "")))
 
-(use-package savehist
-  :init
-  (savehist-mode))
-
 (use-package vertico-multiform
   :after vertico
   :init
@@ -761,6 +873,14 @@ This function can be used as the value of the user option
   (setq vertico-multiform-commands
         '((consult-ripgrep buffer)
           (consult-buffer flat))))
+
+;; * savehist
+
+(use-package savehist
+  :init
+  (savehist-mode))
+
+;; * eglot
 
 (use-package eglot
   :bind
@@ -771,6 +891,8 @@ This function can be used as the value of the user option
   :custom-face
   (eglot-highlight-symbol-face ((t (:background "LightSkyBlue4")))))
 (use-package eglot-jl)
+
+;; * python
 
 (use-package pyenv-mode
   :init
@@ -790,6 +912,8 @@ This function can be used as the value of the user option
   :bind
   (:map python-ts-mode-map
         ("C-c C-n" . python-pytest-dispatch)))
+
+;; * ess
 
 (use-package ess
   :defer t
@@ -840,7 +964,6 @@ This function can be used as the value of the user option
     )
   )
 
-
 (defun rutils-plot-region-or-paragraph()
   "execute region or paragraph and save tmp plot to pdf. Then open windows to show pdf"
   (interactive)
@@ -875,9 +998,9 @@ This function can be used as the value of the user option
     )
   )
 
-(setq eglot-jl-language-server-project "~/.julia/environments/v1.9")
+;; * julia
 
-(use-package vterm)
+(setq eglot-jl-language-server-project "~/.julia/environments/v1.9")
 
 (use-package julia-snail
   :config
@@ -889,11 +1012,15 @@ This function can be used as the value of the user option
   (setq julia-snail-extensions '(repl-history formatter))
   :hook (julia-mode . julia-snail-mode))
 
+;; * typst
+
 (use-package typst-ts-mode
   :straight (:host sourcehut :repo "meow_king/typst-ts-mode")
   :mode ("\\.typ\\'" . typst-ts-mode)
   :custom
   (typst-ts-mode-watch-options "--open"))
+
+;; * flycheck flyspell
 
 (use-package flycheck)
 
@@ -903,14 +1030,6 @@ This function can be used as the value of the user option
 
 (use-package flyspell-correct-avy-menu
   :after flyspell-correct)
-
-(use-package consult-flyspell
-  :bind (:map flyspell-mode-map ("C-<" . consult-flyspell))
-  :config
-  ;; default settings
-  (setq consult-flyspell-select-function 'flyspell-correct-at-point
-        consult-flyspell-set-point-after-word t
-        consult-flyspell-always-check-buffer nil))
 
 (defun flyspell-on-for-buffer-type ()
   "Enable Flyspell appropriately for the major mode of the current buffer.  Uses `flyspell-prog-mode' for modes derived from `prog-mode', so only strings and comments get checked.  All other buffers get `flyspell-mode' to check all text.  If flyspell is already enabled, does nothing."
@@ -973,6 +1092,8 @@ This function can be used as the value of the user option
     ;; Please note ispell-extra-args contains ACTUAL parameters passed to aspell
     (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")))))
 
+;; * tree-sitter
+
 (setq treesit-language-source-alist
       '((bash "https://github.com/tree-sitter/tree-sitter-bash")
         (rust "https://github.com/tree-sitter/tree-sitter-rust")
@@ -1004,16 +1125,25 @@ This function can be used as the value of the user option
   :config
   (global-treesit-auto-mode))
 
+;; * apheleia
+
 (use-package apheleia
   :bind
   (:map prog-mode-map ("C-c f" . apheleia-format-buffer))
   :config
   (apheleia-global-mode))
 
+;; * eldoc
+
 (use-package eldoc
   :config
   (setq eldoc-current-idle-delay 0.3))
+
+;; * pos-tip
+
 (use-package pos-tip)
+
+;; * yasnippet
 
 (use-package yasnippet
   :init
@@ -1027,6 +1157,8 @@ This function can be used as the value of the user option
   (yas-reload-all)
   :hook (prog-mode . yas-minor-mode))
 ;; :bind-keymap ("C-c s" . yas-minor-mode-map))
+
+;; * tempel
 
 (use-package tempel
   ;; Require trigger prefix before template name when completing.
@@ -1057,6 +1189,8 @@ This function can be used as the value of the user option
 (use-package tempel-collection
   :after tempel)
 
+;; * projectile
+
 (use-package project)
 
 (use-package projectile
@@ -1069,7 +1203,11 @@ This function can be used as the value of the user option
         '("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles" "~/Dropbox/repos"))
   (projectile-global-mode 1))
 
+;; * quickrun
+
 (use-package quickrun)
+
+;; * copilot
 
 (use-package copilot
   :straight (:host github :repo "copilot-emacs/copilot.el" :files ("dist" "*.el"))
@@ -1082,6 +1220,8 @@ This function can be used as the value of the user option
 (use-package jsonrpc
   :pin gnu-elpa)
 
+;; * lua
+
 (use-package lua-mode
   :config
   (setq lua-indent-level 3))
@@ -1091,16 +1231,24 @@ This function can be used as the value of the user option
   (setq lua-ts-indent-offset 3)
   :straight (:host sourcehut :repo "johnmuhl/lua-ts-mode" :files ("*.el")))
 
+;; * cc-mode
+
 (use-package cc-mode
   :hook (awk-mode . (lambda nil (setq tab-width 4))))
+
+;; * emmet
 
 (use-package emmet-mode
   :commands (emmet-find-left-bound emmet-transform emmet-reposition-cursor)
   :hook (html-mode . emmet-mode))
 
+;; * grep
+
 (use-package grep
   :config
   (setq grep-program "rg"))
+
+;; * rg
 
 (use-package rg
   :config
@@ -1117,12 +1265,20 @@ This function can be used as the value of the user option
   (:map isearch-mode-map
         ("M-s g" . rg-isearch-menu)))
 
+;; * wgrep
+
 (use-package wgrep)
+
+;; * substitute
 
 (use-package substitute)
 
+;; * occur-x
+
 (use-package occur-x
   :hook (occur-mode . turn-on-occur-x-mode))
+
+;; * loccur
 
 (use-package loccur
   :straight (:host codeberg :repo "fourier/loccur")
@@ -1130,15 +1286,21 @@ This function can be used as the value of the user option
   (:map isearch-mode-map
         ("M-s l" . loccus-isearch)))
 
+;; * dired
+
 (use-package diredfl)
 (use-package fd-dired)
 (use-package dired-rsync)
+
+;; * magit / git
 
 (use-package magit)
 
 (use-package diff-hl)
 
 (use-package git-gutter)
+
+;; * nerd-icons
 
 (use-package nerd-icons
   ;; :custom
@@ -1147,6 +1309,8 @@ This function can be used as the value of the user option
   ;; but you can use any other Nerd Font if you want
   ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
   )
+
+;; * org
 
 (defun mw/org-setup-hook ()
   "Setup org mode hook"
@@ -1218,19 +1382,28 @@ This function can be used as the value of the user option
   :custom-face
   (org-document-title ((t (:height 1.7)))))
 
-
 ;; (use-package ob-shell
 ;;   :after org
 ;;   :config
 ;;   (setq org-babel-default-header-args:sh '((:results . "output")))
 ;;   (setq org-babel-default-header-args:shell '((:results . "output"))))
 
+;; * ox-hugo
+
 (use-package ox-hugo
   :pin melpa  ;`package-archives' should already have ("melpa" . "https://melpa.org/packages/")
   :after ox)
+
+;; * ox-pandoc
+
 (use-package ox-pandoc
   :after ox)
+
+;; * htmlize
+
 (use-package htmlize)
+
+;; * org-remark
 
 (use-package org-remark
   :bind (;; :bind keyword also implicitly defers org-remark itself.
@@ -1254,6 +1427,8 @@ This function can be used as the value of the user option
         org-remark-line-minimum-left-margin-width 1
         org-remark-line-heading-title-max-length 70))
 ;;(use-package org-remark-nov  :after nov  :config (org-remark-nov-mode +1)))
+
+;; * org-mac-link
 
 (when (eq system-type 'darwin)
   (defun mw/org-mac-link-applescript-librewolf-get-frontmost-url ()
@@ -1366,6 +1541,8 @@ This function can be used as the value of the user option
     (:map org-mode-map
           ("C-c L" . mw/org-mac-link-get-link))))
 
+;; * org-noter
+
 (use-package org-noter
   :bind
   (:map org-noter-doc-mode-map ("q" . nil))
@@ -1383,11 +1560,19 @@ This function can be used as the value of the user option
         org-noter-kill-frame-at-session-end nil
         org-noter-separate-notes-from-heading t))
 
+;; * org-ql
+
 (use-package org-ql)
+
+;; * org-web-tools
 
 (use-package org-web-tools)
 
+;; * notmuch
+
 (use-package notmuch)
+
+;; * elfeed
 
 (use-package elfeed)
 (use-package elfeed-org
@@ -1397,6 +1582,8 @@ This function can be used as the value of the user option
   (setq elfeed-search-title-max-width 100)
   (elfeed-org))
 
+;; * eww
+
 (use-package eww
   :bind
   ("C-c w" . eww)
@@ -1404,9 +1591,14 @@ This function can be used as the value of the user option
   (setq eww-restore-desktop t)
   (setq eww-desktop-remove-duplicates t)
   (setq eww-header-line-format nil))
+
+;; * shr
+
 (use-package shr
   :config
   (setq shr-max-image-proportion 0.4))
+
+;; * which-key
 
 (use-package which-key
   :config
@@ -1414,6 +1606,8 @@ This function can be used as the value of the user option
   (setq which-key-idle-delay 1.0)
   (setq which-key-idle-secondary-delay 0.05)
   (which-key-mode 1))
+
+;; * denote
 
 (defun mw/denote-rename-buffer ()
   (interactive)
@@ -1462,6 +1656,8 @@ This function can be used as the value of the user option
   (interactive)
   (let ((consult-ripgrep-command "rg --null --ignore-case --type org --line-buffered --color=always --max-columns=500 --no-heading --line-number . -e ARG OPTS"))
     (consult-ripgrep denote-directory)))
+
+;; * nov-mode
 
 (defun mw/center-reading-mode ()
   "Center the text in visual column mode"
@@ -1533,13 +1729,17 @@ This function can be used as the value of the user option
         ("C-c c" . mw/toggle-cursor-display)
         ("C-c b" . org-noter))
   :hook (nov-mode . mw/nov-mode-setup))
+
+;; * esxml
+
 (use-package esxml)
+
+;; * calibredb
 
 (defun mw/refresh-calibre-bib ()
   (interactive)
   (shell-command "calibredb catalog /tmp/cat.bib --fields=title,authors,formats,id,isbn,pubdate,tags,uuid,identifiers" )
   (shell-command "awk -f ~/.emacs.d/scripts/escape_comma.awk /tmp/cat.bib > ~/cat.bib"))
-
 
 (use-package calibredb
   :bind
@@ -1687,6 +1887,8 @@ Argument BOOK-ALIST ."
                (if calibredb-size-show
                    (propertize "Mb" 'face 'calibredb-size-face) ""))) )))
 
+;; * citar
+
 (defun mw/citar-toggle-multiple ()
   (interactive)
   (if citar-select-multiple
@@ -1745,15 +1947,25 @@ Argument BOOK-ALIST ."
         ("S" . citar-denote-find-citation)
         ("i" . citar-denote-link-reference)))
 
+;; * ebib
+
 (use-package ebib
   :config
   (setq ebib-preload-bib-files '("~/Zotero/bibtex-export.bib")))
 
+;; * speed-type
+
 (use-package speed-type)
+
+;; * fireplace
 
 (use-package fireplace)
 
+;; * gptel
+
 (use-package gptel)
+
+;; * pdf-view
 
 (defun mw/pdf-view-themed-minor-mode-refresh ()
   (interactive)
@@ -1786,10 +1998,14 @@ Argument BOOK-ALIST ."
   :config
   (save-place-mode 1))
 
+;; * pdf-tools
+
 (use-package pdf-tools
   :hook (pdf-outline-buffer-mode . visual-line-mode)
   :init
   (pdf-tools-install :no-query))
+
+;; * pdf-annot
 
 (use-package pdf-annot
   :after pdf-tools
@@ -1804,6 +2020,8 @@ Argument BOOK-ALIST ."
         ("a s" . pdf-annot-add-squiggly-markup-annotation)
         ("a t" . pdf-annot-add-text-annotation)
         ("a u" . pdf-annot-add-underline-markup-annotation)))
+
+;; * other
 
 (defun enable-all-commands ()
   "Enable all commands, reporting on which were disabled."
@@ -1841,4 +2059,20 @@ Argument BOOK-ALIST ."
   (mw/remove-launch-note-hook)
   (delete-frame))
 
+;; * ox-11ty
+
 (require 'ox-11ty)
+
+;; * LOCAL-VARIABLES
+
+;; This is not a literate config tangled from an Org-mode document! So I include
+;; some file-specific settings to make it easier to parse. Specifically, the
+;; outline that you see in this document is represented in the Lisp files as
+;; Org-style collapsible outline headings. See [[*OUTLINE MODE][Outline Mode]].
+
+;; Local Variables:
+;; outline-regexp: ";; \\*+"
+;; page-delimiter: ";; \\**"
+;; eval:(outline-minor-mode 1)
+;; eval:(outline-hide-sublevels 5)
+;; End:
