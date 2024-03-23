@@ -3,9 +3,11 @@
 ;; * Basic settings
 
 (setq warning-minimum-level :emergency)
-
+  (defun dir-concat (dir file)
+    "join path DIR with filename FILE correctly"
+    (concat (file-name-as-directory dir) file))
 (make-directory "~/.emacs_backups/" t)
-(me-directory "~/.emacs_autosave/" t)
+(make-directory "~/.emacs_autosave/" t)
 (setq auto-save-file-name-transforms '((".*" "~/.emacs_autosave/" t)))
 (setq backup-directory-alist '(("." . "~/.emacs_backups/")))
 
@@ -19,7 +21,7 @@
   (setq native-compile-prune-cache t)) ; Emacs 29
 
 ;; Disable the damn thing by making it disposable.
-(setq custom-file (make-temp-file "emacs-custom-"))
+(setq custom-file (dir-concat user-emacs-directory "custom.el"))
 
 (setq disabled-command-function nil)
 
@@ -313,6 +315,7 @@
   (recentf-mode)
   (show-paren-mode)
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
+
   :custom-face
   (show-paren-match ((t (:underline nil :inverse-video nil))))
   :bind
@@ -1979,20 +1982,7 @@ Argument BOOK-ALIST ."
   (interactive)
   (shell-command (concat "open '" buffer-file-name "'")))
 
-(use-package pdf-view
-  :after pdf-tools
-  :custom
-  (pdf-view-resize-factor 1.05)
-  (pdf-view-display-size 'fit-page)
-  :mode "\\.pdf\\'"
-  :hook (pdf-view-mode . pdf-view-themed-minor-mode)
-  :bind
-  (:map pdf-view-mode-map
-        ("C-c C-o" . mw/pdf-view-open-externally)
-        ("C-c C-r r" . mw/pdf-view-themed-minor-mode-refresh)
-        ("c" . mw/pdf-view-current-page)
-        ("o" . pdf-outline)
-        ("C-c C-n" . org-noter)))
+
 
 (use-package saveplace-pdf-view
   :config
@@ -2001,9 +1991,25 @@ Argument BOOK-ALIST ."
 ;; * pdf-tools
 
 (use-package pdf-tools
+  :ensure t
+  :defer 2
   :hook (pdf-outline-buffer-mode . visual-line-mode)
-  :init
-  (pdf-tools-install :no-query))
+  :config
+  (pdf-tools-install :no-query)
+  (use-package pdf-occur)
+  (use-package pdf-view
+    :custom
+    (pdf-view-resize-factor 1.05)
+    (pdf-view-display-size 'fit-page)
+    :mode "\\.pdf\\'"
+    :hook (pdf-view-mode . pdf-view-themed-minor-mode)
+    :bind
+    (:map pdf-view-mode-map
+          ("C-c C-o" . mw/pdf-view-open-externally)
+          ("C-c C-r r" . mw/pdf-view-themed-minor-mode-refresh)
+          ("c" . mw/pdf-view-current-page)
+          ("o" . pdf-outline)
+          ("C-c C-n" . org-noter))))
 
 ;; * pdf-annot
 
