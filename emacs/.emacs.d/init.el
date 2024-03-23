@@ -29,7 +29,7 @@
 (mapc
  (lambda (string)
    (add-to-list 'load-path (locate-user-emacs-file string)))
- '("site-lisp" "mw-emacs-modules"))
+ '("lisp"))
 
 ;; * Packages
 
