@@ -13,3 +13,4 @@ abbr lt "eza --tree"
 abbr n nvim
 abbr zj zellij
 abbr hi history
+abbr --add jrnl " jrnl"
