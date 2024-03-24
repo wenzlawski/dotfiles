@@ -191,9 +191,9 @@ INFO is a plist holding contextual information.  See
 (org-export-define-derived-backend '11ty 'html
   :menu-entry
   '(?1 "Export to 11ty JS"
-       ((?1 "To 11tydata.json and HTML file" org-11ty-export-to-11tydata-and-html)
-        (?o "To Org file" org-11ty-export-to-org)
-        (?b "As buffer" org-11ty-export-as-11ty) ))
+       ((?1 "To 11tydata.json and HTML file  " org-11ty-export-to-11tydata-and-html)
+        (?o "To Org file  " org-11ty-export-to-org)
+        (?b "As buffer  " org-11ty-export-as-11ty) ))
   :translate-alist '((export-block . org-11ty-export-block)
                      (export-snippet . org-11ty-export-snippet)
 		     (src-block . org-11ty-src-block)

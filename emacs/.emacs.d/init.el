@@ -374,9 +374,9 @@
 
 (use-package dtrt-indent
   :config
-  (setq dtrt-indent-verbosity 0)
-  (add-to-list 'dtrt-indent-hook-mapping-list '(lua-ts-mode lua lua-ts-indent-offset))
-  (dtrt-indent-global-mode))
+  (setq dtrt-indent-verbosity 0))
+;; (add-to-list 'dtrt-indent-hook-mapping-list '(lua-ts-mode lua lua-ts-indent-offset))
+;; (dtrt-indent-global-mode))
 
 ;; * gcmh
 
@@ -901,12 +901,18 @@ This function can be used as the value of the user option
 (use-package eglot
   :bind
   (:map eglot-mode-map
+	("C-c f" . eglot-format)
         ("C-c e q" . eglot-shutdown)
         ("C-c e Q" . eglot-shutdown-all)
         ("C-c e l" . eglot-list-connections))
   :custom-face
   (eglot-highlight-symbol-face ((t (:background "LightSkyBlue4")))))
-(use-package eglot-jl)
+
+;; * flymake
+
+(use-package flymake
+  :ensure t
+  :pin gnu-elpa)
 
 ;; * python
 
@@ -1016,17 +1022,28 @@ This function can be used as the value of the user option
 
 ;; * julia
 
-(setq eglot-jl-language-server-project "~/.julia/environments/v1.9")
+(use-package julia-mode
+  :hook (julia-mode . (lambda nil (progn (apheleia-mode -1) (setq-local eglot-connect-timeout 300))))
+  :mode "\\.jl\\'")
 
 (use-package julia-snail
+  :bind (:map julia-snail-mode-map ("C-c f" . julia-snail/formatter-format-buffer))
+  :custom
+  (julia-snail-popup-display-eval-results nil)
+  (julia-snail-repl-display-eval-results t)
+  (julia-snail-multimedia-enable t)
+  (julia-snail-extensions '(repl-history formatter))
   :config
   (add-to-list 'display-buffer-alist
                '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
-  (setq split-height-threshold 15)
-  (setq julia-snail-repl-display-eval-results t)
-  (setq julia-snail-multimedia-enable t)
-  (setq julia-snail-extensions '(repl-history formatter))
   :hook (julia-mode . julia-snail-mode))
+
+(use-package eglot-jl
+  :after eglot
+  :custom
+  (eglot-jl-language-server-project "~/.julia/environments/v1.10")
+  :config
+  (eglot-jl-init))
 
 ;; * typst
 
@@ -1147,11 +1164,21 @@ This function can be used as the value of the user option
   :bind
   (:map prog-mode-map ("C-c f" . apheleia-format-buffer))
   :config
+
+  (with-eval-after-load 'julia-mode
+    (push
+     '(julia . ((dir-concat user-emacs-directory "scripts/julia-format.sh") inplace ))
+     apheleia-formatters)
+    (add-to-list 'apheleia-mode-alist '(julia-mode . julia)))
+  
   (apheleia-global-mode))
 
 ;; * eldoc
 
 (use-package eldoc
+  :custom
+  (eldoc-echo-area-display-truncation-message nil)
+  (eldoc-echo-area-use-multiline-p nil)
   :config
   (setq eldoc-current-idle-delay 0.3))
 
@@ -1263,6 +1290,13 @@ This function can be used as the value of the user option
 (use-package grep
   :config
   (setq grep-program "rg"))
+
+;; * css
+
+(use-package css-mode
+  :hook ((css-mode css-ts-mode) . (lambda nil (setq tab-width 2)))
+  :config
+  (setq css-indent-offset 2))
 
 ;; * rg
 
@@ -1415,6 +1449,103 @@ This function can be used as the value of the user option
 (use-package ox-pandoc
   :after ox)
 
+;; * ob-python
+
+(use-package ob-python
+  :after org
+  :config
+  (setq org-babel-python-command "python3"))
+
+;; * ob-julia
+
+(use-package ob-julia
+  :after org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((julia . t))))
+
+;; (use-package ob-julia-vterm
+;;   :after org
+;;   :config
+;;   (add-to-list 'org-babel-load-languages '(julia-vterm . t))
+;;   (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
+;;   (defalias 'org-babel-execute:julia 'org-babel-execute:julia-vterm)
+;;   (defalias 'org-babel-variable-assignments:julia 'org-babel-variable-assignments:julia-vterm))
+
+(with-eval-after-load 'ob-julia-vterm
+  (defun ob-julia-vterm-make-str-to-run (uuid params src-file out-file)
+    "Make Julia code that execute-s the code in SRC-FILE depending on PARAMS.
+The results are saved in OUT-FILE.  UUID is a unique id assigned
+to the evaluation."
+    (format
+     (pcase (cdr (assq :result-type params))
+       ('output "\
+#OB-JULIA-VTERM_BEGIN %s
+import Logging; let
+    out_file = \"%s\"
+    open(out_file, \"w\") do io
+        logger = Logging.ConsoleLogger(io)
+        redirect_stdout(io) do
+            try
+                include(\"%s\")
+                # %s %s
+            catch e
+                showerror(logger.stream, e, %s)
+            end
+        end
+    end
+    result = open(io -> println(read(io, String)), out_file)
+    if result == nothing
+        open(out_file, \"a\") do io
+            print(io, \"\n\")
+        end
+    else
+        result
+    end
+end #OB-JULIA-VTERM_END\n")
+       ('value "\
+#OB-JULIA-VTERM_BEGIN %s
+import Logging, Pkg; open(\"%s\", \"w\") do io
+    logger = Logging.ConsoleLogger(io)
+    try
+        result = include(\"%s\")
+        if !(result isa Nothing)
+            if isdefined(Main, :PrettyPrinting) && isdefined(PrettyPrinting, :pprint) ||
+               \"PrettyPrinting\" in [p.name for p in values(Pkg.dependencies())]
+                @eval import PrettyPrinting
+                Base.invokelatest(PrettyPrinting.pprint, io, result)
+            else
+                Base.invokelatest(print, io, result)
+            end
+        else
+            if %s
+                Base.invokelatest(show, io, \"text/plain\", result)
+            else
+                Base.invokelatest(show, IOContext(io, :limit => true), \"text/plain\", result)
+            end
+        end
+        result
+    catch e
+        msg = sprint(showerror, e, %s)
+        println(logger.stream, msg)
+        println(msg)
+        nothing
+    end
+end #OB-JULIA-VTERM_END\n"))
+     (substring uuid 0 8) out-file src-file
+     (if (member "pp" (cdr (assq :result-params params))) "true" "false")
+     (if (member "nolimit" (cdr (assq :result-params params))) "true" "false")
+     (if (not (member (cdr (assq :debug params)) '(nil "no"))) "catch_backtrace()" ""))))
+
+
+;; * ob-shell
+
+(use-package ob-shell
+  :after org
+  :config
+  (setq org-babel-default-header-args:sh '((:results . "output")))
+  (setq org-babel-default-header-args:shell '((:results . "output"))))
 ;; * htmlize
 
 (use-package htmlize)
@@ -1584,6 +1715,10 @@ This function can be used as the value of the user option
 
 (use-package org-web-tools)
 
+;; * gnuplot
+
+(use-package gnuplot-mode :ensure t)
+(use-package gnuplot :ensure t)
 ;; * notmuch
 
 (use-package notmuch)
@@ -2036,7 +2171,6 @@ Argument BOOK-ALIST ."
   :custom
   (pdf-view-resize-factor 1.05)
   (pdf-view-display-size 'fit-page)
-  :mode "\\.pdf\\'"
   :hook (pdf-view-mode . pdf-view-themed-minor-mode)
   :bind
   (:map pdf-view-mode-map
