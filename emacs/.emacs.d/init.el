@@ -1053,6 +1053,9 @@ This function can be used as the value of the user option
   :custom
   (typst-ts-mode-watch-options "--open"))
 
+;; * fish
+
+(use-package fish-mode)
 ;; * flycheck flyspell
 
 (use-package flycheck)
