@@ -10,6 +10,7 @@ abbr lh "eza -lha"
 abbr ll "eza -l"
 abbr ls eza
 abbr lt "eza --tree"
+abbr lo "eza -1"
 abbr n nvim
 abbr zj zellij
 abbr hi history
