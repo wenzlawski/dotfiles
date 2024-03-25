@@ -223,6 +223,7 @@
 ;; * default-text-scale
 
 (use-package default-text-scale
+  :commands (default-text-scale-increase default-text-scale-decrease default-text-scale-reset)
   :bind
   (:map default-text-scale-mode-map
         ("s-+" . default-text-scale-increase)
@@ -1055,6 +1056,10 @@ This function can be used as the value of the user option
   :config
   (eglot-jl-init))
 
+;; * markdown
+
+(use-package markdown-mode
+  :hook (markdown-mode . visual-line-mode))
 ;; * typst
 
 (use-package typst-ts-mode
@@ -1302,7 +1307,9 @@ This function can be used as the value of the user option
 
 (use-package grep
   :config
-  (setq grep-program "rg"))
+  (when (executable-find "rg")
+    (setq grep-command "rg --no-heading --line-number --color never %s %s")
+    (setq grep-program "rg")))
 
 ;; * css
 
@@ -1351,9 +1358,19 @@ This function can be used as the value of the user option
 
 ;; * dired
 
-(use-package diredfl)
+(use-package dired)
+(use-package dired-x
+  :after dired)
+(use-package dired-hacks-utils
+  :after dired
+  :config
+  (use-package dired-subtree))
+(use-package diredfl
+  :after dired
+  :config
+  (diredfl-global-mode))
 (use-package fd-dired)
-(use-package dired-rsync)
+
 
 ;; * magit / git
 
