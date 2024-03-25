@@ -99,60 +99,59 @@
     ('dark  (my/theme-default-dark))))
 
 (use-package modus-themes
+  :custom
+  (modus-themes-to-toggle '(modus-operandi modus-vivendi))
+  (modus-themes-mixed-fonts nil)
+  (modus-themes-variable-pitch-ui nil)
+  (modus-themes-italic-constructs nil)
+  (modus-themes-bold-constructs nil)
+  (modus-themes-org-blocks nil)
+  (modus-themes-completions '((t . (extrabold))))
+  (modus-themes-prompts nil)
+  (modus-themes-headings
+   '((agenda-structure . (variable-pitch light 2.2))
+     (agenda-date . (variable-pitch regular 1.3))))
+  (modus-themes-custom-auto-reload t)
   :config
-  (setq modus-themes-custom-auto-reload nil
-        modus-themes-to-toggle '(modus-operandi modus-vivendi)
-        modus-themes-mixed-fonts nil
-        modus-themes-variable-pitch-ui nil
-        modus-themes-italic-constructs nil
-        modus-themes-bold-constructs nil
-        modus-themes-org-blocks nil
-        modus-themes-completions '((t . (extrabold)))
-        modus-themes-prompts nil
-        modus-themes-headings
-        '((agenda-structure . (variable-pitch light 2.2))
-          (agenda-date . (variable-pitch regular 1.3))))
-  (setq modus-themes-to-toggle '(modus-operandi modus-vivendi))
-  (setq modus-vivendi-palette-overrides
-        '((bg-main "#1A1A1A")
-          (bg-dim "#0E0E0E")
-          (fg-main "#E2E2E2")
-          (fg-dim "#999999")))
-  (setq modus-operandi-palette-overrides
-        '((bg-main "#F8F8F8")
-          (bg-dim "#EBEBEB")
-          (fg-main "#2C2C2C")
-          (fg-dim "#8B8B8B")))
-  (setq modus-themes-common-palette-overrides
-        '((cursor magenta-cooler)
-          (prose-done cyan-cooler)
-          (prose-tag fg-dim)
-          (modus-themes-completion-selected bg-dim)
-          (prose-table fg-main)
-          (bg-region bg-sage)
-          (fg-region unspecified)
-          (name blue-warmer)
-          (fg-heading-2 blue-faint)
-          (fg-heading-3 magenta-faint)
-          (fg-heading-4 blue-faint)
-          (fg-heading-5 magenta-faint)
-          (fg-heading-6 blue-faint)
-          (fg-heading-7 magenta-faint)
-          (fg-heading-8 blue-faint)
-          (identifier magenta-faint)
-          (keybind magenta-cooler)
-          (accent-0 magenta-cooler)
-          (accent-1 cyan-cooler)
-          (accent-2 blue-warmer)
-          (accent-3 red-cooler)
-          (bg-completion bg-dim)
-          (bg-mode-line-active bg-dim)
-          (fg-mode-line-active fg-dim)
-          (bg-paren-match bg-magenta-intense)
-          (border-mode-line-active bg-dim)
-          (bg-mode-line-inactive bg-main)
-          (border-mode-line-inactive unspecified)))
-  (setq modus-themes-mode-line 'borderless))
+  (setopt modus-vivendi-palette-overrides
+	  '((bg-main "#1A1A1A")
+	    (bg-dim "#0E0E0E")
+	    (fg-main "#E2E2E2")
+	    (fg-dim "#999999")))
+  (setopt modus-operandi-palette-overrides
+	  '((bg-main "#F8F8F8")
+	    (bg-dim "#EBEBEB")
+	    (fg-main "#2C2C2C")
+	    (fg-dim "#8B8B8B")))
+  (setopt modus-themes-common-palette-overrides
+	  '((cursor magenta-cooler)
+	    (prose-done cyan-cooler)
+	    (prose-tag fg-dim)
+	    (modus-themes-completion-selected bg-dim)
+	    (prose-table fg-main)
+	    (bg-region bg-sage)
+	    (fg-region unspecified)
+	    (name blue-warmer)
+	    (fg-heading-2 blue-faint)
+	    (fg-heading-3 magenta-faint)
+	    (fg-heading-4 blue-faint)
+	    (fg-heading-5 magenta-faint)
+	    (fg-heading-6 blue-faint)
+	    (fg-heading-7 magenta-faint)
+	    (fg-heading-8 blue-faint)
+	    (identifier magenta-faint)
+	    (keybind magenta-cooler)
+	    (accent-0 magenta-cooler)
+	    (accent-1 cyan-cooler)
+	    (accent-2 blue-warmer)
+	    (accent-3 red-cooler)
+	    (bg-completion bg-dim)
+	    (bg-mode-line-active bg-dim)
+	    (fg-mode-line-active fg-dim)
+	    (bg-paren-match bg-magenta-intense)
+	    (bg-mode-line-inactive bg-main)
+	    (border-mode-line-active bg-mode-line-active)
+	    (border-mode-line-inactive bg-mode-line-inactive))))
 
 ;; * Timu theme
 
@@ -201,7 +200,8 @@
 
 (use-package spacious-padding
   :config
-  (spacious-padding-mode))
+  ;; (spacious-padding-mode)
+  )
 
 ;; * Pulsar
 
@@ -228,7 +228,8 @@
         ("s-+" . default-text-scale-increase)
         ("s-_" . default-text-scale-decrease))
   :config
-  (default-text-scale-mode))
+  (default-text-scale-mode)
+  (default-text-scale-reset))
 
 ;; * rainbow-delimiters
 
@@ -332,7 +333,11 @@
   ;;    ("K" . dired-kill-subdir))
   (:map completion-list-mode-map
         ("e" . switch-to-minibuffer)))
+;; * window
 
+(use-package window
+  :config
+  (setq fit-window-to-buffer-horizontally t))
 ;; * CUSTOM FILE
 
 (use-package cus-edit
@@ -464,10 +469,14 @@
   ("C-c t" . vterm)
   ("C-c 4 t" . vterm-other-window)
   :config
+  (setq vterm-eval-cmds
+	'(("Find-file" find-file)
+          ("message" message)
+          ("vterm-clear-scrollback" vterm-clear-scrollback)
+          ("dired" dired)
+          ("ediff-files" ediff-files)))
   (setq vterm-max-scrollback 10000)
   (setq vterm-shell "/usr/local/bin/fish"))
-
-(use-package multi-vterm)
 
 ;; * hydra
 
@@ -524,6 +533,7 @@
 ;; * helpful
 
 (use-package helpful
+  :hook (helpful-mode . show-paren-local-mode)
   :bind
   ([remap describe-function] . helpful-callable)
   ([remap describe-variable] . helpful-variable)
