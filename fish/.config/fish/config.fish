@@ -1,9 +1,9 @@
 # Base16 Shell
 if status --is-interactive
     # CLI inits
-    set -gx ATUIN_NOBIND true
+    #set -gx ATUIN_NOBIND true
     zoxide init fish | source
-    atuin init fish | source
+    #atuin init fish | source
     #starship init fish | source
     pyenv init - | source
     # set BASE16_SHELL_PATH "$HOME/.config/base16-shell"
@@ -34,11 +34,3 @@ fish_add_path /usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS/
 fish_add_path "$VOLTA_HOME/bin"
 fish_add_path $PNPM_HOME
 
-
-# FZF plugin config
-set -x FZF_DEFAULT_COMMAND 'fd --type file --follow --hidden --exclude .git --color=always'
-set -x FZF_CTRL_T_COMMAND $FZF_DEFAULT_COMMAND
-
-# bind to ctrl-r in normal and insert mode, add any other bindings you want here too
-bind \cr _atuin_search
-bind -M insert \cr _atuin_search
