@@ -1,4 +1,3 @@
-abbr rm "rm -i"
 abbr c command
 abbr em "emacsclient -nw"
 abbr emc "emacsclient -nc"
