@@ -223,14 +223,13 @@
 ;; * default-text-scale
 
 (use-package default-text-scale
-  :commands (default-text-scale-increase default-text-scale-decrease default-text-scale-reset)
+  :demand t
   :bind
   (:map default-text-scale-mode-map
         ("s-+" . default-text-scale-increase)
         ("s-_" . default-text-scale-decrease))
   :config
-  (default-text-scale-mode)
-  (default-text-scale-reset))
+  (default-text-scale-mode))
 
 ;; * rainbow-delimiters
 
@@ -303,6 +302,7 @@
   (blink-cursor-mode)
   (recentf-mode)
   (show-paren-mode)
+  (global-auto-revert-mode)
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
 
   :custom-face
@@ -471,17 +471,56 @@
   ("C-c 4 t" . vterm-other-window)
   :config
   (setq vterm-eval-cmds
-	'(("Find-file" find-file)
+	'(("find-file" find-file)
+	  ("find-file-other-window" find-file-other-window)
           ("message" message)
           ("vterm-clear-scrollback" vterm-clear-scrollback)
           ("dired" dired)
+	  ("woman" woman)
           ("ediff-files" ediff-files)))
   (setq vterm-max-scrollback 10000)
-  (setq vterm-shell "/usr/local/bin/fish"))
+  (setq vterm-shell (executable-find "fish")))
 
 ;; * hydra
 
-(use-package hydra)
+(use-package hydra
+  :bind
+  (:map outline-minor-mode-map
+	("C-c <tab>" . hydra-outline/body))
+  :config
+  (with-eval-after-load 'outline
+    (defhydra hydra-outline (:color pink :hint nil)
+      "
+^Hide^             ^Show^           ^Move
+^^^^^^------------------------------------------------------
+_q_: sublevels     _a_: all         _u_: up
+_t_: body          _e_: entry       _n_: next visible
+_o_: other         _i_: children    _p_: previous visible
+_c_: entry         _k_: branches    _f_: forward same level
+_l_: leaves        _s_: subtree     _b_: backward same level
+_d_: subtree
+
+"
+      ;; Hide
+      ("q" outline-hide-sublevels)    ; Hide everything but the top-level headings
+      ("t" outline-hide-body)         ; Hide everything but headings (all body lines)
+      ("o" outline-hide-other)        ; Hide other branches
+      ("c" outline-hide-entry)        ; Hide this entry's body
+      ("l" outline-hide-leaves)       ; Hide body lines in this entry and sub-entries
+      ("d" outline-hide-subtree)      ; Hide everything in this entry and sub-entries
+      ;; Show
+      ("a" outline-show-all)          ; Show (expand) everything
+      ("e" outline-show-entry)        ; Show this heading's body
+      ("i" outline-show-children)     ; Show this heading's immediate child sub-headings
+      ("k" outline-show-branches)     ; Show all sub-headings under this heading
+      ("s" outline-show-subtree)      ; Show (expand) everything in this heading & below
+      ;; Move
+      ("u" outline-up-heading)                ; Up
+      ("n" outline-next-visible-heading)      ; Next
+      ("p" outline-previous-visible-heading)  ; Previous
+      ("f" outline-forward-same-level)        ; Forward - same level
+      ("b" outline-backward-same-level)       ; Backward - same level
+      ("z" nil "leave"))))
 
 ;; * ns-auto-titlebar
 
@@ -741,6 +780,7 @@ This function can be used as the value of the user option
   ("M-g m" . consult-mark)
   ("M-g M" . consult-global-mark)
   ("M-g o" . consult-outline)
+  ("M-o" . consult-outline)
   ;; M-s bindings in `search-map'
   ("M-s d" . consult-fd)                  ;; Alternative: consult-fd
   ("M-s c" . consult-locate)
@@ -1070,7 +1110,9 @@ This function can be used as the value of the user option
 
 ;; * fish
 
-(use-package fish-mode)
+(use-package fish-mode
+  :config
+  (setq fish-enable-auto-indent t))
 ;; * flycheck flyspell
 
 (use-package flycheck)
@@ -1477,7 +1519,138 @@ This function can be used as the value of the user option
 ;; * ox-pandoc
 
 (use-package ox-pandoc
-  :after ox)
+  :after ox
+  :custom
+  (org-pandoc-menu-entry
+   '(
+    ;;(?0 "to jats." org-pandoc-export-to-jats)
+    ;;(?0 "to jats and open." org-pandoc-export-to-jats-and-open)
+    ;;(?  "as jats." org-pandoc-export-as-jats)
+    ;;(?1 "to epub2 and open." org-pandoc-export-to-epub2-and-open)
+    ;;(?! "to epub2." org-pandoc-export-to-epub2)
+    ;;(?2 "to tei." org-pandoc-export-to-tei)
+    ;;(?2 "to tei and open." org-pandoc-export-to-tei-and-open)
+    ;;(?" "as tei." org-pandoc-export-as-tei)
+    ;;(?3 "to markdown_mmd." org-pandoc-export-to-markdown_mmd)
+    ;;(?3 "to markdown_mmd and open." org-pandoc-export-to-markdown_mmd-and-open)
+    ;;(?# "as markdown_mmd." org-pandoc-export-as-markdown_mmd)
+    ;;(?4 "to html5." org-pandoc-export-to-html5)
+    (?4 "to html5 and open." org-pandoc-export-to-html5-and-open)
+    (?$ "as html5." org-pandoc-export-as-html5)
+    (?5 "to html5-pdf and open." org-pandoc-export-to-html5-pdf-and-open)
+    (?% "to html5-pdf." org-pandoc-export-to-html5-pdf)
+    ;;(?6 "to markdown_phpextra." org-pandoc-export-to-markdown_phpextra)
+    ;;(?6 "to markdown_phpextra and open." org-pandoc-export-to-markdown_phpextra-and-open)
+    ;;(?& "as markdown_phpextra." org-pandoc-export-as-markdown_phpextra)
+    ;;(?7 "to markdown_strict." org-pandoc-export-to-markdown_strict)
+    ;;(?7 "to markdown_strict and open." org-pandoc-export-to-markdown_strict-and-open)
+    ;;(?' "as markdown_strict." org-pandoc-export-as-markdown_strict)
+    ;;(?8 "to opendocument." org-pandoc-export-to-opendocument)
+    ;;(?8 "to opendocument and open." org-pandoc-export-to-opendocument-and-open)
+    ;;(?( "as opendocument." org-pandoc-export-as-opendocument)
+    ;;(?9 "to opml." org-pandoc-export-to-opml)
+    ;;(?9 "to opml and open." org-pandoc-export-to-opml-and-open)
+    ;;(?) "as opml." org-pandoc-export-as-opml)
+    ;;(?: "to rst." org-pandoc-export-to-rst)
+    ;;(?: "to rst and open." org-pandoc-export-to-rst-and-open)
+    ;;(?* "as rst." org-pandoc-export-as-rst)
+    ;;(?< "to slideous." org-pandoc-export-to-slideous)
+    ;; (?\[ "to jira." org-pandoc-export-to-jira)
+    ;; (?\[ "as jira." org-pandoc-export-as-jira)
+    ;; (?< "to slideous and open." org-pandoc-export-to-slideous-and-open)
+    ;; (?, "as slideous." org-pandoc-export-as-slideous)
+    (?= "to ms-pdf and open." org-pandoc-export-to-ms-pdf-and-open)
+    (?- "to ms-pdf." org-pandoc-export-to-ms-pdf)
+    ;;(?> "to textile." org-pandoc-export-to-textile)
+    ;;(?> "to textile and open." org-pandoc-export-to-textile-and-open)
+    ;;(?. "as textile." org-pandoc-export-as-textile)
+    ;;(?a "to asciidoc." org-pandoc-export-to-asciidoc)
+    ;;(?a "to asciidoc and open." org-pandoc-export-to-asciidoc-and-open)
+    ;;(?A "as asciidoc." org-pandoc-export-as-asciidoc)
+    (?b "to beamer-pdf and open." org-pandoc-export-to-beamer-pdf-and-open)
+    (?B "to beamer-pdf." org-pandoc-export-to-beamer-pdf)
+    ;; (?c "to context-pdf and open." org-pandoc-export-to-context-pdf-and-open)
+    ;; (?C "to context-pdf." org-pandoc-export-to-context-pdf)
+    ;;(?d "to docbook5." org-pandoc-export-to-docbook5)
+    (?d "to docbook5 and open." org-pandoc-export-to-docbook5-and-open)
+    (?D "as docbook5." org-pandoc-export-as-docbook5)
+    ;; (?e "to epub3 and open." org-pandoc-export-to-epub3-and-open)
+    ;; (?E "to epub3." org-pandoc-export-to-epub3)
+    ;;(?f "to fb2." org-pandoc-export-to-fb2)
+    ;;(?f "to fb2 and open." org-pandoc-export-to-fb2-and-open)
+    ;;(?F "as fb2." org-pandoc-export-as-fb2)
+    ;;(?g "to gfm." org-pandoc-export-to-gfm)
+    (?g "to gfm and open." org-pandoc-export-to-gfm-and-open)
+    (?G "as gfm." org-pandoc-export-as-gfm)
+    ;;(?h "to html4." org-pandoc-export-to-html4)
+    (?h "to html4 and open." org-pandoc-export-to-html4-and-open)
+    (?H "as html4." org-pandoc-export-as-html4)
+    ;;(?i "to icml." org-pandoc-export-to-icml)
+    ;; (?i "to icml and open." org-pandoc-export-to-icml-and-open)
+    ;; (?I "as icml." org-pandoc-export-as-icml)
+    ;;(?j "to json." org-pandoc-export-to-json)
+    (?j "to json and open." org-pandoc-export-to-json-and-open)
+    (?J "as json." org-pandoc-export-as-json)
+    ;;(?k "to markdown." org-pandoc-export-to-markdown)
+    ;;(?k "to markdown and open." org-pandoc-export-to-markdown-and-open)
+    ;;(?K "as markdown." org-pandoc-export-as-markdown)
+    (?l "to latex-pdf and open." org-pandoc-export-to-latex-pdf-and-open)
+    (?L "to latex-pdf." org-pandoc-export-to-latex-pdf)
+    ;;(?m "to man." org-pandoc-export-to-man)
+    (?m "to man and open." org-pandoc-export-to-man-and-open)
+    (?M "as man." org-pandoc-export-as-man)
+    ;;(?n "to native." org-pandoc-export-to-native)
+    (?n "to native and open." org-pandoc-export-to-native-and-open)
+    (?N "as native." org-pandoc-export-as-native)
+    (?o "to odt and open." org-pandoc-export-to-odt-and-open)
+    (?O "to odt." org-pandoc-export-to-odt)
+    (?p "to pptx and open." org-pandoc-export-to-pptx-and-open)
+    (?P "to pptx." org-pandoc-export-to-pptx)
+    ;;(?q "to commonmark." org-pandoc-export-to-commonmark)
+    ;;(?q "to commonmark and open." org-pandoc-export-to-commonmark-and-open)
+    ;;(?Q "as commonmark." org-pandoc-export-as-commonmark)
+    ;;(?r "to rtf." org-pandoc-export-to-rtf)
+    (?r "to rtf and open." org-pandoc-export-to-rtf-and-open)
+    (?R "as rtf." org-pandoc-export-as-rtf)
+    ;;(?s "to s5." org-pandoc-export-to-s5)
+    ;;(?s "to s5 and open." org-pandoc-export-to-s5-and-open)
+    ;;(?S "as s5." org-pandoc-export-as-s5)
+    ;;(?t "to texinfo." org-pandoc-export-to-texinfo)
+    ;;(?t "to texinfo and open." org-pandoc-export-to-texinfo-and-open)
+    ;;(?T "as texinfo." org-pandoc-export-as-texinfo)
+    (?< "to typst." org-pandoc-export-to-typst)
+    (?, "to typst and open." org-pandoc-export-to-typst-and-open)
+    ;; (?, "as typst." org-pandoc-export-as-typst)
+    (?> "to typst-pdf." org-pandoc-export-to-typst-pdf)
+    (?. "to typst-pdf and open." org-pandoc-export-to-typst-pdf-and-open)
+    ;;(?u "to dokuwiki." org-pandoc-export-to-dokuwiki)
+    ;; (?u "to dokuwiki and open." org-pandoc-export-to-dokuwiki-and-open)
+    ;; (?U "as dokuwiki." org-pandoc-export-as-dokuwiki)
+    ;;(?v "to revealjs." org-pandoc-export-to-revealjs)
+    ;; (?v "to revealjs and open." org-pandoc-export-to-revealjs-and-open)
+    ;; (?V "as revealjs." org-pandoc-export-as-revealjs)
+    ;;(?w "to mediawiki." org-pandoc-export-to-mediawiki)
+    ;; (?w "to mediawiki and open." org-pandoc-export-to-mediawiki-and-open)
+    ;; (?W "as mediawiki." org-pandoc-export-as-mediawiki)
+    (?x "to docx and open." org-pandoc-export-to-docx-and-open)
+    (?X "to docx." org-pandoc-export-to-docx)
+    ;;(?y "to slidy." org-pandoc-export-to-slidy)
+    ;; (?y "to slidy and open." org-pandoc-export-to-slidy-and-open)
+    ;; (?Y "as slidy." org-pandoc-export-as-slidy)
+    ;;(?z "to dzslides." org-pandoc-export-to-dzslides)
+    ;; (?z "to dzslides and open." org-pandoc-export-to-dzslides-and-open)
+    ;; (?Z "as dzslides." org-pandoc-export-as-dzslides)
+    ;;(?{ "to muse." org-pandoc-export-to-muse)
+    ;;(?{ "to muse and open." org-pandoc-export-to-muse-and-open)
+    ;;(?[ "as muse." org-pandoc-export-as-muse)
+    ;;(?} "to zimwiki." org-pandoc-export-to-zimwiki)
+    ;;(?} "to zimwiki and open." org-pandoc-export-to-zimwiki-and-open)
+    ;;(?] "as zimwiki." org-pandoc-export-as-zimwiki)
+    ;;(?~ "to haddock." org-pandoc-export-to-haddock)
+    ;;(?~ "to haddock and open." org-pandoc-export-to-haddock-and-open)
+    ;;(?^ "as haddock." org-pandoc-export-as-haddock)
+    )))
+
 
 ;; * ob-python
 
@@ -1584,25 +1757,25 @@ end #OB-JULIA-VTERM_END\n"))
 
 (use-package org-remark
   :bind (;; :bind keyword also implicitly defers org-remark itself.
-         ;; Keybindings before :map is set for global-map.
-         :map org-remark-mode-map
-         ("C-c r m" . org-remark-mark)
-         ("C-c r l" . org-remark-mark-line)
-         ("C-c r o" . org-remark-open)
-         ("C-c r n" . org-remark-next)
-         ("C-c r p" . org-remark-prev)
-         ("C-c r ]" . org-remark-view-next)
-         ("C-c r [" . org-remark-view-prev)
-         ("C-c r r" . org-remark-remove)
-         ("C-c r d" . org-remark-delete)
-         ("C-c r v" . org-remark-view))
+	 ;; Keybindings before :map is set for global-map.
+	 :map org-remark-mode-map
+	 ("C-c r m" . org-remark-mark)
+	 ("C-c r l" . org-remark-mark-line)
+	 ("C-c r o" . org-remark-open)
+	 ("C-c r n" . org-remark-next)
+	 ("C-c r p" . org-remark-prev)
+	 ("C-c r ]" . org-remark-view-next)
+	 ("C-c r [" . org-remark-view-prev)
+	 ("C-c r r" . org-remark-remove)
+	 ("C-c r d" . org-remark-delete)
+	 ("C-c r v" . org-remark-view))
   :init
   ;; (org-remark-global-tracking-mode +1)
   :hook (org-remark-open . (lambda () (org-cycle-hide-drawers 'all)))
   :config
   (setq org-remark-notes-file-name "~/Dropbox/Org/remark.org"
-        org-remark-line-minimum-left-margin-width 1
-        org-remark-line-heading-title-max-length 70))
+	org-remark-line-minimum-left-margin-width 1
+	org-remark-line-heading-title-max-length 70))
 ;;(use-package org-remark-nov  :after nov  :config (org-remark-nov-mode +1)))
 
 ;; * org-mac-link
@@ -1611,18 +1784,18 @@ end #OB-JULIA-VTERM_END\n"))
   (defun my/org-mac-link-applescript-librewolf-get-frontmost-url ()
     "AppleScript to get the links to the frontmost window of the LibreWolf.app."
     (let ((result
-           (org-mac-link-do-applescript
-            (concat
-             "tell application \"System Events\"\n"
-             "   tell its application process \"LibreWolf\"\n"
-             "       set theTitle to get name of window 1\n"
-             "       set theUrl to get value of UI element 1 of combo box 1 of toolbar \"Navigation\" of first group of front window\n"
-             "    end tell\n"
-             "end tell\n"
-             "set theResult to (get theUrl) & \"::split::\" & (get theTitle)\n"
-             "set links to {}\n"
-             "copy theResult to the end of links\n"
-             "return links as string\n"))))
+	   (org-mac-link-do-applescript
+	    (concat
+	     "tell application \"System Events\"\n"
+	     "   tell its application process \"LibreWolf\"\n"
+	     "       set theTitle to get name of window 1\n"
+	     "       set theUrl to get value of UI element 1 of combo box 1 of toolbar \"Navigation\" of first group of front window\n"
+	     "    end tell\n"
+	     "end tell\n"
+	     "set theResult to (get theUrl) & \"::split::\" & (get theTitle)\n"
+	     "set links to {}\n"
+	     "copy theResult to the end of links\n"
+	     "return links as string\n"))))
       (car (split-string result "[\r\n]+" t))))
 
   (defun my/org-mac-link-librewolf-get-frontmost-url ()
@@ -1642,81 +1815,81 @@ end #OB-JULIA-VTERM_END\n"))
   is active, that will be the link's description."
     (interactive
      (if (use-region-p)
-         (list (region-beginning) (region-end))
+	 (list (region-beginning) (region-end))
        '()))
     (let* ((descriptors
-            `(("F" "inder" org-mac-link-finder-insert-selected ,org-mac-link-finder-app-p)
-              ("m" "ail" org-mac-link-mail-insert-selected ,org-mac-link-mail-app-p)
-              ("d" "EVONthink Pro Office" org-mac-link-devonthink-item-insert-selected
-               ,org-mac-link-devonthink-app-p)
-              ("o" "utlook" org-mac-link-outlook-message-insert-selected ,org-mac-link-outlook-app-p)
-              ("a" "ddressbook" org-mac-link-addressbook-item-insert-selected ,org-mac-link-addressbook-app-p)
-              ("s" "afari" org-mac-link-safari-insert-frontmost-url ,org-mac-link-safari-app-p)
-              ("l" "ibrewolf" my/org-mac-link-librewolf-insert-frontmost-url ,org-mac-link-librewolf-app-p)
-              ("v" "imperator" org-mac-link-vimperator-insert-frontmost-url ,org-mac-link-firefox-vimperator-p)
-              ("c" "hrome" org-mac-link-chrome-insert-frontmost-url ,org-mac-link-chrome-app-p)
-              ("b" "rave" org-mac-link-brave-insert-frontmost-url ,org-mac-link-brave-app-p)
-              ("e" "evernote" org-mac-link-evernote-note-insert-selected ,org-mac-link-evernote-app-p)
-              ("t" "ogether" org-mac-link-together-insert-selected ,org-mac-link-together-app-p)
-              ("S" "kim" org-mac-link-skim-insert-page ,org-mac-link-skim-app-p)
-              ("A" "crobat" org-mac-link-acrobat-insert-page ,org-mac-link-acrobat-app-p)
-              ("q" "utebrowser" org-mac-link-qutebrowser-insert-frontmost-url ,org-mac-link-qutebrowser-app-p)))
-           (menu-string (make-string 0 ?x))
-           input)
+	    `(("F" "inder" org-mac-link-finder-insert-selected ,org-mac-link-finder-app-p)
+	      ("m" "ail" org-mac-link-mail-insert-selected ,org-mac-link-mail-app-p)
+	      ("d" "EVONthink Pro Office" org-mac-link-devonthink-item-insert-selected
+	       ,org-mac-link-devonthink-app-p)
+	      ("o" "utlook" org-mac-link-outlook-message-insert-selected ,org-mac-link-outlook-app-p)
+	      ("a" "ddressbook" org-mac-link-addressbook-item-insert-selected ,org-mac-link-addressbook-app-p)
+	      ("s" "afari" org-mac-link-safari-insert-frontmost-url ,org-mac-link-safari-app-p)
+	      ("l" "ibrewolf" my/org-mac-link-librewolf-insert-frontmost-url ,org-mac-link-librewolf-app-p)
+	      ("v" "imperator" org-mac-link-vimperator-insert-frontmost-url ,org-mac-link-firefox-vimperator-p)
+	      ("c" "hrome" org-mac-link-chrome-insert-frontmost-url ,org-mac-link-chrome-app-p)
+	      ("b" "rave" org-mac-link-brave-insert-frontmost-url ,org-mac-link-brave-app-p)
+	      ("e" "evernote" org-mac-link-evernote-note-insert-selected ,org-mac-link-evernote-app-p)
+	      ("t" "ogether" org-mac-link-together-insert-selected ,org-mac-link-together-app-p)
+	      ("S" "kim" org-mac-link-skim-insert-page ,org-mac-link-skim-app-p)
+	      ("A" "crobat" org-mac-link-acrobat-insert-page ,org-mac-link-acrobat-app-p)
+	      ("q" "utebrowser" org-mac-link-qutebrowser-insert-frontmost-url ,org-mac-link-qutebrowser-app-p)))
+	   (menu-string (make-string 0 ?x))
+	   input)
 
       ;; Create the menu string for the keymap
       (mapc (lambda (descriptor)
-              (when (elt descriptor 3)
-                (setf menu-string (concat menu-string
-                                          "[" (elt descriptor 0) "]"
-                                          (elt descriptor 1) " "))))
-            descriptors)
+	      (when (elt descriptor 3)
+		(setf menu-string (concat menu-string
+					  "[" (elt descriptor 0) "]"
+					  (elt descriptor 1) " "))))
+	    descriptors)
       (setf (elt menu-string (- (length menu-string) 1)) ?:)
 
       ;; Prompt the user, and grab the link
       (message menu-string)
       (setq input (read-char-exclusive))
       (mapc (lambda (descriptor)
-              (let ((key (elt (elt descriptor 0) 0))
-                    (active (elt descriptor 3))
-                    (grab-function (elt descriptor 2)))
-                (when (and active (eq input key))
-                  (if (and beg end)
-                      (let ((new-desc (buffer-substring beg end))
-                            end-desc)
-                        (delete-region beg end)
-                        (call-interactively grab-function)
-                        (save-excursion
-                          (backward-char 2)
-                          (setq end-desc (point))
-                          (search-backward "][")
-                          (forward-char 2)
-                          (delete-region (point) end-desc)
-                          (insert new-desc)))
-                    (call-interactively grab-function)))))
-            descriptors)))
+	      (let ((key (elt (elt descriptor 0) 0))
+		    (active (elt descriptor 3))
+		    (grab-function (elt descriptor 2)))
+		(when (and active (eq input key))
+		  (if (and beg end)
+		      (let ((new-desc (buffer-substring beg end))
+			    end-desc)
+			(delete-region beg end)
+			(call-interactively grab-function)
+			(save-excursion
+			  (backward-char 2)
+			  (setq end-desc (point))
+			  (search-backward "][")
+			  (forward-char 2)
+			  (delete-region (point) end-desc)
+			  (insert new-desc)))
+		    (call-interactively grab-function)))))
+	    descriptors)))
 
   (use-package org-mac-link
     :demand t
     :init
     (setq org-mac-link-brave-app-p nil
-          org-mac-link-chrome-app-p nil
-          org-mac-link-acrobat-app-p nil
-          org-mac-link-outlook-app-p nil
-          org-mac-link-addressbook-app-p nil
-          org-mac-link-qutebrowser-app-p nil
-          org-mac-link-finder-app-p t
-          org-mac-link-mail-app-p t
-          org-mac-link-devonthink-app-p t
-          org-mac-link-safari-app-p nil
-          org-mac-link-librewolf-app-p t
-          org-mac-link-firefox-vimperator-p nil
-          org-mac-link-evernote-app-p nil
-          org-mac-link-together-app-p nil
-          org-mac-link-skim-app-p t)
+	  org-mac-link-chrome-app-p nil
+	  org-mac-link-acrobat-app-p nil
+	  org-mac-link-outlook-app-p nil
+	  org-mac-link-addressbook-app-p nil
+	  org-mac-link-qutebrowser-app-p nil
+	  org-mac-link-finder-app-p t
+	  org-mac-link-mail-app-p t
+	  org-mac-link-devonthink-app-p t
+	  org-mac-link-safari-app-p nil
+	  org-mac-link-librewolf-app-p t
+	  org-mac-link-firefox-vimperator-p nil
+	  org-mac-link-evernote-app-p nil
+	  org-mac-link-together-app-p nil
+	  org-mac-link-skim-app-p t)
     :bind
     (:map org-mode-map
-          ("C-c L" . my/org-mac-link-get-link))))
+	  ("C-c L" . my/org-mac-link-get-link))))
 
 ;; * org-noter
 
@@ -1725,17 +1898,17 @@ end #OB-JULIA-VTERM_END\n"))
   (:map org-noter-doc-mode-map ("q" . nil))
   (:map pdf-view-mode-map ("C-c C-n" . org-noter))
   (:map org-mode-map
-        ("C-c C-x n n" . org-noter)
-        ("C-c C-x n k" . org-noter-kill-session)
-        ("C-c C-x n s" . org-noter-create-skeleton))
+	("C-c C-x n n" . org-noter)
+	("C-c C-x n k" . org-noter-kill-session)
+	("C-c C-x n s" . org-noter-create-skeleton))
   :config
   (add-to-list 'org-noter-notes-search-path "/Users/my/Library/CloudStorage/Dropbox/Org")
   (setq org-noter-default-notes-file-names '("noter.org")
-        org-noter-always-create-frame nil
-        org-noter-auto-save-last-location t
-        org-noter-doc-split-fraction '(0.5 . 0.5)
-        org-noter-kill-frame-at-session-end nil
-        org-noter-separate-notes-from-heading t))
+	org-noter-always-create-frame nil
+	org-noter-auto-save-last-location t
+	org-noter-doc-split-fraction '(0.5 . 0.5)
+	org-noter-kill-frame-at-session-end nil
+	org-noter-separate-notes-from-heading t))
 
 ;; * org-ql
 
@@ -1785,10 +1958,10 @@ end #OB-JULIA-VTERM_END\n"))
   :bind
   ("C-c w" . eww)
   (:map eww-mode-map
-        ("D" . eww-download)
-        ("d" . my/scroll-up-half)
-        ("u" . my/scroll-down-half)
-        ("U" . eww-up-url))
+	("D" . eww-download)
+	("d" . my/scroll-up-half)
+	("u" . my/scroll-down-half)
+	("U" . eww-up-url))
   :config
   (setq eww-browse-url-new-window-is-tab nil)
   (setq eww-restore-desktop t)
@@ -1798,7 +1971,7 @@ end #OB-JULIA-VTERM_END\n"))
 (use-package shr
   :bind
   (:map shr-map
-        ("u" . nil)))
+	("u" . nil)))
 
 ;; * shr
 
@@ -1912,30 +2085,30 @@ end #OB-JULIA-VTERM_END\n"))
   (setq visual-fill-column-center-text t)
   :bind
   (:map nov-mode-map
-        ("j" . (lambda () (interactive) (scroll-up 1)))
-        ("k" . (lambda () (interactive) (scroll-down 1)))
-        ("z" . visual-fill-column-mode)
-        ("d" . +lookup/dictionary-definition)
-        ("m" . nil)
-        ("h" . nil)
-        ("y" . org-store-link)
-        ("m p" . mark-paragraph)
-        ("m s" . my/mark-whole-sentence)
-        ("h m" . org-remark-mark)
-        ("h l" . org-remark-mark-line)
-        ("h o" . org-remark-open)
-        ("h n" . org-remark-next)
-        ("h p" . org-remark-prev)
-        ("h ]" . org-remark-view-next)
-        ("h [" . org-remark-view-prev)
-        ("h r" . org-remark-remove)
-        ("h d" . org-remark-delete)
-        ("h v" . org-remark-view)
-        ("h q" . delete-other-windows)
-        ("C-c t" . my/toggle-header-line)
-        ("C-c v" . visual-line-mode)
-        ("C-c c" . my/toggle-cursor-display)
-        ("C-c b" . org-noter))
+	("j" . (lambda () (interactive) (scroll-up 1)))
+	("k" . (lambda () (interactive) (scroll-down 1)))
+	("z" . visual-fill-column-mode)
+	("d" . +lookup/dictionary-definition)
+	("m" . nil)
+	("h" . nil)
+	("y" . org-store-link)
+	("m p" . mark-paragraph)
+	("m s" . my/mark-whole-sentence)
+	("h m" . org-remark-mark)
+	("h l" . org-remark-mark-line)
+	("h o" . org-remark-open)
+	("h n" . org-remark-next)
+	("h p" . org-remark-prev)
+	("h ]" . org-remark-view-next)
+	("h [" . org-remark-view-prev)
+	("h r" . org-remark-remove)
+	("h d" . org-remark-delete)
+	("h v" . org-remark-view)
+	("h q" . delete-other-windows)
+	("C-c t" . my/toggle-header-line)
+	("C-c v" . visual-line-mode)
+	("C-c c" . my/toggle-cursor-display)
+	("C-c b" . org-noter))
   :hook (nov-mode . my/nov-mode-setup))
 
 ;; * esxml
@@ -1991,109 +2164,109 @@ end #OB-JULIA-VTERM_END\n"))
     "Format the candidate string shown in helm or ivy.
 Argument BOOK-ALIST ."
     (let ((id (calibredb-getattr (list book-alist) :id))
-          (title (calibredb-getattr (list book-alist) :book-title))
-          (format (calibredb-getattr (list book-alist) :book-format))
-          (author (calibredb-getattr (list book-alist) :author-sort))
-          (tag (calibredb-getattr (list book-alist) :tag))
-          (comment (calibredb-getattr (list book-alist) :comment))
-          (size (calibredb-getattr (list book-alist) :size))
-          (ids (calibredb-getattr (list book-alist) :ids))
-          (date (calibredb-getattr (list book-alist) :last_modified))
-          (favorite-map (make-sparse-keymap))
-          (tag-map (make-sparse-keymap))
-          (format-map (make-sparse-keymap))
-          (author-map (make-sparse-keymap))
-          (date-map (make-sparse-keymap)))
+	  (title (calibredb-getattr (list book-alist) :book-title))
+	  (format (calibredb-getattr (list book-alist) :book-format))
+	  (author (calibredb-getattr (list book-alist) :author-sort))
+	  (tag (calibredb-getattr (list book-alist) :tag))
+	  (comment (calibredb-getattr (list book-alist) :comment))
+	  (size (calibredb-getattr (list book-alist) :size))
+	  (ids (calibredb-getattr (list book-alist) :ids))
+	  (date (calibredb-getattr (list book-alist) :last_modified))
+	  (favorite-map (make-sparse-keymap))
+	  (tag-map (make-sparse-keymap))
+	  (format-map (make-sparse-keymap))
+	  (author-map (make-sparse-keymap))
+	  (date-map (make-sparse-keymap)))
       (define-key favorite-map [mouse-1] 'calibredb-favorite-mouse-1)
       (define-key tag-map [mouse-1] 'calibredb-tag-mouse-1)
       (define-key format-map [mouse-1] 'calibredb-format-mouse-1)
       (define-key author-map [mouse-1] 'calibredb-author-mouse-1)
       (define-key date-map [mouse-1] 'calibredb-date-mouse-1)
       (if calibredb-detailed-view
-          (setq title (concat title "\n")))
+	  (setq title (concat title "\n")))
       (format
        (if calibredb-detailed-view
-           (let ((num (cond (calibredb-format-all-the-icons 3)
-                            (calibredb-format-icons-in-terminal 3)
-                            ((>= calibredb-id-width 0) calibredb-id-width)
-                            (t 0 ))))
-             (concat
-              "%s%s%s"
-              (calibredb-format-column (format "%sFormat:" (make-string num ? )) (+ 8 num) :left) "%s\n"
-              (calibredb-format-column (format "%sDate:" (make-string num ? )) (+ 8 num) :left) "%s\n"
-              (calibredb-format-column (format "%sAuthor:" (make-string num ? ))  (+ 8 num) :left) "%s\n"
-              (calibredb-format-column (format "%sTag:" (make-string num ? )) (+ 8 num) :left) "%s\n"
-              (calibredb-format-column (format "%sIds:" (make-string num ? )) (+ 8 num) :left) "%s\n"
-              (calibredb-format-column (format "%sComment:" (make-string num ? )) (+ 8 num) :left) "%s\n"
-              (calibredb-format-column (format "%sSize:" (make-string num ? )) (+ 8 num) :left) "%s"))
-         "%s%s%s %s %s %s (%s) %s %s %s")
+	   (let ((num (cond (calibredb-format-all-the-icons 3)
+			    (calibredb-format-icons-in-terminal 3)
+			    ((>= calibredb-id-width 0) calibredb-id-width)
+			    (t 0 ))))
+	     (concat
+	      "%s%s%s"
+	      (calibredb-format-column (format "%sFormat:" (make-string num ? )) (+ 8 num) :left) "%s\n"
+	      (calibredb-format-column (format "%sDate:" (make-string num ? )) (+ 8 num) :left) "%s\n"
+	      (calibredb-format-column (format "%sAuthor:" (make-string num ? ))  (+ 8 num) :left) "%s\n"
+	      (calibredb-format-column (format "%sTag:" (make-string num ? )) (+ 8 num) :left) "%s\n"
+	      (calibredb-format-column (format "%sIds:" (make-string num ? )) (+ 8 num) :left) "%s\n"
+	      (calibredb-format-column (format "%sComment:" (make-string num ? )) (+ 8 num) :left) "%s\n"
+	      (calibredb-format-column (format "%sSize:" (make-string num ? )) (+ 8 num) :left) "%s"))
+	 "%s%s%s %s %s %s (%s) %s %s %s")
        (cond (calibredb-format-all-the-icons
-              (concat (if (fboundp 'all-the-icons-icon-for-file)
-                          (all-the-icons-icon-for-file (calibredb-get-file-path (list book-alist))) "")
-                      " "))
-             (calibredb-format-icons-in-terminal
-              (concat (if (fboundp 'icons-in-terminal-icon-for-file)
-                          (icons-in-terminal-icon-for-file (calibredb-get-file-path (list book-alist) ) :v-adjust 0 :height 1) "")
-                      " "))
-             (calibredb-format-character-icons
-              (concat (calibredb-attach-icon-for (calibredb-get-file-path (list book-alist))) " "))
-             (t ""))
+	      (concat (if (fboundp 'all-the-icons-icon-for-file)
+			  (all-the-icons-icon-for-file (calibredb-get-file-path (list book-alist))) "")
+		      " "))
+	     (calibredb-format-icons-in-terminal
+	      (concat (if (fboundp 'icons-in-terminal-icon-for-file)
+			  (icons-in-terminal-icon-for-file (calibredb-get-file-path (list book-alist) ) :v-adjust 0 :height 1) "")
+		      " "))
+	     (calibredb-format-character-icons
+	      (concat (calibredb-attach-icon-for (calibredb-get-file-path (list book-alist))) " "))
+	     (t ""))
        (calibredb-format-column (format "%s" (propertize id 'face 'calibredb-id-face 'id id)) calibredb-id-width :left)
        (calibredb-format-column (format "%s%s"
-                                        (if (s-contains? calibredb-favorite-keyword tag)
-                                            (format "%s " (propertize calibredb-favorite-icon
-                                                                      'face 'calibredb-favorite-face
-                                                                      'mouse-face 'calibredb-mouse-face
-                                                                      'help-echo "Filter the favorite items"
-                                                                      'keymap favorite-map)) "")
-                                        (cond
-                                         ((s-contains? calibredb-archive-keyword tag)
-                                          (propertize title 'face 'calibredb-archive-face))
-                                         ((s-contains? calibredb-highlight-keyword tag)
-                                          (propertize title 'face 'calibredb-highlight-face))
-                                         (t
-                                          (propertize title 'face (calibredb-title-face))))) (calibredb-title-width) :left)
+					(if (s-contains? calibredb-favorite-keyword tag)
+					    (format "%s " (propertize calibredb-favorite-icon
+								      'face 'calibredb-favorite-face
+								      'mouse-face 'calibredb-mouse-face
+								      'help-echo "Filter the favorite items"
+								      'keymap favorite-map)) "")
+					(cond
+					 ((s-contains? calibredb-archive-keyword tag)
+					  (propertize title 'face 'calibredb-archive-face))
+					 ((s-contains? calibredb-highlight-keyword tag)
+					  (propertize title 'face 'calibredb-highlight-face))
+					 (t
+					  (propertize title 'face (calibredb-title-face))))) (calibredb-title-width) :left)
        (calibredb-format-column (propertize format
-                                            'face 'calibredb-format-face
-                                            'mouse-face 'calibredb-mouse-face
-                                            'help-echo "Filter with this format"
-                                            'keymap format-map) (calibredb-format-width) :left)
+					    'face 'calibredb-format-face
+					    'mouse-face 'calibredb-mouse-face
+					    'help-echo "Filter with this format"
+					    'keymap format-map) (calibredb-format-width) :left)
        (calibredb-format-column (propertize (s-left 10 date) 'face 'calibredb-date-face ; only keep YYYY-MM-DD
-                                            'mouse-face 'calibredb-mouse-face
-                                            'help-echo "Filter with this date"
-                                            'keymap date-map) (calibredb-date-width) :left)
+					    'mouse-face 'calibredb-mouse-face
+					    'help-echo "Filter with this date"
+					    'keymap date-map) (calibredb-date-width) :left)
        (calibredb-format-column (mapconcat
-                                 (lambda (author)
-                                   (propertize author
-                                               'author author
-                                               'face 'calibredb-author-face
-                                               'mouse-face 'calibredb-mouse-face
-                                               'help-echo (format "Filter with this author: %s" author)
-                                               'keymap author-map))
-                                 (split-string author "&" t "\s+") " & ") (calibredb-author-width) :left)
+				 (lambda (author)
+				   (propertize author
+					       'author author
+					       'face 'calibredb-author-face
+					       'mouse-face 'calibredb-mouse-face
+					       'help-echo (format "Filter with this author: %s" author)
+					       'keymap author-map))
+				 (split-string author "&" t "\s+") " & ") (calibredb-author-width) :left)
        (calibredb-format-column (mapconcat
-                                 (lambda (tag)
-                                   (propertize tag
-                                               'tag tag
-                                               'face 'calibredb-tag-face
-                                               'mouse-face 'calibredb-mouse-face
-                                               'help-echo (format "Filter with this tag: %s" tag)
-                                               'keymap tag-map))
-                                 (split-string tag ",") ",") (calibredb-tag-width) :left)
+				 (lambda (tag)
+				   (propertize tag
+					       'tag tag
+					       'face 'calibredb-tag-face
+					       'mouse-face 'calibredb-mouse-face
+					       'help-echo (format "Filter with this tag: %s" tag)
+					       'keymap tag-map))
+				 (split-string tag ",") ",") (calibredb-tag-width) :left)
        (calibredb-format-column (propertize ids 'face 'calibredb-ids-face) (calibredb-ids-width) :left)
        (if (stringp comment)
-           (propertize
-            (let ((c (if calibredb-condense-comments (calibredb-condense-comments comment) comment))
-                  (w calibredb-comment-width))
-              (cond ((> w 0) (s-truncate w c))
-                    ((= w 0) "")
-                    (t c)))
-            'face 'calibredb-comment-face) "")
+	   (propertize
+	    (let ((c (if calibredb-condense-comments (calibredb-condense-comments comment) comment))
+		  (w calibredb-comment-width))
+	      (cond ((> w 0) (s-truncate w c))
+		    ((= w 0) "")
+		    (t c)))
+	    'face 'calibredb-comment-face) "")
        (format "%s%s"
-               (if calibredb-size-show
-                   (propertize size 'face 'calibredb-size-face) "")
-               (if calibredb-size-show
-                   (propertize "Mb" 'face 'calibredb-size-face) ""))) )))
+	       (if calibredb-size-show
+		   (propertize size 'face 'calibredb-size-face) "")
+	       (if calibredb-size-show
+		   (propertize "Mb" 'face 'calibredb-size-face) ""))) )))
 
 ;; * citar
 
@@ -2118,11 +2291,11 @@ Argument BOOK-ALIST ."
   (setq citar-select-multiple nil)
   :bind
   (:map org-mode-map :package org
-        ("C-c b" . #'org-cite-insert)
-        ("C-c B" . citar-dwim))
+	("C-c b" . #'org-cite-insert)
+	("C-c B" . citar-dwim))
   (:map citar-map :package citar
-        ("x" . my/citar-toggle-multiple)
-        ("a" . consult-recoll))
+	("x" . my/citar-toggle-multiple)
+	("a" . consult-recoll))
   :bind-keymap
   ("C-c c" . citar-map))
 
@@ -2147,13 +2320,13 @@ Argument BOOK-ALIST ."
   ;; Bind all available commands
   :bind
   (:map citar-map
-        ("c" . citar-create-note)
-        ("N" . citar-denote-open-note)
-        ("d" . citar-denote-dwim)
-        ("E" . citar-denote-open-reference-entry)
-        ("s" . citar-denote-find-reference)
-        ("S" . citar-denote-find-citation)
-        ("i" . citar-denote-link-reference)))
+	("c" . citar-create-note)
+	("N" . citar-denote-open-note)
+	("d" . citar-denote-dwim)
+	("E" . citar-denote-open-reference-entry)
+	("s" . citar-denote-find-reference)
+	("S" . citar-denote-find-citation)
+	("i" . citar-denote-link-reference)))
 
 ;; * ebib
 
@@ -2182,8 +2355,6 @@ Argument BOOK-ALIST ."
 	     (when (eq major-mode 'pdf-view-mode)
 	       (my/pdf-view-themed-minor-mode-refresh)))))
 
-(add-to-list 'ns-system-appearance-change-functions 'my/background-pdf-view-refresh)
-
 (defun my/pdf-view-themed-minor-mode-refresh ()
   (interactive)
   (pdf-view-themed-minor-mode 1))
@@ -2204,11 +2375,11 @@ Argument BOOK-ALIST ."
   :hook (pdf-view-mode . pdf-view-themed-minor-mode)
   :bind
   (:map pdf-view-mode-map
-        ("C-c C-o" . my/pdf-view-open-externally)
-        ("C-c C-r r" . my/pdf-view-themed-minor-mode-refresh)
-        ("c" . my/pdf-view-current-page)
-        ("o" . pdf-outline)
-        ("C-c C-n" . org-noter)))
+	("C-c C-o" . my/pdf-view-open-externally)
+	("C-c C-r r" . my/pdf-view-themed-minor-mode-refresh)
+	("c" . my/pdf-view-current-page)
+	("o" . pdf-outline)
+	("C-c C-n" . org-noter)))
 
 (use-package saveplace-pdf-view
   :config
@@ -2230,15 +2401,15 @@ Argument BOOK-ALIST ."
   :after pdf-tools
   :bind
   (:map pdf-annot-minor-mode-map
-        ("a D" . pdf-annot-delete)
-        ("a a" . pdf-annot-attachment-dired)
-        ("a h" . pdf-annot-add-highlight-markup-annotation)
-        ("a l" . pdf-annot-list-annotations)
-        ("a m" . pdf-annot-add-markup-annotation)
-        ("a o" . pdf-annot-add-strikeout-markup-annotation)
-        ("a s" . pdf-annot-add-squiggly-markup-annotation)
-        ("a t" . pdf-annot-add-text-annotation)
-        ("a u" . pdf-annot-add-underline-markup-annotation)))
+	("a D" . pdf-annot-delete)
+	("a a" . pdf-annot-attachment-dired)
+	("a h" . pdf-annot-add-highlight-markup-annotation)
+	("a l" . pdf-annot-list-annotations)
+	("a m" . pdf-annot-add-markup-annotation)
+	("a o" . pdf-annot-add-strikeout-markup-annotation)
+	("a s" . pdf-annot-add-squiggly-markup-annotation)
+	("a t" . pdf-annot-add-text-annotation)
+	("a u" . pdf-annot-add-underline-markup-annotation)))
 
 ;; * other
 
@@ -2249,10 +2420,10 @@ Argument BOOK-ALIST ."
     (mapatoms
      (function
       (lambda (symbol)
-        (when (get symbol 'disabled)
-          (put symbol 'disabled nil)
-          (prin1 symbol)
-          (princ "\n")))))))
+	(when (get symbol 'disabled)
+	  (put symbol 'disabled nil)
+	  (prin1 symbol)
+	  (princ "\n")))))))
 
 (defun my/launch-note (&optional initial-input key)
   (select-frame-set-input-focus (selected-frame))
@@ -2260,14 +2431,14 @@ Argument BOOK-ALIST ."
   (set-frame-name "org-capture")
   (add-hook 'org-capture-after-finalize-hook 'my/post-org-launch-note)
   (letf! ((#'pop-to-buffer #'switch-to-buffer))
-         (interactive)
-         (switch-to-buffer (doom-fallback-buffer))
-         (let ((org-capture-initial initial-input)
-               org-capture-entry)
-           (when (and key (not (string-empty-p key)))
-             (setq org-capture-entry (org-capture-select-template key)))
-           (funcall #'org-capture))
-         )
+	 (interactive)
+	 (switch-to-buffer (doom-fallback-buffer))
+	 (let ((org-capture-initial initial-input)
+	       org-capture-entry)
+	   (when (and key (not (string-empty-p key)))
+	     (setq org-capture-entry (org-capture-select-template key)))
+	   (funcall #'org-capture))
+	 )
   )
 
 (defun my/remove-launch-note-hook ()
@@ -2282,6 +2453,8 @@ Argument BOOK-ALIST ."
 
 (require 'ox-11ty)
 
+;; * custom-org
+(require 'custom-org)
 ;; * LOCAL-VARIABLES
 
 ;; This is not a literate config tangled from an Org-mode document! So I include
