@@ -718,6 +718,12 @@ _d_: subtree
 
 (use-package cape)
 
+;; * expand-region
+
+(use-package expand-region :ensure t
+  :bind
+  ("C-=" . er/expand-region)
+  ("C-+" . er/contract-region))
 ;; * completion
 
 (defun my/sort-by-length (elements)
@@ -962,8 +968,13 @@ This function can be used as the value of the user option
 ;; * flymake
 
 (use-package flymake
-  :ensure t
   :pin gnu-elpa)
+
+;; * elisp
+
+(use-package elisp-mode
+  :config
+  (setq lisp-indent-function 'common-lisp-indent-function))
 
 ;; * python
 
@@ -1230,8 +1241,14 @@ This function can be used as the value of the user option
      '(julia . ((dir-concat user-emacs-directory "scripts/julia-format.sh") inplace ))
      apheleia-formatters)
     (add-to-list 'apheleia-mode-alist '(julia-mode . julia)))
-  
+
   (apheleia-global-mode))
+
+;; * format-all
+
+;; problem with emacs format region
+;; but apheleia does not have format region.
+(use-package format-all)
 
 ;; * eldoc
 
@@ -1475,6 +1492,9 @@ This function can be used as the value of the user option
         '((nil :maxlevel . 3)
           (org-agenda-files :maxlevel . 2)))
   (setq org-ellipsis "↴")
+
+  ;; after https://emacs.stackexchange.com/questions/75822/ignoring-non-existent-org-mode-agenda-files
+  (setq org-agenda-skip-unavailable-files t)
   (setq org-src-preserve-indentation t)
   (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
   (setq org-fast-tag-selection-single-key t)
@@ -1510,6 +1530,10 @@ This function can be used as the value of the user option
 ;;   (setq org-babel-default-header-args:sh '((:results . "output")))
 ;;   (setq org-babel-default-header-args:shell '((:results . "output"))))
 
+;; * org-appear
+
+(use-package org-appear)
+
 ;; * ox-hugo
 
 (use-package ox-hugo
@@ -1523,133 +1547,133 @@ This function can be used as the value of the user option
   :custom
   (org-pandoc-menu-entry
    '(
-    ;;(?0 "to jats." org-pandoc-export-to-jats)
-    ;;(?0 "to jats and open." org-pandoc-export-to-jats-and-open)
-    ;;(?  "as jats." org-pandoc-export-as-jats)
-    ;;(?1 "to epub2 and open." org-pandoc-export-to-epub2-and-open)
-    ;;(?! "to epub2." org-pandoc-export-to-epub2)
-    ;;(?2 "to tei." org-pandoc-export-to-tei)
-    ;;(?2 "to tei and open." org-pandoc-export-to-tei-and-open)
-    ;;(?" "as tei." org-pandoc-export-as-tei)
-    ;;(?3 "to markdown_mmd." org-pandoc-export-to-markdown_mmd)
-    ;;(?3 "to markdown_mmd and open." org-pandoc-export-to-markdown_mmd-and-open)
-    ;;(?# "as markdown_mmd." org-pandoc-export-as-markdown_mmd)
-    ;;(?4 "to html5." org-pandoc-export-to-html5)
-    (?4 "to html5 and open." org-pandoc-export-to-html5-and-open)
-    (?$ "as html5." org-pandoc-export-as-html5)
-    (?5 "to html5-pdf and open." org-pandoc-export-to-html5-pdf-and-open)
-    (?% "to html5-pdf." org-pandoc-export-to-html5-pdf)
-    ;;(?6 "to markdown_phpextra." org-pandoc-export-to-markdown_phpextra)
-    ;;(?6 "to markdown_phpextra and open." org-pandoc-export-to-markdown_phpextra-and-open)
-    ;;(?& "as markdown_phpextra." org-pandoc-export-as-markdown_phpextra)
-    ;;(?7 "to markdown_strict." org-pandoc-export-to-markdown_strict)
-    ;;(?7 "to markdown_strict and open." org-pandoc-export-to-markdown_strict-and-open)
-    ;;(?' "as markdown_strict." org-pandoc-export-as-markdown_strict)
-    ;;(?8 "to opendocument." org-pandoc-export-to-opendocument)
-    ;;(?8 "to opendocument and open." org-pandoc-export-to-opendocument-and-open)
-    ;;(?( "as opendocument." org-pandoc-export-as-opendocument)
-    ;;(?9 "to opml." org-pandoc-export-to-opml)
-    ;;(?9 "to opml and open." org-pandoc-export-to-opml-and-open)
-    ;;(?) "as opml." org-pandoc-export-as-opml)
-    ;;(?: "to rst." org-pandoc-export-to-rst)
-    ;;(?: "to rst and open." org-pandoc-export-to-rst-and-open)
-    ;;(?* "as rst." org-pandoc-export-as-rst)
-    ;;(?< "to slideous." org-pandoc-export-to-slideous)
-    ;; (?\[ "to jira." org-pandoc-export-to-jira)
-    ;; (?\[ "as jira." org-pandoc-export-as-jira)
-    ;; (?< "to slideous and open." org-pandoc-export-to-slideous-and-open)
-    ;; (?, "as slideous." org-pandoc-export-as-slideous)
-    (?= "to ms-pdf and open." org-pandoc-export-to-ms-pdf-and-open)
-    (?- "to ms-pdf." org-pandoc-export-to-ms-pdf)
-    ;;(?> "to textile." org-pandoc-export-to-textile)
-    ;;(?> "to textile and open." org-pandoc-export-to-textile-and-open)
-    ;;(?. "as textile." org-pandoc-export-as-textile)
-    ;;(?a "to asciidoc." org-pandoc-export-to-asciidoc)
-    ;;(?a "to asciidoc and open." org-pandoc-export-to-asciidoc-and-open)
-    ;;(?A "as asciidoc." org-pandoc-export-as-asciidoc)
-    (?b "to beamer-pdf and open." org-pandoc-export-to-beamer-pdf-and-open)
-    (?B "to beamer-pdf." org-pandoc-export-to-beamer-pdf)
-    ;; (?c "to context-pdf and open." org-pandoc-export-to-context-pdf-and-open)
-    ;; (?C "to context-pdf." org-pandoc-export-to-context-pdf)
-    ;;(?d "to docbook5." org-pandoc-export-to-docbook5)
-    (?d "to docbook5 and open." org-pandoc-export-to-docbook5-and-open)
-    (?D "as docbook5." org-pandoc-export-as-docbook5)
-    ;; (?e "to epub3 and open." org-pandoc-export-to-epub3-and-open)
-    ;; (?E "to epub3." org-pandoc-export-to-epub3)
-    ;;(?f "to fb2." org-pandoc-export-to-fb2)
-    ;;(?f "to fb2 and open." org-pandoc-export-to-fb2-and-open)
-    ;;(?F "as fb2." org-pandoc-export-as-fb2)
-    ;;(?g "to gfm." org-pandoc-export-to-gfm)
-    (?g "to gfm and open." org-pandoc-export-to-gfm-and-open)
-    (?G "as gfm." org-pandoc-export-as-gfm)
-    ;;(?h "to html4." org-pandoc-export-to-html4)
-    (?h "to html4 and open." org-pandoc-export-to-html4-and-open)
-    (?H "as html4." org-pandoc-export-as-html4)
-    ;;(?i "to icml." org-pandoc-export-to-icml)
-    ;; (?i "to icml and open." org-pandoc-export-to-icml-and-open)
-    ;; (?I "as icml." org-pandoc-export-as-icml)
-    ;;(?j "to json." org-pandoc-export-to-json)
-    (?j "to json and open." org-pandoc-export-to-json-and-open)
-    (?J "as json." org-pandoc-export-as-json)
-    ;;(?k "to markdown." org-pandoc-export-to-markdown)
-    ;;(?k "to markdown and open." org-pandoc-export-to-markdown-and-open)
-    ;;(?K "as markdown." org-pandoc-export-as-markdown)
-    (?l "to latex-pdf and open." org-pandoc-export-to-latex-pdf-and-open)
-    (?L "to latex-pdf." org-pandoc-export-to-latex-pdf)
-    ;;(?m "to man." org-pandoc-export-to-man)
-    (?m "to man and open." org-pandoc-export-to-man-and-open)
-    (?M "as man." org-pandoc-export-as-man)
-    ;;(?n "to native." org-pandoc-export-to-native)
-    (?n "to native and open." org-pandoc-export-to-native-and-open)
-    (?N "as native." org-pandoc-export-as-native)
-    (?o "to odt and open." org-pandoc-export-to-odt-and-open)
-    (?O "to odt." org-pandoc-export-to-odt)
-    (?p "to pptx and open." org-pandoc-export-to-pptx-and-open)
-    (?P "to pptx." org-pandoc-export-to-pptx)
-    ;;(?q "to commonmark." org-pandoc-export-to-commonmark)
-    ;;(?q "to commonmark and open." org-pandoc-export-to-commonmark-and-open)
-    ;;(?Q "as commonmark." org-pandoc-export-as-commonmark)
-    ;;(?r "to rtf." org-pandoc-export-to-rtf)
-    (?r "to rtf and open." org-pandoc-export-to-rtf-and-open)
-    (?R "as rtf." org-pandoc-export-as-rtf)
-    ;;(?s "to s5." org-pandoc-export-to-s5)
-    ;;(?s "to s5 and open." org-pandoc-export-to-s5-and-open)
-    ;;(?S "as s5." org-pandoc-export-as-s5)
-    ;;(?t "to texinfo." org-pandoc-export-to-texinfo)
-    ;;(?t "to texinfo and open." org-pandoc-export-to-texinfo-and-open)
-    ;;(?T "as texinfo." org-pandoc-export-as-texinfo)
-    (?< "to typst." org-pandoc-export-to-typst)
-    (?, "to typst and open." org-pandoc-export-to-typst-and-open)
-    ;; (?, "as typst." org-pandoc-export-as-typst)
-    (?> "to typst-pdf." org-pandoc-export-to-typst-pdf)
-    (?. "to typst-pdf and open." org-pandoc-export-to-typst-pdf-and-open)
-    ;;(?u "to dokuwiki." org-pandoc-export-to-dokuwiki)
-    ;; (?u "to dokuwiki and open." org-pandoc-export-to-dokuwiki-and-open)
-    ;; (?U "as dokuwiki." org-pandoc-export-as-dokuwiki)
-    ;;(?v "to revealjs." org-pandoc-export-to-revealjs)
-    ;; (?v "to revealjs and open." org-pandoc-export-to-revealjs-and-open)
-    ;; (?V "as revealjs." org-pandoc-export-as-revealjs)
-    ;;(?w "to mediawiki." org-pandoc-export-to-mediawiki)
-    ;; (?w "to mediawiki and open." org-pandoc-export-to-mediawiki-and-open)
-    ;; (?W "as mediawiki." org-pandoc-export-as-mediawiki)
-    (?x "to docx and open." org-pandoc-export-to-docx-and-open)
-    (?X "to docx." org-pandoc-export-to-docx)
-    ;;(?y "to slidy." org-pandoc-export-to-slidy)
-    ;; (?y "to slidy and open." org-pandoc-export-to-slidy-and-open)
-    ;; (?Y "as slidy." org-pandoc-export-as-slidy)
-    ;;(?z "to dzslides." org-pandoc-export-to-dzslides)
-    ;; (?z "to dzslides and open." org-pandoc-export-to-dzslides-and-open)
-    ;; (?Z "as dzslides." org-pandoc-export-as-dzslides)
-    ;;(?{ "to muse." org-pandoc-export-to-muse)
-    ;;(?{ "to muse and open." org-pandoc-export-to-muse-and-open)
-    ;;(?[ "as muse." org-pandoc-export-as-muse)
-    ;;(?} "to zimwiki." org-pandoc-export-to-zimwiki)
-    ;;(?} "to zimwiki and open." org-pandoc-export-to-zimwiki-and-open)
-    ;;(?] "as zimwiki." org-pandoc-export-as-zimwiki)
-    ;;(?~ "to haddock." org-pandoc-export-to-haddock)
-    ;;(?~ "to haddock and open." org-pandoc-export-to-haddock-and-open)
-    ;;(?^ "as haddock." org-pandoc-export-as-haddock)
-    )))
+     ;;(?0 "to jats." org-pandoc-export-to-jats)
+     ;;(?0 "to jats and open." org-pandoc-export-to-jats-and-open)
+     ;;(?  "as jats." org-pandoc-export-as-jats)
+     ;;(?1 "to epub2 and open." org-pandoc-export-to-epub2-and-open)
+     ;;(?! "to epub2." org-pandoc-export-to-epub2)
+     ;;(?2 "to tei." org-pandoc-export-to-tei)
+     ;;(?2 "to tei and open." org-pandoc-export-to-tei-and-open)
+     ;;(?" "as tei." org-pandoc-export-as-tei)
+     ;;(?3 "to markdown_mmd." org-pandoc-export-to-markdown_mmd)
+     ;;(?3 "to markdown_mmd and open." org-pandoc-export-to-markdown_mmd-and-open)
+     ;;(?# "as markdown_mmd." org-pandoc-export-as-markdown_mmd)
+     ;;(?4 "to html5." org-pandoc-export-to-html5)
+     (?4 "to html5 and open." org-pandoc-export-to-html5-and-open)
+     (?$ "as html5." org-pandoc-export-as-html5)
+     (?5 "to html5-pdf and open." org-pandoc-export-to-html5-pdf-and-open)
+     (?% "to html5-pdf." org-pandoc-export-to-html5-pdf)
+     ;;(?6 "to markdown_phpextra." org-pandoc-export-to-markdown_phpextra)
+     ;;(?6 "to markdown_phpextra and open." org-pandoc-export-to-markdown_phpextra-and-open)
+     ;;(?& "as markdown_phpextra." org-pandoc-export-as-markdown_phpextra)
+     ;;(?7 "to markdown_strict." org-pandoc-export-to-markdown_strict)
+     ;;(?7 "to markdown_strict and open." org-pandoc-export-to-markdown_strict-and-open)
+     ;;(?' "as markdown_strict." org-pandoc-export-as-markdown_strict)
+     ;;(?8 "to opendocument." org-pandoc-export-to-opendocument)
+     ;;(?8 "to opendocument and open." org-pandoc-export-to-opendocument-and-open)
+     ;;(?( "as opendocument." org-pandoc-export-as-opendocument)
+     ;;(?9 "to opml." org-pandoc-export-to-opml)
+     ;;(?9 "to opml and open." org-pandoc-export-to-opml-and-open)
+     ;;(?) "as opml." org-pandoc-export-as-opml)
+     ;;(?: "to rst." org-pandoc-export-to-rst)
+     ;;(?: "to rst and open." org-pandoc-export-to-rst-and-open)
+     ;;(?* "as rst." org-pandoc-export-as-rst)
+     ;;(?< "to slideous." org-pandoc-export-to-slideous)
+     ;; (?\[ "to jira." org-pandoc-export-to-jira)
+     ;; (?\[ "as jira." org-pandoc-export-as-jira)
+     ;; (?< "to slideous and open." org-pandoc-export-to-slideous-and-open)
+     ;; (?, "as slideous." org-pandoc-export-as-slideous)
+     (?= "to ms-pdf and open." org-pandoc-export-to-ms-pdf-and-open)
+     (?- "to ms-pdf." org-pandoc-export-to-ms-pdf)
+     ;;(?> "to textile." org-pandoc-export-to-textile)
+     ;;(?> "to textile and open." org-pandoc-export-to-textile-and-open)
+     ;;(?. "as textile." org-pandoc-export-as-textile)
+     ;;(?a "to asciidoc." org-pandoc-export-to-asciidoc)
+     ;;(?a "to asciidoc and open." org-pandoc-export-to-asciidoc-and-open)
+     ;;(?A "as asciidoc." org-pandoc-export-as-asciidoc)
+     (?b "to beamer-pdf and open." org-pandoc-export-to-beamer-pdf-and-open)
+     (?B "to beamer-pdf." org-pandoc-export-to-beamer-pdf)
+     ;; (?c "to context-pdf and open." org-pandoc-export-to-context-pdf-and-open)
+     ;; (?C "to context-pdf." org-pandoc-export-to-context-pdf)
+     ;;(?d "to docbook5." org-pandoc-export-to-docbook5)
+     (?d "to docbook5 and open." org-pandoc-export-to-docbook5-and-open)
+     (?D "as docbook5." org-pandoc-export-as-docbook5)
+     ;; (?e "to epub3 and open." org-pandoc-export-to-epub3-and-open)
+     ;; (?E "to epub3." org-pandoc-export-to-epub3)
+     ;;(?f "to fb2." org-pandoc-export-to-fb2)
+     ;;(?f "to fb2 and open." org-pandoc-export-to-fb2-and-open)
+     ;;(?F "as fb2." org-pandoc-export-as-fb2)
+     ;;(?g "to gfm." org-pandoc-export-to-gfm)
+     (?g "to gfm and open." org-pandoc-export-to-gfm-and-open)
+     (?G "as gfm." org-pandoc-export-as-gfm)
+     ;;(?h "to html4." org-pandoc-export-to-html4)
+     (?h "to html4 and open." org-pandoc-export-to-html4-and-open)
+     (?H "as html4." org-pandoc-export-as-html4)
+     ;;(?i "to icml." org-pandoc-export-to-icml)
+     ;; (?i "to icml and open." org-pandoc-export-to-icml-and-open)
+     ;; (?I "as icml." org-pandoc-export-as-icml)
+     ;;(?j "to json." org-pandoc-export-to-json)
+     (?j "to json and open." org-pandoc-export-to-json-and-open)
+     (?J "as json." org-pandoc-export-as-json)
+     ;;(?k "to markdown." org-pandoc-export-to-markdown)
+     ;;(?k "to markdown and open." org-pandoc-export-to-markdown-and-open)
+     ;;(?K "as markdown." org-pandoc-export-as-markdown)
+     (?l "to latex-pdf and open." org-pandoc-export-to-latex-pdf-and-open)
+     (?L "to latex-pdf." org-pandoc-export-to-latex-pdf)
+     ;;(?m "to man." org-pandoc-export-to-man)
+     (?m "to man and open." org-pandoc-export-to-man-and-open)
+     (?M "as man." org-pandoc-export-as-man)
+     ;;(?n "to native." org-pandoc-export-to-native)
+     (?n "to native and open." org-pandoc-export-to-native-and-open)
+     (?N "as native." org-pandoc-export-as-native)
+     (?o "to odt and open." org-pandoc-export-to-odt-and-open)
+     (?O "to odt." org-pandoc-export-to-odt)
+     (?p "to pptx and open." org-pandoc-export-to-pptx-and-open)
+     (?P "to pptx." org-pandoc-export-to-pptx)
+     ;;(?q "to commonmark." org-pandoc-export-to-commonmark)
+     ;;(?q "to commonmark and open." org-pandoc-export-to-commonmark-and-open)
+     ;;(?Q "as commonmark." org-pandoc-export-as-commonmark)
+     ;;(?r "to rtf." org-pandoc-export-to-rtf)
+     (?r "to rtf and open." org-pandoc-export-to-rtf-and-open)
+     (?R "as rtf." org-pandoc-export-as-rtf)
+     ;;(?s "to s5." org-pandoc-export-to-s5)
+     ;;(?s "to s5 and open." org-pandoc-export-to-s5-and-open)
+     ;;(?S "as s5." org-pandoc-export-as-s5)
+     ;;(?t "to texinfo." org-pandoc-export-to-texinfo)
+     ;;(?t "to texinfo and open." org-pandoc-export-to-texinfo-and-open)
+     ;;(?T "as texinfo." org-pandoc-export-as-texinfo)
+     (?< "to typst." org-pandoc-export-to-typst)
+     (?, "to typst and open." org-pandoc-export-to-typst-and-open)
+     ;; (?, "as typst." org-pandoc-export-as-typst)
+     (?> "to typst-pdf." org-pandoc-export-to-typst-pdf)
+     (?. "to typst-pdf and open." org-pandoc-export-to-typst-pdf-and-open)
+     ;;(?u "to dokuwiki." org-pandoc-export-to-dokuwiki)
+     ;; (?u "to dokuwiki and open." org-pandoc-export-to-dokuwiki-and-open)
+     ;; (?U "as dokuwiki." org-pandoc-export-as-dokuwiki)
+     ;;(?v "to revealjs." org-pandoc-export-to-revealjs)
+     ;; (?v "to revealjs and open." org-pandoc-export-to-revealjs-and-open)
+     ;; (?V "as revealjs." org-pandoc-export-as-revealjs)
+     ;;(?w "to mediawiki." org-pandoc-export-to-mediawiki)
+     ;; (?w "to mediawiki and open." org-pandoc-export-to-mediawiki-and-open)
+     ;; (?W "as mediawiki." org-pandoc-export-as-mediawiki)
+     (?x "to docx and open." org-pandoc-export-to-docx-and-open)
+     (?X "to docx." org-pandoc-export-to-docx)
+     ;;(?y "to slidy." org-pandoc-export-to-slidy)
+     ;; (?y "to slidy and open." org-pandoc-export-to-slidy-and-open)
+     ;; (?Y "as slidy." org-pandoc-export-as-slidy)
+     ;;(?z "to dzslides." org-pandoc-export-to-dzslides)
+     ;; (?z "to dzslides and open." org-pandoc-export-to-dzslides-and-open)
+     ;; (?Z "as dzslides." org-pandoc-export-as-dzslides)
+     ;;(?{ "to muse." org-pandoc-export-to-muse)
+     ;;(?{ "to muse and open." org-pandoc-export-to-muse-and-open)
+     ;;(?[ "as muse." org-pandoc-export-as-muse)
+     ;;(?} "to zimwiki." org-pandoc-export-to-zimwiki)
+     ;;(?} "to zimwiki and open." org-pandoc-export-to-zimwiki-and-open)
+     ;;(?] "as zimwiki." org-pandoc-export-as-zimwiki)
+     ;;(?~ "to haddock." org-pandoc-export-to-haddock)
+     ;;(?~ "to haddock and open." org-pandoc-export-to-haddock-and-open)
+     ;;(?^ "as haddock." org-pandoc-export-as-haddock)
+     )))
 
 
 ;; * ob-python
@@ -1658,6 +1682,16 @@ This function can be used as the value of the user option
   :after org
   :config
   (setq org-babel-python-command "python3"))
+
+;; * ob-ipython
+
+(use-package ob-ipython
+  :disabled
+  :after org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((ipython . t))))
 
 ;; * ob-julia
 
@@ -1749,6 +1783,16 @@ end #OB-JULIA-VTERM_END\n"))
   :config
   (setq org-babel-default-header-args:sh '((:results . "output")))
   (setq org-babel-default-header-args:shell '((:results . "output"))))
+;; * ob-async
+
+;; python does not work.
+(use-package ob-async
+  :after org
+  :config
+  (setq ob-async-no-async-languages-alist '("python" "ipython"))
+  (add-hook 'ob-async-pre-execute-src-block-hook
+            '(lambda ()
+               (setq inferior-julia-program-name "/usr/local/bin/julia"))))
 ;; * htmlize
 
 (use-package htmlize)
@@ -1920,8 +1964,8 @@ end #OB-JULIA-VTERM_END\n"))
 
 ;; * gnuplot
 
-(use-package gnuplot-mode :ensure t)
-(use-package gnuplot :ensure t)
+(use-package gnuplot-mode)
+(use-package gnuplot)
 ;; * notmuch
 
 (use-package notmuch)
@@ -2388,7 +2432,6 @@ Argument BOOK-ALIST ."
 ;; * pdf-tools
 
 (use-package pdf-tools
-  :ensure t
   :defer 2
   :hook (pdf-outline-buffer-mode . visual-line-mode)
   :config
@@ -2455,6 +2498,33 @@ Argument BOOK-ALIST ."
 
 ;; * custom-org
 (require 'custom-org)
+;; * xah
+
+(use-package xah
+  :bind
+  (:map lisp-interaction-mode-map
+        ("C-a" . xah-backward-left-bracket)
+	("C-e" . xah-forward-right-bracket)
+	("(" . xah-insert-paren)
+	(")" . xah-insert-paren)
+	("{" . xah-insert-brace)
+	("}" . xah-insert-brace)
+	("[" . xah-insert-bracket)
+	("]" . xah-insert-bracket)
+	("\"" . xah-insert-ascii-double-quote)
+	("M-<DEL>" . xah-delete-backward-bracket-text))
+  (:map emacs-lisp-mode-map
+        ("C-a" . xah-backward-left-bracket)
+	("C-e" . xah-forward-right-bracket)
+	("(" . xah-insert-paren)
+	(")" . xah-insert-paren)
+	("{" . xah-insert-brace)
+	("}" . xah-insert-brace)
+	("[" . xah-insert-bracket)
+	("]" . xah-insert-bracket)
+	("\"" . xah-insert-ascii-double-quote)
+	("M-<DEL>" . xah-delete-backward-bracket-text)))
+
 ;; * LOCAL-VARIABLES
 
 ;; This is not a literate config tangled from an Org-mode document! So I include
