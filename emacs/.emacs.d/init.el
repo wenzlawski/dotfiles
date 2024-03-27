@@ -160,8 +160,8 @@
   :init
   (setq timu-macos-flavour (symbol-name ns-system-appearance))
   :bind (:map help-map
-              ("t" . nil)
-              ("t s" . timu-macos-toggle-dark-light)))
+	      ("t" . nil)
+	      ("t s" . timu-macos-toggle-dark-light)))
 
 (defun my/timu-theme-change (appearance)
   "Load theme, taking current system APPEARANCE into consideration."
@@ -480,6 +480,10 @@
           ("ediff-files" ediff-files)))
   (setq vterm-max-scrollback 10000)
   (setq vterm-shell (executable-find "fish")))
+
+;; * tldr
+
+(use-package tldr)
 
 ;; * hydra
 
@@ -929,7 +933,7 @@ This function can be used as the value of the user option
 ;; Enable vertico
 (use-package vertico
   :bind (:map vertico-map
-              ("C-c C-n" . vertico-quick-jump))
+	      ("C-c C-n" . vertico-quick-jump))
   :custom-face
   ;;(vertico-current ((t (:background "slate"))))
   :init (vertico-mode)
@@ -972,9 +976,7 @@ This function can be used as the value of the user option
 
 ;; * elisp
 
-(use-package elisp-mode
-  :config
-  (setq lisp-indent-function 'common-lisp-indent-function))
+(use-package elisp-mode)
 
 ;; * python
 
@@ -1097,7 +1099,7 @@ This function can be used as the value of the user option
   (julia-snail-extensions '(repl-history formatter))
   :config
   (add-to-list 'display-buffer-alist
-               '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
+	       '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
   :hook (julia-mode . julia-snail-mode))
 
 (use-package eglot-jl
@@ -1211,7 +1213,7 @@ This function can be used as the value of the user option
         (go "https://github.com/tree-sitter/tree-sitter-go")
         (html "https://github.com/tree-sitter/tree-sitter-html")
         (javascript "https://github.com/tree-sitter/tree-sitter-javascript"
-                    "master" "src")
+		    "master" "src")
         (json "https://github.com/tree-sitter/tree-sitter-json")
         (make "https://github.com/alemuller/tree-sitter-make")
         (markdown "https://github.com/ikatyang/tree-sitter-markdown")
@@ -1220,7 +1222,7 @@ This function can be used as the value of the user option
         (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master"
              "tsx/src")
         (typescript "https://github.com/tree-sitter/tree-sitter-typescript"
-                    "master" "typescript/src")
+		    "master" "typescript/src")
         (typst "https://github.com/uben0/tree-sitter-typst")
         (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 (setq treesit-font-lock-level 4)
@@ -1286,6 +1288,9 @@ This function can be used as the value of the user option
   ;; (tempel-trigger-prefix "<")
   :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
          ("M-*" . tempel-insert))
+  (:map tempel-map
+	("<tab>" . tempel-next)
+	("<backtab>" . tempel-previous))
   :init
   ;; Setup completion at point
   (defun tempel-setup-capf ()
@@ -1298,7 +1303,7 @@ This function can be used as the value of the user option
     ;; that it will be tried first.
     (setq-local completion-at-point-functions
                 (cons #'tempel-expand
-                      completion-at-point-functions)))
+		      completion-at-point-functions)))
   ;; Optionally make the Tempel templates available to Abbrev,
   ;; either locally or globally. `expand-abbrev' is bound to C-x '.
   ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
@@ -1532,7 +1537,8 @@ This function can be used as the value of the user option
 
 ;; * org-appear
 
-(use-package org-appear)
+(use-package org-appear
+  :hook org-mode)
 
 ;; * ox-hugo
 
@@ -1792,7 +1798,7 @@ end #OB-JULIA-VTERM_END\n"))
   (setq ob-async-no-async-languages-alist '("python" "ipython"))
   (add-hook 'ob-async-pre-execute-src-block-hook
             '(lambda ()
-               (setq inferior-julia-program-name "/usr/local/bin/julia"))))
+	       (setq inferior-julia-program-name "/usr/local/bin/julia"))))
 ;; * htmlize
 
 (use-package htmlize)
@@ -2505,6 +2511,8 @@ Argument BOOK-ALIST ."
   (:map lisp-interaction-mode-map
         ("C-a" . xah-backward-left-bracket)
 	("C-e" . xah-forward-right-bracket)
+	("M-a" . beginning-of-line)
+	("M-e" . end-of-line)
 	("(" . xah-insert-paren)
 	(")" . xah-insert-paren)
 	("{" . xah-insert-brace)
@@ -2516,6 +2524,8 @@ Argument BOOK-ALIST ."
   (:map emacs-lisp-mode-map
         ("C-a" . xah-backward-left-bracket)
 	("C-e" . xah-forward-right-bracket)
+	("M-a" . beginning-of-line)
+	("M-e" . end-of-line)
 	("(" . xah-insert-paren)
 	(")" . xah-insert-paren)
 	("{" . xah-insert-brace)
