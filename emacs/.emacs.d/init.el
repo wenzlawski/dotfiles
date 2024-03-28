@@ -20,6 +20,42 @@
   (setq native-comp-async-report-warnings-errors 'silent) ; Emacs 28 with native compilation
   (setq native-compile-prune-cache t)) ; Emacs 29
 
+;; decouple C-i and TAB
+;; https://emacs.stackexchange.com/questions/220/how-to-bind-c-i-as-different-from-tab/221#221
+(define-key input-decode-map [?\C-i] [C-i])
+
+(defconst IS-MAC     (eq system-type 'darwin))
+(defconst IS-LINUX   (eq system-type 'gnu/linux))
+(defconst IS-WINDOWS (memq system-type '(cygwin windows-nt ms-dos)))
+(defconst IS-BSD     (or IS-MAC (eq system-type 'berkeley-unix)))
+(defconst IS-GUIX    (and IS-LINUX
+                          (with-temp-buffer
+                            (insert-file-contents "/etc/os-release")
+                            (re-search-forward "ID=\\(?:guix\\|nixos\\)" nil t))))
+
+;; Disable bidirectional text rendering for a modest performance boost. Just
+;; need to remember to turn it on when displaying a right-to-left language!
+(setq-default bidi-display-reordering 'left-to-right)
+
+;; Reduce rendering/line scan work for Emacs by not rendering cursors or regions
+;; in non-focused windows.
+(setq-default cursor-in-non-selected-windows nil)
+(setq highlight-nonselected-windows nil)
+
+;; More performant rapid scrolling over unfontified regions. May cause brief
+;; spells of inaccurate fontification immediately after scrolling.
+(setq fast-but-imprecise-scrolling t)
+(when (> emacs-major-version 27)
+  (setq redisplay-skip-fontification-on-input t))
+
+;; Don't ping things that look like domain names.
+(setq ffap-machine-p-known 'reject)
+
+;; Remove command line options that aren't relevant to our current OS; that
+;; means less to process at startup.
+(unless IS-MAC   (setq command-line-ns-option-alist nil))
+(unless IS-LINUX (setq command-line-x-option-alist nil))
+
 ;; * Packages
 
 (require 'package)
@@ -151,7 +187,10 @@
 	    (bg-paren-match bg-magenta-intense)
 	    (bg-mode-line-inactive bg-main)
 	    (border-mode-line-active bg-mode-line-active)
-	    (border-mode-line-inactive bg-mode-line-inactive))))
+	    (border-mode-line-inactive bg-mode-line-inactive)
+	    (bg-tab-bar bg-main)
+	    (bg-tab-current bg-active)
+	    (bg-tab-other bg-main))))
 
 ;; * Timu theme
 
@@ -261,7 +300,7 @@
   (setq auto-save-default t)
   (setq inhibit-compacting-font-caches t)
   (setq truncate-string-ellipsis "…")
-  (setq shell-file-name (executable-find "zsh"))
+  (setq shell-file-name (executable-find "fish"))
   (setq confirm-kill-emacs 'yes-or-no-p)
   (setq redisplay-dont-pause t)
   (setq-default line-spacing 0.1)
@@ -312,6 +351,7 @@
   ("C-x C-S-l" . downcase-region)
   ("C-c o" .  occur)
   ("C-x M-k" . kill-this-buffer)
+  ("C-x <C-i>" . tab-to-tab-stop)
   (:map tab-prefix-map
         ("h" . tab-bar-mode)
         ("s" . tab-switcher))
@@ -477,13 +517,24 @@
           ("vterm-clear-scrollback" vterm-clear-scrollback)
           ("dired" dired)
 	  ("woman" woman)
+	  ("tldr" tldr)
           ("ediff-files" ediff-files)))
   (setq vterm-max-scrollback 10000)
   (setq vterm-shell (executable-find "fish")))
 
 ;; * tldr
 
-(use-package tldr)
+(use-package tldr
+  :custom-face
+  (tldr-command-itself ((t (:inherit font-lock-keyword-face :weight bold :background unspecified :foreground "orange"))))
+  (tldr-command-argument ((t nil)))
+  (tldr-code-block ((t (:foreground unspecified :background unspecified)))))
+
+;; * devdocs
+
+(use-package devdocs
+  :ensure t
+  :bind (:map help-map ("D" . devdocs-lookup)))
 
 ;; * hydra
 
@@ -616,6 +667,7 @@ _d_: subtree
 (use-package exec-path-from-shell
   :when (memq window-system '(mac ns x))
   :config
+  (setq exec-path-from-shell-arguments nil)
   (exec-path-from-shell-initialize))
 
 ;; * transpose-frame
@@ -815,7 +867,9 @@ This function can be used as the value of the user option
         ("M-r" . consult-history))
 
   (:map org-mode-map
-        ("C-c h" . consult-org-heading)))
+        ("C-c h" . consult-org-heading))
+  (:map python-ts-mode-map
+	("M-o" . consult-imenu)))
 
 ;; ** consult-flycheck
 
@@ -965,39 +1019,70 @@ This function can be used as the value of the user option
 	("C-c f" . eglot-format)
         ("C-c e q" . eglot-shutdown)
         ("C-c e Q" . eglot-shutdown-all)
-        ("C-c e l" . eglot-list-connections))
+        ("C-c e l" . eglot-list-connections)
+	("C-c e r" . eglot-rename))
   :custom-face
-  (eglot-highlight-symbol-face ((t (:background "LightSkyBlue4")))))
+  (eglot-highlight-symbol-face ((t (:inherit highlight)))))
 
 ;; * flymake
 
 (use-package flymake
-  :pin gnu-elpa)
+  :pin gnu-elpa
+  :bind
+  (:map flymake-mode-map
+	("C-c M-n" . flymake-goto-next-error)
+	("C-c M-p" . flymake-goto-prev-error)
+	("C-c M-l" . flymake-show-project-diagnostics)))
 
 ;; * elisp
 
-(use-package elisp-mode)
+(use-package elisp-mode
+  :bind
+  (:map emacs-lisp-mode-map
+	("M-i" . completion-at-point))
+  (:map lisp-interaction-mode-map
+	("M-i" . completion-at-point)))
 
 ;; * python
 
-(use-package pyenv-mode
-  :init
-  (setq pyenv-mode-map
-        (let ((map (make-sparse-keymap)))
-          map))
-  :hook python-ts-mode python-mode
+(use-package python
   :bind
   (:map python-ts-mode-map
-        ("C-c C-s" . pyenv-mode-set)
-        ("C-c C-u" . pyenv-mode-unset)))
-(use-package poetry
-  :bind
-  (:map python-ts-mode-map
-        ("C-c C-b" . poetry)))
-(use-package python-pytest
-  :bind
-  (:map python-ts-mode-map
-        ("C-c C-n" . python-pytest-dispatch)))
+	("C-c M-e" . eglot)
+	("M-i" . completion-at-point))
+  :config
+
+  (use-package pyenv-mode
+    :init
+    (setq pyenv-mode-map
+          (let ((map (make-sparse-keymap)))
+            map))
+    :hook (python-ts-mode .  pyenv-mode)
+    :bind
+    (:map python-ts-mode-map
+          ("C-c C-s" . pyenv-mode-set)
+          ("C-c C-u" . pyenv-mode-unset)))
+
+  (use-package poetry
+    :bind
+    (:map python-ts-mode-map
+          ("C-c C-b" . poetry)))
+
+  (use-package python-pytest
+    :bind
+    (:map python-ts-mode-map
+          ("C-c C-n" . python-pytest-dispatch))))
+
+;; * ein
+
+(use-package ein
+  :ensure t
+  :config)
+
+(use-package ob-ein
+  :after ein python-ts-mode
+  :config
+  (org-babel-do-load-languages 'org-babel-load-languages '((ein . t))))
 
 ;; * ess
 
@@ -1250,7 +1335,8 @@ This function can be used as the value of the user option
 
 ;; problem with emacs format region
 ;; but apheleia does not have format region.
-(use-package format-all)
+(use-package format-all
+  :disabled)
 
 ;; * eldoc
 
@@ -1277,7 +1363,15 @@ This function can be used as the value of the user option
   ;;         (define-key map (kbd "v") 'yas-visit-snippet-file)
   ;;         map))
   (yas-reload-all)
-  :hook (prog-mode . yas-minor-mode))
+  :hook (prog-mode . yas-minor-mode)
+  :config
+  (setq yas-verbosity 0))
+
+(use-package yasnippet-capf
+  :straight (:host github :repo "elken/yasnippet-capf")
+  :after cape
+  :config
+  (add-to-list 'completion-at-point-functions #'yasnippet-capf))
 ;; :bind-keymap ("C-c s" . yas-minor-mode-map))
 
 ;; * tempel
@@ -1309,7 +1403,7 @@ This function can be used as the value of the user option
   ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
   ;; (global-tempel-abbrev-mode)
   :hook
-  ((conf-mode prog-mode text-mode) . tempel-setup-capf))
+  ((conf-mode text-mode) . tempel-setup-capf))
 
 (use-package tempel-collection
   :after tempel)
@@ -1525,7 +1619,9 @@ This function can be used as the value of the user option
         ("C-c 4 o" . my/org-open-at-point-other-window)
         ("C-c 5 C-o" . my/org-open-at-point-other-frame)
         ("C-c 5 o" . my/org-open-at-point-other-frame)
-        ("C-c e" . org-emphasize))
+        ("C-c e" . org-emphasize)
+	("<C-i>" . org-delete-backward-char)
+	("M-i" . backward-kill-word))
   :custom-face
   (org-document-title ((t (:height 1.7)))))
 
@@ -1797,8 +1893,8 @@ end #OB-JULIA-VTERM_END\n"))
   :config
   (setq ob-async-no-async-languages-alist '("python" "ipython"))
   (add-hook 'ob-async-pre-execute-src-block-hook
-            '(lambda ()
-	       (setq inferior-julia-program-name "/usr/local/bin/julia"))))
+            #'(lambda ()
+		(setq inferior-julia-program-name "/usr/local/bin/julia"))))
 ;; * htmlize
 
 (use-package htmlize)
@@ -2514,11 +2610,11 @@ Argument BOOK-ALIST ."
 	("M-a" . beginning-of-line)
 	("M-e" . end-of-line)
 	("(" . xah-insert-paren)
-	(")" . xah-insert-paren)
+	;;(")" . xah-insert-paren)
 	("{" . xah-insert-brace)
-	("}" . xah-insert-brace)
+	;;("}" . xah-insert-brace)
 	("[" . xah-insert-bracket)
-	("]" . xah-insert-bracket)
+	;;("]" . xah-insert-bracket)
 	("\"" . xah-insert-ascii-double-quote)
 	("M-<DEL>" . xah-delete-backward-bracket-text))
   (:map emacs-lisp-mode-map
@@ -2527,11 +2623,11 @@ Argument BOOK-ALIST ."
 	("M-a" . beginning-of-line)
 	("M-e" . end-of-line)
 	("(" . xah-insert-paren)
-	(")" . xah-insert-paren)
+	;;(")" . xah-insert-paren)
 	("{" . xah-insert-brace)
-	("}" . xah-insert-brace)
+	;;("}" . xah-insert-brace)
 	("[" . xah-insert-bracket)
-	("]" . xah-insert-bracket)
+	;;("]" . xah-insert-bracket)
 	("\"" . xah-insert-ascii-double-quote)
 	("M-<DEL>" . xah-delete-backward-bracket-text)))
 

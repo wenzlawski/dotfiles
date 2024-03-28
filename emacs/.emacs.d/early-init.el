@@ -3,6 +3,85 @@
 ;; NOTE: early-init.el is generated from config.org.
 ;; Please edit that file instead.
 
+;; Temporarily increase the garbage collection threshold.  These
+;; changes help shave off about half a second of startup time.  The
+;; `most-positive-fixnum' is DANGEROUS AS A PERMANENT VALUE.  See the
+;; `emacs-startup-hook' a few lines below for what I actually use.
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 0.6)
+
+;; Initialise installed packages at this early stage, by using the
+;; available cache.  I had tried a setup with this set to nil in the
+;; early-init.el, but (i) it ended up being slower and (ii) various
+;; package commands, like `describe-package', did not have an index of
+;; packages to work with, requiring a `package-refresh-contents'.
+(setq package-enable-at-startup t
+      package-quickstart t
+      load-prefer-newer t)
+
+(unless (or (daemonp) noninteractive)
+  (let ((old-file-name-handler-alist file-name-handler-alist))
+    ;; `file-name-handler-alist' is consulted on each `require', `load' and
+    ;; various path/io functions. You get a minor speed up by unsetting this.
+    ;; Some warning, however: this could cause problems on builds of Emacs where
+    ;; its site lisp files aren't byte-compiled and we're forced to load the
+    ;; *.el.gz files (e.g. on Alpine).
+    (setq-default file-name-handler-alist nil)
+    ;; ...but restore `file-name-handler-alist' later, because it is needed for
+    ;; handling encrypted or compressed files, among other things.
+    (defun my/reset-file-handler-alist ()
+      (setq file-name-handler-alist
+            ;; Merge instead of overwrite because there may have bene changes to
+            ;; `file-name-handler-alist' since startup we want to preserve.
+            (delete-dups (append file-name-handler-alist
+                                 old-file-name-handler-alist))))
+    (add-hook 'emacs-startup-hook #'my/reset-file-handler-alist 101))
+
+  (setq-default inhibit-redisplay t
+                inhibit-message t)
+  (add-hook 'window-setup-hook
+            (lambda ()
+              (setq-default inhibit-redisplay nil
+                            inhibit-message nil)
+              (redisplay)))
+
+  ;; Site files tend to use `load-file', which emits "Loading X..." messages in
+  ;; the echo area, which in turn triggers a redisplay. Redisplays can have a
+  ;; substantial effect on startup times and in this case happens so early that
+  ;; Emacs may flash white while starting up.
+  (define-advice load-file (:override (file) silence)
+    (load file nil 'nomessage))
+
+  ;; Undo our `load-file' advice above, to limit the scope of any edge cases it
+  ;; may introduce down the road.
+  (define-advice startup--load-user-init-file (:before (&rest _) nomessage-remove)
+    (advice-remove #'load-file #'load-file@silence)))
+
+;; This is bound to MacOS. In the future, there should be an OS
+;; agnostic way of calling these functions. This would be handled by
+;; making a boolean checking for OS type at startup and then assigning
+;; respective variables to the desktop commands. That way we won't
+;; have to constantly do the checking for OS, just do it once.
+(defun mw/theme-gsettings-dark-p ()
+  "Return non-nil if defaults (MACOS) has a dark theme.
+Return nil if the OS is not darwin"
+  (if (eq system-type 'darwin)
+      (string-match-p
+       "Dark"
+       (shell-command-to-string "defaults read -g AppleInterfaceStyle"))))
+
+(defun mw/avoid-initial-flash-of-light ()
+  "Avoid flash of light when starting Emacs, if needed.
+New frames are instructed to call `prot-emacs-re-enable-frame-theme'."
+  (when (mw/theme-gsettings-dark-p)
+    (set-face-attribute 'default nil :background "#000000"
+                        :foreground "#ffffff")
+    (set-face-attribute 'mode-line nil :background "#000000"
+                        :foreground "#ffffff" :box 'unspecified)))
+
+(setq mode-line-format nil)
+(mw/avoid-initial-flash-of-light)
+
 (add-to-list 'initial-frame-alist '(height . 80))
 (add-to-list 'default-frame-alist '(height . 80))
 (add-to-list 'initial-frame-alist '(width . 140))
@@ -56,42 +135,10 @@
                   file-name-handler-alist prot-emacs--file-name-handler-alist
                   vc-handled-backends prot-emacs--vc-handled-backends)))
 
-;; Initialise installed packages at this early stage, by using the
-;; available cache.  I had tried a setup with this set to nil in the
-;; early-init.el, but (i) it ended up being slower and (ii) various
-;; package commands, like `describe-package', did not have an index of
-;; packages to work with, requiring a `package-refresh-contents'.
-(setq package-enable-at-startup t)
-
 ;; Prevent unwanted runtime builds in gccemacs (native-comp); packages are
 ;; compiled ahead-of-time when they are installed and site files are compiled
 ;; when gccemacs is installed.
 (setq comp-deferred-compilation nil)
 
+
 ;;; early-init.el ends here
-
-;; This is bound to MacOS. In the future, there should be an OS
-;; agnostic way of calling these functions. This would be handled by
-;; making a boolean checking for OS type at startup and then assigning
-;; respective variables to the desktop commands. That way we won't
-;; have to constantly do the checking for OS, just do it once.
-(defun mw/theme-gsettings-dark-p ()
-  "Return non-nil if defaults (MACOS) has a dark theme.
-Return nil if the OS is not darwin"
-  (if (eq system-type 'darwin)
-      (string-match-p
-       "Dark"
-       (shell-command-to-string "defaults read -g AppleInterfaceStyle"))))
-
-(defun mw/avoid-initial-flash-of-light ()
-  "Avoid flash of light when starting Emacs, if needed.
-New frames are instructed to call
-`prot-emacs-re-enable-frame-theme'."
-  (when (mw/theme-gsettings-dark-p)
-    (set-face-attribute 'default nil :background "#000000"
-                        :foreground "#ffffff")
-    (set-face-attribute 'mode-line nil :background "#000000"
-                        :foreground "#ffffff" :box 'unspecified)))
-
-(setq mode-line-format nil)
-(mw/avoid-initial-flash-of-light)
