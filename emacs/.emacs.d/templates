@@ -2,3 +2,23 @@ fundamental-mode ;; Available everywhere
 
 (today (format-time-string "%Y-%m-%d"))
 (todayde (format-time-string "%d/%m/%Y"))
+
+python-ts-mode python-mode
+
+(ife "if " p ":" n> (p "pass") n> "else:" n> q)
+(try "try: " n> (p "pass") n> "except " p " as e:" n> q)
+(tryelse "try: " n> (p "pass") n> "except " p " as e:" n> (p "pass") n> "else:" n> q)
+(elif "if " p ":" n> (p "pass") n> "elif " p ":" n> (p "pass") n> "else:" n> q)
+
+org-mode
+
+(scr "#+begin_src " p n r n "#+end_src" :post (org-edit-src-code))
+(julia "#+begin_src julia" n r n "#+end_src" :post (org-edit-src-code))
+(sh "#+begin_src sh" n r n "#+end_src" :post (org-edit-src-code))
+(fish "#+begin_src fish" n r n "#+end_src" :post (org-edit-src-code))
+(python "#+begin_src python" n r n "#+end_src" :post (org-edit-src-code))
+
+;; Local Variables:
+;; mode: lisp-data
+;; outline-regexp: "[a-z]"
+;; End:

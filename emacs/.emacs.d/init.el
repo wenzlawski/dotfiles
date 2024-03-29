@@ -1016,7 +1016,7 @@ This function can be used as the value of the user option
 (use-package eglot
   :bind
   (:map eglot-mode-map
-	("C-c f" . eglot-format)
+	("C-c e f" . eglot-format)
         ("C-c e q" . eglot-shutdown)
         ("C-c e Q" . eglot-shutdown-all)
         ("C-c e l" . eglot-list-connections)
@@ -1034,9 +1034,14 @@ This function can be used as the value of the user option
 	("C-c M-p" . flymake-goto-prev-error)
 	("C-c M-l" . flymake-show-project-diagnostics)))
 
+;; * lisp
+
+(use-package lisp-mode
+  :hook (lisp-data-mode . electric-pair-mode))
 ;; * elisp
 
 (use-package elisp-mode
+  :hook (emacs-lisp-mode . electric-pair-mode)
   :bind
   (:map emacs-lisp-mode-map
 	("M-i" . completion-at-point))
@@ -1354,6 +1359,7 @@ This function can be used as the value of the user option
 ;; * yasnippet
 
 (use-package yasnippet
+  :disabled 
   :init
   (use-package yasnippet-snippets)
   ;; (setq yas-minor-mode-map
@@ -1368,6 +1374,7 @@ This function can be used as the value of the user option
   (setq yas-verbosity 0))
 
 (use-package yasnippet-capf
+  :disabled
   :straight (:host github :repo "elken/yasnippet-capf")
   :after cape
   :config
@@ -1403,7 +1410,7 @@ This function can be used as the value of the user option
   ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
   ;; (global-tempel-abbrev-mode)
   :hook
-  ((conf-mode text-mode) . tempel-setup-capf))
+  ((conf-mode prog-mode text-mode) . tempel-setup-capf))
 
 (use-package tempel-collection
   :after tempel)
@@ -1432,7 +1439,7 @@ This function can be used as the value of the user option
   :straight (:host github :repo "copilot-emacs/copilot.el" :files ("dist" "*.el"))
   :hook prog-mode
   :commands copilot-login
-  :bind (:map copilot-completion-map ("<tab>" . copilot-accept-completion))
+  :bind (:map copilot-completion-map ("<C-i>" . copilot-accept-completion))
   :config
   (setq copilot-idle-delay 0.3))
 
@@ -2609,26 +2616,32 @@ Argument BOOK-ALIST ."
 	("C-e" . xah-forward-right-bracket)
 	("M-a" . beginning-of-line)
 	("M-e" . end-of-line)
-	("(" . xah-insert-paren)
+	;;("(" . xah-insert-paren)
 	;;(")" . xah-insert-paren)
-	("{" . xah-insert-brace)
+	;;("{" . xah-insert-brace)
 	;;("}" . xah-insert-brace)
-	("[" . xah-insert-bracket)
+	;;("[" . xah-insert-bracket)
 	;;("]" . xah-insert-bracket)
-	("\"" . xah-insert-ascii-double-quote)
+	;;("\"" . xah-insert-ascii-double-quote)
 	("M-<DEL>" . xah-delete-backward-bracket-text))
   (:map emacs-lisp-mode-map
         ("C-a" . xah-backward-left-bracket)
 	("C-e" . xah-forward-right-bracket)
 	("M-a" . beginning-of-line)
 	("M-e" . end-of-line)
-	("(" . xah-insert-paren)
+	;;("(" . xah-insert-paren)
 	;;(")" . xah-insert-paren)
-	("{" . xah-insert-brace)
+	;;("{" . xah-insert-brace)
 	;;("}" . xah-insert-brace)
-	("[" . xah-insert-bracket)
+	;;("[" . xah-insert-bracket)
 	;;("]" . xah-insert-bracket)
-	("\"" . xah-insert-ascii-double-quote)
+	;;("\"" . xah-insert-ascii-double-quote)
+	("M-<DEL>" . xah-delete-backward-bracket-text))
+  (:map lisp-data-mode-map
+	("C-a" . xah-backward-left-bracket)
+	("C-e" . xah-forward-right-bracket)
+	("M-a" . beginning-of-line)
+	("M-e" . end-of-line)
 	("M-<DEL>" . xah-delete-backward-bracket-text)))
 
 ;; * LOCAL-VARIABLES
