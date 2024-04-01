@@ -1,7 +1,5 @@
 ;;; -*- lexical-binding: t; no-byte-compile: t -*-
 ;;; early-init.el --- Early Init File
-;; NOTE: early-init.el is generated from config.org.
-;; Please edit that file instead.
 
 ;; Temporarily increase the garbage collection threshold.  These
 ;; changes help shave off about half a second of startup time.  The
@@ -62,7 +60,7 @@
 ;; making a boolean checking for OS type at startup and then assigning
 ;; respective variables to the desktop commands. That way we won't
 ;; have to constantly do the checking for OS, just do it once.
-(defun mw/theme-gsettings-dark-p ()
+(defun my/theme-gsettings-dark-p ()
   "Return non-nil if defaults (MACOS) has a dark theme.
 Return nil if the OS is not darwin"
   (if (eq system-type 'darwin)
@@ -70,17 +68,17 @@ Return nil if the OS is not darwin"
        "Dark"
        (shell-command-to-string "defaults read -g AppleInterfaceStyle"))))
 
-(defun mw/avoid-initial-flash-of-light ()
+(defun my/avoid-initial-flash-of-light ()
   "Avoid flash of light when starting Emacs, if needed.
 New frames are instructed to call `prot-emacs-re-enable-frame-theme'."
-  (when (mw/theme-gsettings-dark-p)
+  (when (my/theme-gsettings-dark-p)
     (set-face-attribute 'default nil :background "#000000"
                         :foreground "#ffffff")
     (set-face-attribute 'mode-line nil :background "#000000"
                         :foreground "#ffffff" :box 'unspecified)))
 
 (setq mode-line-format nil)
-(mw/avoid-initial-flash-of-light)
+(my/avoid-initial-flash-of-light)
 
 (add-to-list 'initial-frame-alist '(height . 80))
 (add-to-list 'default-frame-alist '(height . 80))
@@ -139,6 +137,5 @@ New frames are instructed to call `prot-emacs-re-enable-frame-theme'."
 ;; compiled ahead-of-time when they are installed and site files are compiled
 ;; when gccemacs is installed.
 (setq comp-deferred-compilation nil)
-
 
 ;;; early-init.el ends here

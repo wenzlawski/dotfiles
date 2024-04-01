@@ -105,8 +105,6 @@
 ;; * Themes
 
 (setq custom-safe-themes t)
-
-(setq custom-safe-themes t)
 (defalias 'my/apply-theme-change 'my/modus-theme-change)
 
 (add-to-list 'ns-system-appearance-change-functions 'my/apply-theme-change)
@@ -340,10 +338,9 @@
   (fringe-mode '(0 . 0))
   (blink-cursor-mode)
   (recentf-mode)
-  (show-paren-mode)
   (global-auto-revert-mode)
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
-
+  :hook (prog-mode . show-paren-mode)
   :custom-face
   (show-paren-match ((t (:underline nil :inverse-video nil))))
   :bind
@@ -374,6 +371,10 @@
   ;;    ("K" . dired-kill-subdir))
   (:map completion-list-mode-map
         ("e" . switch-to-minibuffer)))
+;; * info
+
+(use-package info)
+
 ;; * window
 
 (use-package window
@@ -533,7 +534,6 @@
 ;; * devdocs
 
 (use-package devdocs
-  :ensure t
   :bind (:map help-map ("D" . devdocs-lookup)))
 
 ;; * hydra
@@ -776,7 +776,7 @@ _d_: subtree
 
 ;; * expand-region
 
-(use-package expand-region :ensure t
+(use-package expand-region
   :bind
   ("C-=" . er/expand-region)
   ("C-+" . er/contract-region))
@@ -867,9 +867,7 @@ This function can be used as the value of the user option
         ("M-r" . consult-history))
 
   (:map org-mode-map
-        ("C-c h" . consult-org-heading))
-  (:map python-ts-mode-map
-	("M-o" . consult-imenu)))
+        ("C-c h" . consult-org-heading)))
 
 ;; ** consult-flycheck
 
@@ -1054,9 +1052,9 @@ This function can be used as the value of the user option
   :bind
   (:map python-ts-mode-map
 	("C-c M-e" . eglot)
-	("M-i" . completion-at-point))
+	("M-i" . completion-at-point)
+	("M-o" . consult-imenu))
   :config
-
   (use-package pyenv-mode
     :init
     (setq pyenv-mode-map
@@ -1067,12 +1065,10 @@ This function can be used as the value of the user option
     (:map python-ts-mode-map
           ("C-c C-s" . pyenv-mode-set)
           ("C-c C-u" . pyenv-mode-unset)))
-
   (use-package poetry
     :bind
     (:map python-ts-mode-map
           ("C-c C-b" . poetry)))
-
   (use-package python-pytest
     :bind
     (:map python-ts-mode-map
@@ -1081,7 +1077,6 @@ This function can be used as the value of the user option
 ;; * ein
 
 (use-package ein
-  :ensure t
   :config)
 
 (use-package ob-ein
@@ -1607,6 +1602,7 @@ This function can be used as the value of the user option
   (setq org-special-ctrl-a/e t)
   (setq org-outline-path-complete-in-steps nil)
   (setq org-goto-max-level 5)
+  (setq org-highlight-latex-and-related '(latex script entities))
   (setq org-blank-before-new-entry '((heading . auto) (plain-list-item . auto)))
   (add-to-list 'org-babel-load-languages '(shell . t))
   (setq org-src-window-setup 'current-window)
@@ -1619,16 +1615,19 @@ This function can be used as the value of the user option
   (org-mode . visual-line-mode)
   :bind
   ("C-x c" . org-capture)
+  ("C-c l" . org-store-link)
   (:map org-mode-map
         ("C-c C-." . org-time-stamp-inactive)
         ("C-c a" . org-agenda)
-        ("C-c 4 C-o" . my/org-open-at-point-other-window)
         ("C-c 4 o" . my/org-open-at-point-other-window)
+        ("C-c 4 C-o" . my/org-open-at-point-other-window)
         ("C-c 5 C-o" . my/org-open-at-point-other-frame)
         ("C-c 5 o" . my/org-open-at-point-other-frame)
         ("C-c e" . org-emphasize)
 	("<C-i>" . org-delete-backward-char)
 	("M-i" . backward-kill-word))
+  
+
   :custom-face
   (org-document-title ((t (:height 1.7)))))
 
@@ -1641,13 +1640,66 @@ This function can be used as the value of the user option
 ;; * org-appear
 
 (use-package org-appear
+  :hook org-mode
+  :custom
+  (org-appear-autolinks t))
+
+;; * org-fragtog
+
+(use-package org-fragtog
   :hook org-mode)
+
+;; * org-ref
+
+(use-package org-ref
+  :after org
+  :init
+  (with-eval-after-load 'ox
+    (defun my/org-ref-process-buffer--html (backend)
+      "Preprocess `org-ref' citations to HTML format.
+
+Do this only if the export backend is `html' or a derivative of
+that."
+      ;; `ox-hugo' is derived indirectly from `ox-html'.
+      ;; ox-hugo <- ox-blackfriday <- ox-md <- ox-html
+      (when (org-export-derived-backend-p backend 'html)
+        (org-ref-process-buffer 'html)))
+    (add-to-list 'org-export-before-parsing-hook #'my/org-ref-process-buffer--html)))
 
 ;; * ox-hugo
 
 (use-package ox-hugo
   :pin melpa  ;`package-archives' should already have ("melpa" . "https://melpa.org/packages/")
-  :after ox)
+  :after ox
+  :config
+  (add-to-list 'org-hugo-special-block-type-properties '("sidenote" . (:trim-pre t :trim-post t))))
+
+(with-eval-after-load 'ox-hugo
+  ;;;; Export Block
+  (defun org-hugo-export-block (export-block _contents _info)
+    "Transcode a EXPORT-BLOCK element from Org to Hugo-compatible Markdown.
+CONTENTS is nil.  INFO is a plist holding contextual information.
+
+Example:
+
+  #+begin_export hugo
+  foo
+  #+end_export
+
+exports verbatim to \"foo\" only when exported using `hugo'
+backend.
+
+If the backend tag is \"markdown\"/\"md\" or \"html\", exporting
+of those blocks falls back to the respective exporters."
+    (cond
+     ((string= (org-element-property :type export-block) "HUGO")
+      (org-remove-indentation (org-element-property :value export-block)))
+     ((string= (org-element-property :type export-block) "LATEX")
+      (org-export-with-backend 'latex export-block nil nil))
+     ;; Also include Markdown and HTML export blocks.
+     ;; ox-md handles HTML export blocks too.
+     (t
+      (org-export-with-backend 'md export-block nil nil)))))
 
 ;; * ox-pandoc
 
@@ -1892,6 +1944,14 @@ end #OB-JULIA-VTERM_END\n"))
   :config
   (setq org-babel-default-header-args:sh '((:results . "output")))
   (setq org-babel-default-header-args:shell '((:results . "output"))))
+;; * ob-latex
+
+(use-package ob-latex
+  :after org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((latex . t))))
 ;; * ob-async
 
 ;; python does not work.
@@ -1933,7 +1993,29 @@ end #OB-JULIA-VTERM_END\n"))
 
 ;; * org-mac-link
 
-(when (eq system-type 'darwin)
+(use-package org-mac-link
+  :when (eq system-type 'darwin)
+  :after org
+  :init
+  (setq org-mac-link-brave-app-p nil
+	org-mac-link-chrome-app-p nil
+	org-mac-link-acrobat-app-p nil
+	org-mac-link-outlook-app-p nil
+	org-mac-link-addressbook-app-p nil
+	org-mac-link-qutebrowser-app-p nil
+	org-mac-link-finder-app-p t
+	org-mac-link-mail-app-p t
+	org-mac-link-devonthink-app-p t
+	org-mac-link-safari-app-p nil
+	org-mac-link-librewolf-app-p t
+	org-mac-link-firefox-vimperator-p nil
+	org-mac-link-evernote-app-p nil
+	org-mac-link-together-app-p nil
+	org-mac-link-skim-app-p t)
+  :bind
+  (:map org-mode-map
+	("C-c L" . my/org-mac-link-get-link))
+  :config
   (defun my/org-mac-link-applescript-librewolf-get-frontmost-url ()
     "AppleScript to get the links to the frontmost window of the LibreWolf.app."
     (let ((result
@@ -2020,29 +2102,7 @@ end #OB-JULIA-VTERM_END\n"))
 			  (delete-region (point) end-desc)
 			  (insert new-desc)))
 		    (call-interactively grab-function)))))
-	    descriptors)))
-
-  (use-package org-mac-link
-    :demand t
-    :init
-    (setq org-mac-link-brave-app-p nil
-	  org-mac-link-chrome-app-p nil
-	  org-mac-link-acrobat-app-p nil
-	  org-mac-link-outlook-app-p nil
-	  org-mac-link-addressbook-app-p nil
-	  org-mac-link-qutebrowser-app-p nil
-	  org-mac-link-finder-app-p t
-	  org-mac-link-mail-app-p t
-	  org-mac-link-devonthink-app-p t
-	  org-mac-link-safari-app-p nil
-	  org-mac-link-librewolf-app-p t
-	  org-mac-link-firefox-vimperator-p nil
-	  org-mac-link-evernote-app-p nil
-	  org-mac-link-together-app-p nil
-	  org-mac-link-skim-app-p t)
-    :bind
-    (:map org-mode-map
-	  ("C-c L" . my/org-mac-link-get-link))))
+	    descriptors))))
 
 ;; * org-noter
 
@@ -2071,6 +2131,20 @@ end #OB-JULIA-VTERM_END\n"))
 
 (use-package org-web-tools)
 
+;; * org-mind-map
+
+(use-package org-mind-map
+  :init
+  (require 'ox-org)
+  :config
+  (setq org-mind-map-engine "dot")       ; Default. Directed Graph
+  ;; (setq org-mind-map-engine "neato")  ; Undirected Spring Graph
+  ;; (setq org-mind-map-engine "twopi")  ; Radial Layout
+  ;; (setq org-mind-map-engine "fdp")    ; Undirected Spring Force-Directed
+  ;; (setq org-mind-map-engine "sfdp")   ; Multiscale version of fdp for the layout of large graphs
+  ;; (setq org-mind-map-engine "twopi")  ; Radial layouts
+  ;; (setq org-mind-map-engine "circo")  ; Circular Layout
+  )
 ;; * gnuplot
 
 (use-package gnuplot-mode)
@@ -2162,34 +2236,67 @@ end #OB-JULIA-VTERM_END\n"))
   (setq denote-date-format nil)
   (setq denote-backlinks-show-context t)
   (denote-rename-buffer-mode 1)
-  (require 'denote-org-dblock)
   :hook (dired-mode-hook . denote-dired-mode-in-directories)
   :bind
-  ("C-c n n" . denote)
-  ("C-c n p" . denote-region) ; "contents" mnemonic
-  ("C-c n N" . denote-type)
-  ("C-c n d" . denote-date)
-  ("C-c n z" . denote-signature) ; "zettelkasten" mnemonic
-  ("C-c n s" . denote-subdirectory)
-  ("C-c n t" . denote-template)
-  ("C-c n i" . denote-link) ; "insert" mnemonic
+  ("C-c n C-r" . my/denote-rename-buffer)
   ("C-c n I" . denote-add-links)
   ("C-c n L" . denote-link-or-create)
-  ("C-c n l" . denote-link-after-creating)
-  ("C-c n h" . denote-org-extras-link-to-heading)
-  ("C-c n b" . denote-backlinks)
-  ("C-c n f f" . denote-find-link)
-  ("C-c n f b" . denote-find-backlink)
-  ("C-c n f r" . my/denote-rg-search)
-  ("C-c n r" . denote-rename-file)
+  ("C-c n N" . denote-type)
   ("C-c n R" . denote-rename-file-using-front-matter)
-  ("C-c n C-r" . my/denote-rename-buffer))
+  ("C-c n b" . denote-backlinks)
+  ("C-c n d" . denote-date)
+  ("C-c n h" . denote-org-extras-link-to-heading)
+  ("C-c n f b" . denote-find-backlink)
+  ("C-c n f f" . denote-find-link)
+  ("C-c n f r" . my/denote-rg-search)
+  ("C-c n i" . denote-link) ; "insert" mnemonic
+  ("C-c n l" . denote-link-after-creating)
+  ("C-c n n" . denote)
+  ("C-c n p" . denote-region) ; "contents" mnemonic
+  ("C-c n P" . denote-org-extras-extract-org-subtree)
+
+  ("C-c n r" . denote-rename-file)
+  ("C-c n s" . denote-subdirectory)
+  ("C-c n t" . denote-template)
+  ("C-c n z" . denote-signature)) ; "zettelkasten" mnemonic
+
+(use-package denote-org-extras
+  :after denote)
+
 
 (defun my/denote-rg-search ()
   "Search org-roam directory using consult-ripgrep. With live-preview."
   (interactive)
   (let ((consult-ripgrep-command "rg --null --ignore-case --type org --line-buffered --color=always --max-columns=500 --no-heading --line-number . -e ARG OPTS"))
     (consult-ripgrep denote-directory)))
+
+(use-package denote-explore
+  :custom
+  ;; Where to store network data and in which format
+  ;; (denote-explore-network-directory "<folder>")
+  ;; (denote-explore-network-filename "<filename?")
+  (denote-explore-network-format 'graphviz)
+  :bind
+  (;; Statistics
+   ("C-c n e c" . denote-explore-count-notes)
+   ("C-c n e C" . denote-explore-count-keywords)
+   ("C-c n e b" . denote-explore-keywords-barchart)
+   ("C-c n e x" . denote-explore-extensions-barchart)
+   ;; Random walks
+   ("C-c n e r" . denote-explore-random-note)
+   ("C-c n e l" . denote-explore-random-link)
+   ("C-c n e k" . denote-explore-random-keyword)
+   ;; Denote Janitor
+   ("C-c n e d" . denote-explore-identify-duplicate-notes)
+   ("C-c n e z" . denote-explore-zero-keywords)
+   ("C-c n e s" . denote-explore-single-keywords)
+   ("C-c n e o" . denote-explore-sort-keywords)
+   ("C-c n e r" . denote-explore-rename-keywords)
+   ;; Visualise denote
+   ("C-c n e n" . denote-explore-network)
+   ("C-c n e v" . denote-explore-network-regenerate)
+   ("C-c n e D" . denote-explore-degree-barchart)))
+
 
 ;; * nov-mode
 
@@ -2458,6 +2565,7 @@ Argument BOOK-ALIST ."
   :config (citar-embark-mode))
 
 (use-package citar-denote
+  :ensure t
   :custom
   ;; Use package defaults
   (citar-open-always-create-notes nil)
