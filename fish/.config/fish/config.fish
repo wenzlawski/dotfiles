@@ -26,3 +26,4 @@ fish_add_path /usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS
 fish_add_path $VOLTA_HOME/bin
 fish_add_path $PNPM_HOME
 fish_add_path ~/.pyenv/shims
+fish_add_path /Library/TeX/texbin
