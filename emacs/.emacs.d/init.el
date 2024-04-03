@@ -2217,6 +2217,16 @@ end #OB-JULIA-VTERM_END\n"))
   (setq which-key-idle-secondary-delay 0.05)
   (which-key-mode 1))
 
+;; * hyperbole
+
+(use-package hyperbole
+  :bind
+  (:map hyperbole-mode-map
+	("M-o" . nil))
+  :config
+  (setq hbmap:dir-user "~/.emacs.d/hyperb")
+  (hyperbole-mode 1))
+
 ;; * denote
 
 (defun my/denote-rename-buffer ()
