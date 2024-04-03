@@ -1036,6 +1036,7 @@ This function can be used as the value of the user option
 
 (use-package lisp-mode
   :hook (lisp-data-mode . electric-pair-mode))
+
 ;; * elisp
 
 (use-package elisp-mode
@@ -1435,6 +1436,7 @@ This function can be used as the value of the user option
   :hook prog-mode
   :commands copilot-login
   :bind (:map copilot-completion-map ("<C-i>" . copilot-accept-completion))
+  (:map help-map ("t C" . copilot-mode))
   :config
   (setq copilot-idle-delay 0.3))
 
@@ -2720,10 +2722,10 @@ Argument BOOK-ALIST ."
 (use-package xah
   :bind
   (:map lisp-interaction-mode-map
-        ("C-a" . xah-backward-left-bracket)
-	("C-e" . xah-forward-right-bracket)
-	("M-a" . beginning-of-line)
-	("M-e" . end-of-line)
+        ("M-a" . xah-backward-left-bracket)
+	("M-e" . xah-forward-right-bracket)
+	("C-a" . beginning-of-line)
+	("C-e" . end-of-line)
 	;;("(" . xah-insert-paren)
 	;;(")" . xah-insert-paren)
 	;;("{" . xah-insert-brace)
@@ -2733,10 +2735,10 @@ Argument BOOK-ALIST ."
 	;;("\"" . xah-insert-ascii-double-quote)
 	("M-<DEL>" . xah-delete-backward-bracket-text))
   (:map emacs-lisp-mode-map
-        ("C-a" . xah-backward-left-bracket)
-	("C-e" . xah-forward-right-bracket)
-	("M-a" . beginning-of-line)
-	("M-e" . end-of-line)
+        ("M-a" . xah-backward-left-bracket)
+	("M-e" . xah-forward-right-bracket)
+	("C-a" . beginning-of-line)
+	("C-e" . end-of-line)
 	;;("(" . xah-insert-paren)
 	;;(")" . xah-insert-paren)
 	;;("{" . xah-insert-brace)
@@ -2746,10 +2748,10 @@ Argument BOOK-ALIST ."
 	;;("\"" . xah-insert-ascii-double-quote)
 	("M-<DEL>" . xah-delete-backward-bracket-text))
   (:map lisp-data-mode-map
-	("C-a" . xah-backward-left-bracket)
-	("C-e" . xah-forward-right-bracket)
-	("M-a" . beginning-of-line)
-	("M-e" . end-of-line)
+	("M-a" . xah-backward-left-bracket)
+	("M-e" . xah-forward-right-bracket)
+	("C-a" . beginning-of-line)
+	("C-e" . end-of-line)
 	("M-<DEL>" . xah-delete-backward-bracket-text)))
 
 ;; * LOCAL-VARIABLES
