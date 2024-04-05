@@ -6,9 +6,9 @@ fundamental-mode ;; Available everywhere
 python-ts-mode python-mode
 
 (ife "if " p ":" n> (p "pass") n> "else:" n> q)
+(elif "if " p ":" n> (p "pass") n> "elif " p ":" n> (p "pass") n> "else:" n> q)
 (try "try: " n> (p "pass") n> "except " p " as e:" n> q)
 (tryelse "try: " n> (p "pass") n> "except " p " as e:" n> (p "pass") n> "else:" n> q)
-(elif "if " p ":" n> (p "pass") n> "elif " p ":" n> (p "pass") n> "else:" n> q)
 
 org-mode
 
@@ -24,9 +24,8 @@ org-mode
 (startup "#+startup: " q )
 (el "#+begin_src emacs-lisp" n r n "#+end_src" :post (org-edit-src-code))
 
-;; if emmet-mode is loaded
-(lorem20 (if (featurep 'emmet-mode) (emmet-lorem-generate 20)))
-(lorem100 (if (featurep 'emmet-mode) (emmet-lorem-generate 100))) 
+(lorems (Lorem-ipsum-insert-sentences (read-number "Sentences: ")))
+(loremp (Lorem-ipsum-insert-paragraphs (read-number "Paragraphs: ")))
 
 ;; Local Variables:
 ;; mode: lisp-data

@@ -213,8 +213,6 @@
   (setq poet-theme-variable-pitch-multiplier 1.6)
   (setq poet-theme-variable-headers nil))
 
-(add-to-list 'default-frame-alist '(font . "Iosevka Comfy-18"))
-
 ;; * Writroom
 
 (defun my/writeroom-mode-hook ()
@@ -340,9 +338,12 @@
   (recentf-mode)
   (global-auto-revert-mode)
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
+  (add-to-list 'default-frame-alist '(font . "Iosevka Comfy-18"))
   :hook (prog-mode . show-paren-mode)
   :custom-face
   (show-paren-match ((t (:underline nil :inverse-video nil))))
+  (variable-pitch ((t (:family "Open Sans"))))
+  (fixed-pitch ((t (:family "Iosevka Comfy"))))
   :bind
   ("C-x C-l" . nil)
   ("C-x C-S-l" . downcase-region)
@@ -374,6 +375,15 @@
 ;; * info
 
 (use-package info)
+
+;; * mwheel
+
+(use-package mwheel
+  :bind
+  ("C-<mouse-4>" . nil)
+  ("C-<mouse-5>" . nil)
+  ("C-<wheel-down>" . nil)
+  ("C-<wheel-up>" . nil))
 
 ;; * window
 
@@ -611,7 +621,9 @@ _d_: subtree
 
 ;; * hl-todo
 
-(use-package hl-todo)
+(use-package hl-todo
+  :config
+  (global-hl-todo-mode))
 
 ;; * exiftool
 
@@ -756,6 +768,13 @@ _d_: subtree
   ;; `global-corfu-modes' to exclude certain modes.
   :init
   (global-corfu-mode))
+
+;; * abbrev
+
+(use-package abbrev
+  :config
+  (setq save-abbrevs 'silently)
+  (quietly-read-abbrev-file))
 
 ;; * dabbrev
 
@@ -1405,6 +1424,20 @@ This function can be used as the value of the user option
   ;; either locally or globally. `expand-abbrev' is bound to C-x '.
   ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
   ;; (global-tempel-abbrev-mode)
+  :config
+  (defun tempel-include (elt)
+    (when (eq (car-safe elt) 'i)
+      (if-let (template (alist-get (cadr elt) (tempel--templates)))
+          (cons 'l template)
+	(message "Template %s not found" (cadr elt))
+	nil)))
+  (add-to-list 'tempel-user-elements #'tempel-include)
+
+  (defun tempel-propmt (elt)
+    (when (eq (car-safe elt) 'p)
+      (if-let (prompt (alist-get (cadr elt) (tempel--templates)))
+	  (cons 'l prompt))))
+
   :hook
   ((conf-mode prog-mode text-mode) . tempel-setup-capf))
 
@@ -1554,14 +1587,6 @@ This function can be used as the value of the user option
 
 ;; * org
 
-(defun my/org-setup-hook ()
-  "Setup org mode hook"
-  (display-line-numbers-mode 0)
-  ;;(smartparens-mode 0)
-  ;;(git-gutter-mode 0)
-  (auto-fill-mode 1)
-  (setq fill-column 78))
-
 (defun my/org-open-at-point-other-window ()
   "Open at point other window"
   (interactive)
@@ -1615,6 +1640,8 @@ This function can be used as the value of the user option
   :hook
   (org-mode . auto-fill-mode)
   (org-mode . visual-line-mode)
+  (org-mode . variable-pitch-mode)
+  (org-mode . (lambda nil (setq cursor-type 'bar)))
   :bind
   ("C-x c" . org-capture)
   ("C-c l" . org-store-link)
@@ -1631,7 +1658,17 @@ This function can be used as the value of the user option
   
 
   :custom-face
-  (org-document-title ((t (:height 1.7)))))
+  (org-document-title ((t (:height 1.7))))
+  (org-table ((t (:inherit 'fixed-pitch))))
+  (org-block ((t (:inherit 'fixed-pitch))))
+  (org-block-begin-line ((t (:inherit 'fixed-pitch))))
+  (org-document-info-keyword ((t (:inherit 'fixed-pitch))))
+  (org-meta-line ((t (:inherit 'fixed-pitch))))
+  (org-document-info ((t (:inherit 'fixed-pitch))))
+  (org-property-value ((t (:inherit 'fixed-pitch))))
+  (org-drawer ((t (:inherit 'fixed-pitch))))
+  (org-special-keyword ((t (:inherit 'fixed-pitch)))))
+
 
 ;; (use-package ob-shell
 ;;   :after org
@@ -1651,7 +1688,7 @@ This function can be used as the value of the user option
 (use-package org-fragtog
   :hook org-mode)
 
-;; * org-ref
+;; * TODO org-ref
 
 (use-package org-ref
   :after org
@@ -2217,12 +2254,14 @@ end #OB-JULIA-VTERM_END\n"))
   (setq which-key-idle-secondary-delay 0.05)
   (which-key-mode 1))
 
-;; * hyperbole
+;; * TODO hyperbole
 
 (use-package hyperbole
+  :disabled
   :bind
   (:map hyperbole-mode-map
-	("M-o" . nil))
+	("M-o" . nil)
+	("ESC <return>" . nil))
   :config
   (setq hbmap:dir-user "~/.emacs.d/hyperb")
   (hyperbole-mode 1))
@@ -2397,7 +2436,6 @@ end #OB-JULIA-VTERM_END\n"))
 (use-package calibredb
   :bind
   ("C-c d" . calibredb)
-  ("C-c C-d" . my/refresh-calibre-bib)
   ("C-c D" . calibredb-consult-read)
   :config
   (setq calibredb-root-dir "~/Dropbox/Calibre Library")
@@ -2567,7 +2605,7 @@ Argument BOOK-ALIST ."
 	("C-c B" . citar-dwim))
   (:map citar-map :package citar
 	("x" . my/citar-toggle-multiple)
-	("a" . consult-recoll))
+	("R" . citar-insert-reference))
   :bind-keymap
   ("C-c c" . citar-map))
 
@@ -2593,13 +2631,13 @@ Argument BOOK-ALIST ."
   ;; Bind all available commands
   :bind
   (:map citar-map
-	("c" . citar-create-note)
+	("C-n" . citar-create-note)
 	("N" . citar-denote-open-note)
 	("d" . citar-denote-dwim)
-	("E" . citar-denote-open-reference-entry)
+	("C-e" . citar-denote-open-reference-entry)
 	("s" . citar-denote-find-reference)
-	("S" . citar-denote-find-citation)
-	("i" . citar-denote-link-reference)))
+	("c" . citar-denote-find-citation)
+	("R" . citar-denote-link-reference)))
 
 ;; * ebib
 
@@ -2683,6 +2721,15 @@ Argument BOOK-ALIST ."
 	("a t" . pdf-annot-add-text-annotation)
 	("a u" . pdf-annot-add-underline-markup-annotation)))
 
+;; * image
+
+(use-package image
+  :bind
+  (:map image-slice-map
+	("C-<mouse-4>" . nil)
+	("C-<mouse-5>" . nil)
+	("C-<wheel-up>" . nil)
+	("C-<wheel-down>" . nil)))
 ;; * other
 
 (defun enable-all-commands ()
@@ -2763,6 +2810,11 @@ Argument BOOK-ALIST ."
 	("C-a" . beginning-of-line)
 	("C-e" . end-of-line)
 	("M-<DEL>" . xah-delete-backward-bracket-text)))
+
+;; * lorem-ipsum
+
+(use-package lorem-ipsum
+  :commands (Lorem-ipsum-insert-sentences Lorem-ipsum-insert-list Lorem-ipsum-insert-paragraphs))
 
 ;; * LOCAL-VARIABLES
 
