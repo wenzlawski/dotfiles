@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
-;; * Basic settings
+;; * BASIC SETTINGS
 
 (setq warning-minimum-level :emergency)
 (defun dir-concat (dir file)
@@ -57,13 +57,18 @@
 (unless IS-MAC   (setq command-line-ns-option-alist nil))
 (unless IS-LINUX (setq command-line-x-option-alist nil))
 
+(mapc
+ (lambda (string)
+   (add-to-list 'load-path (locate-user-emacs-file string)))
+ '("lisp"))
+
 (use-package server
   :defer 5
   :config
   (unless (server-running-p)
     (server-start)))
 
-;; * Packages
+;; * PACKAGES
 
 (require 'package)
 
@@ -110,7 +115,7 @@
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
 
-;; * Themes
+;; * THEMES
 
 (setq custom-safe-themes t)
 (defalias 'my/apply-theme-change 'my/modus-theme-change)
@@ -122,7 +127,7 @@
 (use-package ef-themes)
 (use-package color-theme-modern)
 
-;; * Modus themes
+;; ** Modus themes
 
 (defun my/theme-default-light ()
   "Set the default theme to light"
@@ -198,7 +203,7 @@
 	    (bg-tab-current bg-active)
 	    (bg-tab-other bg-main))))
 
-;; * Timu theme
+;; ** Timu theme
 
 (use-package timu-macos-theme
   :straight (:host github :repo "emacsmirror/timu-macos-theme")
@@ -214,14 +219,15 @@
   (customize-set-variable 'timu-macos-flavour (symbol-name appearance))
   (load-theme 'timu-macos t))
 
-;; * Poet theme
+;; ** Poet theme
 
 (use-package poet-theme
   :config
   (setq poet-theme-variable-pitch-multiplier 1.6)
   (setq poet-theme-variable-headers nil))
 
-;; * Writroom
+;; * USER INTERFACE
+;; ** Writeroom
 
 (defun my/writeroom-mode-hook ()
   "Custom behaviours for `writeroom-mode'."
@@ -234,7 +240,7 @@
   :hook (writeroom-mode . my/writeroom-mode-hook))
 (use-package centered-cursor-mode)
 
-;; * Spacious padding
+;; ** Spacious padding
 
 (defun my/spacious-padding-reset ()
   "reset the spacious padding and modeline formats"
@@ -246,7 +252,7 @@
   ;; (spacious-padding-mode)
   )
 
-;; * Pulsar
+;; ** Pulsar
 
 (use-package pulsar
   :config
@@ -263,7 +269,7 @@
 (remove-hook 'xref-after-return-hook 'xref-pulse-momentarily)
 (remove-hook 'xref-after-jump-hook 'xref-pulse-momentarily)
 
-;; * default-text-scale
+;; ** default-text-scale
 
 (use-package default-text-scale
   :demand t
@@ -274,7 +280,7 @@
   :config
   (default-text-scale-mode))
 
-;; * rainbow-delimiters
+;; ** rainbow-delimiters
 
 (use-package rainbow-delimiters
   :disabled
@@ -292,14 +298,86 @@
   :custom
   (rainbow-delimiters-max-face-count 3))
 
-;; * user details
+;; ** ns-auto-titlebar
+
+(when (eq system-type 'darwin)
+  (use-package ns-auto-titlebar
+    :config
+    (ns-auto-titlebar-mode))
+  (use-package osx-trash
+    :config
+    (osx-trash-setup)))
+
+;; ** modeline
+
+(require 'prot-modeline)
+(defun prot-modeline-subtle-activate ()
+  "Run prot-modeline-subtle-mode with 1"
+  (interactive)
+  (prot-modeline-subtle-mode 1))
+
+(setq mode-line-compact nil) ; Emacs 28
+;; write a function to do the spacing
+(defun simple-mode-line-render (left right)
+  "Return a string of `window-width' length.
+    Containing LEFT, and RIGHT aligned respectively."
+  (let ((available-width
+         (- (window-total-width)
+            (+ (length (format-mode-line left))
+               (length (format-mode-line right))))))
+    (append left
+            (list (format (format "%%%ds" available-width) ""))
+            right)))
+(setq mode-line-right-align-edge 'right-margin)
+(setq-default mode-line-format
+              '((:eval
+                 (simple-mode-line-render
+                  (quote ("%e"
+                          prot-modeline-kbd-macro
+                          prot-modeline-narrow
+                          prot-modeline-buffer-status
+                          prot-modeline-input-method
+                          prot-modeline-evil
+                          prot-modeline-buffer-identification
+                          "  "
+                          prot-modeline-major-mode
+                          prot-modeline-process
+                          "  "
+                          prot-modeline-vc-branch
+                          "  "
+                          prot-modeline-eglot
+                          "  "
+                          prot-modeline-flymake))
+                  (quote (
+                          " "
+                          prot-modeline-misc-info
+                          " "))))))
+;;(prot-modeline-subtle-mode)
+
+;; ** highlight visual line
+
+(defun my/highlight-visual-line ()
+  (save-excursion
+    (cons (progn (beginning-of-visual-line) (point))
+          (progn (end-of-visual-line) (point)))))
+(setq hl-line-range-function 'my/highlight-visual-line)
+
+;; ** hl-todo
+
+(use-package hl-todo
+  :config
+  (global-hl-todo-mode))
+
+;; * CONFIGURATION
+;; ** user details
 
 (setq user-full-name "Marc Wenzlawski"
       user-mail-address "marcwenzlawski@gmail.com")
 
-;; * use-package emacs
+;; ** Emacs
 
 (use-package emacs
+  :straight nil
   :config
   (setq undo-limit 80000000)
   (setq auto-save-default t)
@@ -386,11 +464,7 @@
   ;;    ("K" . dired-kill-subdir))
   (:map completion-list-mode-map
         ("e" . switch-to-minibuffer)))
-;; * info
-
-(use-package info)
-
-;; * CUSTOM FILE
+;; ** CUSTOM FILE
 
 (use-package cus-edit
   :straight nil
@@ -411,24 +485,14 @@
 ;; Always start with *scratch*
 ;;(setq initial-buffer-choice t)
 
-(mapc
- (lambda (string)
-   (add-to-list 'load-path (locate-user-emacs-file string)))
- '("lisp"))
 
-;; * outline
-
-(use-package outline
-  :custom
-  (outline-minor-mode-prefix ""))
-
-;; * editorconfig
+;; ** editorconfig
 
 (use-package editorconfig
   :config
   (editorconfig-mode))
 
-;; * dtrt-indent
+;; ** dtrt-indent
 
 (use-package dtrt-indent
   :config
@@ -436,13 +500,236 @@
 ;; (add-to-list 'dtrt-indent-hook-mapping-list '(lua-ts-mode lua lua-ts-indent-offset))
 ;; (dtrt-indent-global-mode))
 
-;; * gcmh
+;; ** gcmh
 
 (use-package gcmh
   :config
   (gcmh-mode 1))
 
-;; * ace-window
+;; ** tabspaces
+
+(use-package tabspaces)
+
+;; ** outline
+
+(use-package outline
+  :custom
+  (outline-minor-mode-prefix ""))
+
+;; ** openwith
+
+(use-package openwith)
+
+;; ** tab-bar
+
+(use-package tab-bar
+  :custom
+  (tab-bar-select-tab-modifiers '(super))
+  :config
+  (setq tab-bar-close-button-show nil)       ;; hide tab close / X button
+  (setq tab-bar-new-tab-choice "*dashboard*");; buffer to show in new tabs
+  (setq tab-bar-tab-hints t)                 ;; show tab numbers
+  (setq tab-bar-format '(tab-bar-format-tabs tab-bar-separator)))
+
+;; ** exec-path-from-shell
+
+(use-package exec-path-from-shell
+  :when (memq window-system '(mac ns x))
+  :config
+  (setq exec-path-from-shell-arguments nil)
+  (exec-path-from-shell-initialize))
+
+;; ** savehist
+
+(use-package savehist
+  :init
+  (savehist-mode))
+
+;; ** htmlize
+
+(use-package htmlize)
+
+;; * HELP
+;; ** tldr
+
+(use-package tldr
+  :custom-face
+  (tldr-command-itself ((t (:inherit font-lock-keyword-face :weight bold :background unspecified :foreground "orange"))))
+  (tldr-command-argument ((t nil)))
+  (tldr-code-block ((t (:foreground unspecified :background unspecified)))))
+
+;; ** devdocs
+
+(use-package devdocs
+  :bind (:map help-map ("D" . devdocs-lookup)))
+
+;; ** helpful
+
+(use-package helpful
+  :hook (helpful-mode . show-paren-local-mode)
+  :bind
+  ([remap describe-function] . helpful-callable)
+  ([remap describe-variable] . helpful-variable)
+  ([remap describe-key] . helpful-key)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-symbol] . helpful-symbol)
+  ("C-h C-h" . helpful-at-point)
+  ("C-h F" . helpful-function))
+
+;; ** eldoc
+
+(use-package eldoc
+  :custom
+  (eldoc-echo-area-display-truncation-message nil)
+  (eldoc-echo-area-use-multiline-p nil)
+  :config
+  (setq eldoc-current-idle-delay 0.3))
+
+;; *** yasnippet
+
+(use-package yasnippet
+  :disabled 
+  :init
+  (use-package yasnippet-snippets)
+  ;; (setq yas-minor-mode-map
+  ;;       (let ((map (make-sparse-keymap)))
+  ;;         (define-key map (kbd "s") 'yas-insert-snippet)
+  ;;         (define-key map (kbd "n") 'yas-new-snippet)
+  ;;         (define-key map (kbd "v") 'yas-visit-snippet-file)
+  ;;         map))
+  (yas-reload-all)
+  :hook (prog-mode . yas-minor-mode)
+  :config
+  (setq yas-verbosity 0))
+
+(use-package yasnippet-capf
+  :disabled
+  :straight (:host github :repo "elken/yasnippet-capf")
+  :after cape
+  :config
+  (add-to-list 'completion-at-point-functions #'yasnippet-capf))
+;; :bind-keymap ("C-c s" . yas-minor-mode-map))
+
+;; *** tempel
+
+(use-package tempel
+  ;; Require trigger prefix before template name when completing.
+  ;; :custom
+  ;; (tempel-trigger-prefix "<")
+  :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
+         ("M-*" . tempel-insert))
+  (:map tempel-map
+	("<tab>" . tempel-next)
+	("<backtab>" . tempel-previous))
+  :init
+  ;; Setup completion at point
+  (defun tempel-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'.
+    ;; `tempel-expand' only triggers on exact matches. Alternatively use
+    ;; `tempel-complete' if you want to see all matches, but then you
+    ;; should also configure `tempel-trigger-prefix', such that Tempel
+    ;; does not trigger too often when you don't expect it. NOTE: We add
+    ;; `tempel-expand' *before* the main programming mode Capf, such
+    ;; that it will be tried first.
+    (setq-local completion-at-point-functions
+                (cons #'tempel-expand
+		      completion-at-point-functions)))
+  ;; Optionally make the Tempel templates available to Abbrev,
+  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
+  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
+  ;; (global-tempel-abbrev-mode)
+  :config
+  (defun tempel-include (elt)
+    (when (eq (car-safe elt) 'i)
+      (if-let (template (alist-get (cadr elt) (tempel--templates)))
+          (cons 'l template)
+	(message "Template %s not found" (cadr elt))
+	nil)))
+  (add-to-list 'tempel-user-elements #'tempel-include)
+
+  (defun tempel-propmt (elt)
+    (when (eq (car-safe elt) 'p)
+      (if-let (prompt (alist-get (cadr elt) (tempel--templates)))
+	  (cons 'l prompt))))
+
+  :hook
+  ((conf-mode prog-mode text-mode) . tempel-setup-capf))
+
+(use-package tempel-collection
+  :after tempel)
+
+;; *** projectile
+
+(use-package project)
+
+(use-package projectile
+  :bind-keymap
+  ("C-x p" . projectile-command-map)
+  :bind
+  (:map projectile-command-map ("b" . consult-project-buffer))
+  :config
+  (setq projectile-project-search-path
+        '("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles" "~/Dropbox/repos"))
+  (projectile-global-mode 1))
+
+;; *** quickrun
+
+(use-package quickrun)
+
+;; *** copilot
+
+(use-package copilot
+  :straight (:host github :repo "copilot-emacs/copilot.el" :files ("dist" "*.el"))
+  :hook prog-mode
+  :commands copilot-login
+  :bind (:map copilot-completion-map ("<C-i>" . copilot-accept-completion))
+  (:map help-map ("t C" . copilot-mode))
+  :config
+  (setq copilot-idle-delay 0.3))
+
+(use-package jsonrpc)
+;;  :pin gnu-elpa)
+
+;; *** emmet
+
+(use-package emmet-mode
+  :commands (emmet-find-left-bound emmet-transform emmet-reposition-cursor)
+  :hook (html-mode . emmet-mode))
+
+;; *** pos-tip
+
+(use-package pos-tip)
+
+;; *** vterm
+
+(use-package vterm
+  :bind
+  ("C-c t" . vterm)
+  ("C-c 4 t" . vterm-other-window)
+  :config
+  (setq vterm-eval-cmds
+	'(("find-file" find-file)
+	  ("find-file-other-window" find-file-other-window)
+          ("message" message)
+          ("vterm-clear-scrollback" vterm-clear-scrollback)
+          ("dired" dired)
+	  ("woman" woman)
+	  ("tldr" tldr)
+          ("ediff-files" ediff-files)))
+  (setq vterm-max-scrollback 10000)
+  (setq vterm-shell (executable-find "fish")))
+
+;; * which-key
+
+(use-package which-key
+  :config
+  (setq which-key-show-early-on-C-h nil)
+  (setq which-key-idle-delay 1.0)
+  (setq which-key-idle-secondary-delay 0.05)
+  (which-key-mode 1))
+
+;; * USER EXPERIENCE
+;; ** ace-window
 
 (use-package ace-window
   :config
@@ -466,11 +753,7 @@
   ("C-x o" . ace-window)
   ("C-<tab>" . ace-window))
 
-;; * tabspaces
-
-(use-package tabspaces)
-
-;; * avy
+;; ** avy
 
 (use-package avy
   :bind
@@ -492,7 +775,7 @@
           (?z . avy-action-zap-to-char)))
   (setq avy-keys '(?a ?r ?s ?t ?g ?m ?n ?e ?i ?o)))
 
-;; * embark
+;; ** embark
 
 (use-package embark
   :bind
@@ -515,39 +798,7 @@
 (use-package dash)
 (use-package embark-vc)
 
-;; * vterm
-
-(use-package vterm
-  :bind
-  ("C-c t" . vterm)
-  ("C-c 4 t" . vterm-other-window)
-  :config
-  (setq vterm-eval-cmds
-	'(("find-file" find-file)
-	  ("find-file-other-window" find-file-other-window)
-          ("message" message)
-          ("vterm-clear-scrollback" vterm-clear-scrollback)
-          ("dired" dired)
-	  ("woman" woman)
-	  ("tldr" tldr)
-          ("ediff-files" ediff-files)))
-  (setq vterm-max-scrollback 10000)
-  (setq vterm-shell (executable-find "fish")))
-
-;; * tldr
-
-(use-package tldr
-  :custom-face
-  (tldr-command-itself ((t (:inherit font-lock-keyword-face :weight bold :background unspecified :foreground "orange"))))
-  (tldr-command-argument ((t nil)))
-  (tldr-code-block ((t (:foreground unspecified :background unspecified)))))
-
-;; * devdocs
-
-(use-package devdocs
-  :bind (:map help-map ("D" . devdocs-lookup)))
-
-;; * hydra
+;; ** hydra
 
 (use-package hydra
   :bind
@@ -557,13 +808,13 @@
   (with-eval-after-load 'outline
     (defhydra hydra-outline (:color pink :hint nil)
       "
-^Hide^             ^Show^           ^Move
-^^^^^^------------------------------------------------------
-_q_: sublevels     _a_: all         _u_: up
-_t_: body          _e_: entry       _n_: next visible
-_o_: other         _i_: children    _p_: previous visible
-_c_: entry         _k_: branches    _f_: forward same level
-_l_: leaves        _s_: subtree     _b_: backward same level
+^Hide^             ^Show^           ^Move                      ^Edit
+^^^^^^----------------------------------------------------------------------
+_q_: sublevels     _a_: all         _u_: up                    _U_: up
+_t_: body          _e_: entry       _n_: next visible          _D_: down
+_o_: other         _i_: children    _p_: previous visible      _<_: promote
+_c_: entry         _k_: branches    _f_: forward same level    _>_: demote
+_l_: leaves        _s_: subtree     _b_: backward same level   
 _d_: subtree                      _/_: outline
 "
       ;; Hide
@@ -586,104 +837,25 @@ _d_: subtree                      _/_: outline
       ("f" outline-forward-same-level)        ; Forward - same level
       ("b" outline-backward-same-level)       ; Backward - same level
       ("/" consult-outline)
+      ;; Edit
+      ("k" outline-headers-as-kill)        ; Kill this heading
+      ("U" outline-move-subtree-up)        ; Up
+      ("D" outline-move-subtree-down)
+      ("<" outline-promote)           ; Promote
+      (">" outline-demote)            ; Demote
       ("z" nil "leave"))))
 
-;; * ns-auto-titlebar
-
-(when (eq system-type 'darwin)
-  (use-package ns-auto-titlebar
-    :config
-    (ns-auto-titlebar-mode))
-  (use-package osx-trash
-    :config
-    (osx-trash-setup)))
-
-;; * highlight visual line
-
-(defun my/highlight-visual-line ()
-  (save-excursion
-    (cons (progn (beginning-of-visual-line) (point))
-          (progn (end-of-visual-line) (point)))))
-(setq hl-line-range-function 'my/highlight-visual-line)
-
-;; * openwith
-
-(use-package openwith)
-
-;; * undo-fu
+;; ** undo-fu
 
 (use-package undo-fu)
 
 (use-package undo-fu-session)
 
-;; * vundo
+;; ** vundo
 
 (use-package vundo)
 
-;; * hl-todo
-
-(use-package hl-todo
-  :config
-  (global-hl-todo-mode))
-
-;; * exiftool
-
-(use-package exiftool
-  :defer t)
-
-;; * bookmark+
-
-(use-package bookmark+
-  :straight (bookmark+))
-
-(setq bookmark-save-flag 1)
-
-;; * helpful
-
-(use-package helpful
-  :hook (helpful-mode . show-paren-local-mode)
-  :bind
-  ([remap describe-function] . helpful-callable)
-  ([remap describe-variable] . helpful-variable)
-  ([remap describe-key] . helpful-key)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-symbol] . helpful-symbol)
-  ("C-h C-h" . helpful-at-point)
-  ("C-h F" . helpful-function))
-
-;; * tab-bar
-
-(use-package tab-bar
-  :custom
-  (tab-bar-select-tab-modifiers '(super))
-  :config
-  (setq tab-bar-close-button-show nil)       ;; hide tab close / X button
-  (setq tab-bar-new-tab-choice "*dashboard*");; buffer to show in new tabs
-  (setq tab-bar-tab-hints t)                 ;; show tab numbers
-  (setq tab-bar-format '(tab-bar-format-tabs tab-bar-separator)))
-
-;; * scratch
-
-(use-package scratch
-  :straight (:host codeberg :repo "emacs-weirdware/scratch" :files ("*.el")))
-
-;; * pandoc-mode
-
-(use-package pandoc-mode
-  :hook ((text-mode doc-view-mode pdf-view-mode) . pandoc-mode)
-  :bind (:map pandoc-mode-map
-	      ("C-c p" . pandoc-main-hydra/body)
-	      ("C-c /" . nil)))
-
-;; * exec-path-from-shell
-
-(use-package exec-path-from-shell
-  :when (memq window-system '(mac ns x))
-  :config
-  (setq exec-path-from-shell-arguments nil)
-  (exec-path-from-shell-initialize))
-
-;; * transpose-frame
+;; ** transpose-frame
 
 (use-package transpose-frame
   :straight (:host github :repo "emacsorphanage/transpose-frame")
@@ -693,58 +865,37 @@ _d_: subtree                      _/_: outline
   ("C-x 4 o" . flop-frame)
   ("C-x 4 n" . rotate-frame))
 
-;; * modeline
-
-(require 'prot-modeline)
-(defun prot-modeline-subtle-activate ()
-  "Run prot-modeline-subtle-mode with 1"
-  (interactive)
-  (prot-modeline-subtle-mode 1))
-
-(setq mode-line-compact nil) ; Emacs 28
-;; write a function to do the spacing
-(defun simple-mode-line-render (left right)
-  "Return a string of `window-width' length.
-    Containing LEFT, and RIGHT aligned respectively."
-  (let ((available-width
-         (- (window-total-width)
-            (+ (length (format-mode-line left))
-               (length (format-mode-line right))))))
-    (append left
-            (list (format (format "%%%ds" available-width) ""))
-            right)))
-(setq mode-line-right-align-edge 'right-margin)
-(setq-default mode-line-format
-              '((:eval
-                 (simple-mode-line-render
-                  (quote ("%e"
-                          prot-modeline-kbd-macro
-                          prot-modeline-narrow
-                          prot-modeline-buffer-status
-                          prot-modeline-input-method
-                          prot-modeline-evil
-                          prot-modeline-buffer-identification
-                          "  "
-                          prot-modeline-major-mode
-                          prot-modeline-process
-                          "  "
-                          prot-modeline-vc-branch
-                          "  "
-                          prot-modeline-eglot
-                          "  "
-                          prot-modeline-flymake))
-                  (quote (
-                          " "
-                          prot-modeline-misc-info
-                          " "))))))
-;;(prot-modeline-subtle-mode)
-
-;; * hide-mode-line
+;; ** hide-mode-line
 
 (use-package hide-mode-line
   :bind (:map help-map ("t m" . hide-mode-line-mode)))
 
-;; * corfu
+;; ** bookmark+
+
+(use-package bookmark+
+  :straight (bookmark+))
+
+(setq bookmark-save-flag 1)
+
+;; ** scratch
+
+(use-package scratch
+  :straight (:host codeberg :repo "emacs-weirdware/scratch" :files ("*.el")))
+
+;; ** exiftool
+
+(use-package exiftool
+  :defer t)
+
+;; ** pandoc-mode
+
+(use-package pandoc-mode
+  :hook ((text-mode doc-view-mode pdf-view-mode) . pandoc-mode)
+  :bind (:map pandoc-mode-map
+	      ("C-c p" . pandoc-main-hydra/body)
+	      ("C-c /" . nil)))
+
+;; ** corfu
 
 (use-package corfu
   ;; Optional customizations
@@ -770,7 +921,7 @@ _d_: subtree                      _/_: outline
   :init
   (global-corfu-mode))
 
-;; * abbrev
+;; ** abbrev
 
 (use-package abbrev
   :straight nil
@@ -778,7 +929,7 @@ _d_: subtree                      _/_: outline
   (setq save-abbrevs 'silently)
   (quietly-read-abbrev-file))
 
-;; * dabbrev
+;; ** dabbrev
 
 ;; Use Dabbrev with Corfu!
 (use-package dabbrev
@@ -792,17 +943,17 @@ _d_: subtree                      _/_: outline
   (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
   (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode))
 
-;; * cape
+;; ** cape
 
 (use-package cape)
 
-;; * expand-region
+;; ** expand-region
 
 (use-package expand-region
   :bind
   ("C-=" . er/expand-region)
   ("C-+" . er/contract-region))
-;; * completion
+;; ** completion
 
 (defun my/sort-by-length (elements)
   "Sort ELEMENTS by minibuffer history, else return them unsorted.
@@ -824,13 +975,13 @@ This function can be used as the value of the user option
 ;;(bind-key "<return>" #'minibuffer-force-complete-and-exit 'minibuffer-mode-map)
 ;;(bind-key "C-<return>" #'minibuffer-tcomplete-and-exit 'minibuffer-mode-map)
 
-;; * marginalia
+;; ** marginalia
 
 (use-package marginalia
   :init
   (marginalia-mode))
 
-;; * orderless
+;; ** orderless
 
 (use-package orderless
   :init
@@ -841,7 +992,43 @@ This function can be used as the value of the user option
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
 
-;; * consult
+;; ** vertico
+
+;; Adapted from vertico-reverse
+(defun vertico-bottom--display-candidates (lines)
+  "Display LINES in bottom."
+  (move-overlay vertico--candidates-ov (point-min) (point-min))
+  (unless (eq vertico-resize t)
+    (setq lines (nconc (make-list (max 0 (- vertico-count (length lines))) "\n") lines)))
+  (let ((string (apply #'concat lines)))
+    (add-face-text-property 0 (length string) 'default 'append string)
+    (overlay-put vertico--candidates-ov 'before-string string)
+    (overlay-put vertico--candidates-ov 'after-string nil))
+  (vertico--resize-window (length lines)))
+
+;; Enable vertico
+(use-package vertico
+  :bind (:map vertico-map
+	      ("C-c C-n" . vertico-quick-jump))
+  :custom-face
+  ;;(vertico-current ((t (:background "slate"))))
+  :init (vertico-mode)
+  ;;(advice-add #'vertico--display-candidates :override #'vertico-bottom--display-candidates)
+  (setq vertico-scroll-margin 0)       ;; Different scroll margin
+  (setq vertico-count 10)
+  (setq vertico-resize 'grow-only))
+;;(setq vertico-count-format '("" . "")))
+
+(use-package vertico-multiform
+  :straight nil
+  :after vertico
+  :init
+  (vertico-multiform-mode)
+  (setq vertico-multiform-commands
+        '((consult-ripgrep buffer)
+          (consult-buffer flat))))
+
+;; ** consult
 
 (use-package consult
   :after org
@@ -891,11 +1078,11 @@ This function can be used as the value of the user option
   (:map org-mode-map
         ("C-c h" . consult-org-heading)))
 
-;; ** consult-flycheck
+;; *** consult-flycheck
 
 (use-package consult-flycheck)
 
-;; ** consult-frecoll
+;; *** consult-frecoll
 
 (use-package consult-recoll
   :after citar
@@ -903,7 +1090,7 @@ This function can be used as the value of the user option
   ;; (setq exec-path (append exec-path '("/usr/local/Cellar/recoll/1.35.0/recoll.app/Contents/MacOS/")))
   (consult-recoll-embark-setup))
 
-;; ** consult-notes
+;; *** consult-notes
 
 (use-package consult-notes
   :after consult denote
@@ -980,7 +1167,7 @@ This function can be used as the value of the user option
   (let ((consult--buffer-display #'switch-to-buffer-other-window))
     (consult-notes)))
 
-;; ** consult-flyspell
+;; *** consult-flyspell
 
 (use-package consult-flyspell
   :bind (:map flyspell-mode-map ("C-<" . consult-flyspell))
@@ -990,49 +1177,80 @@ This function can be used as the value of the user option
         consult-flyspell-set-point-after-word t
         consult-flyspell-always-check-buffer nil))
 
-;; * vertico
+;; ** grep
 
-;; Adapted from vertico-reverse
-(defun vertico-bottom--display-candidates (lines)
-  "Display LINES in bottom."
-  (move-overlay vertico--candidates-ov (point-min) (point-min))
-  (unless (eq vertico-resize t)
-    (setq lines (nconc (make-list (max 0 (- vertico-count (length lines))) "\n") lines)))
-  (let ((string (apply #'concat lines)))
-    (add-face-text-property 0 (length string) 'default 'append string)
-    (overlay-put vertico--candidates-ov 'before-string string)
-    (overlay-put vertico--candidates-ov 'after-string nil))
-  (vertico--resize-window (length lines)))
+(use-package grep
+  :config
+  (when (executable-find "rg")
+    (setq grep-command "rg --no-heading --line-number --color never %s %s")
+    (setq grep-program "rg")))
 
-;; Enable vertico
-(use-package vertico
-  :bind (:map vertico-map
-	      ("C-c C-n" . vertico-quick-jump))
-  :custom-face
-  ;;(vertico-current ((t (:background "slate"))))
-  :init (vertico-mode)
-  ;;(advice-add #'vertico--display-candidates :override #'vertico-bottom--display-candidates)
-  (setq vertico-scroll-margin 0)       ;; Different scroll margin
-  (setq vertico-count 10)
-  (setq vertico-resize 'grow-only))
-;;(setq vertico-count-format '("" . "")))
+;; ** rg
 
-(use-package vertico-multiform
+(use-package rg
+  :config
+  (rg-define-search search-denote
+    "Search files including hidden in home directory"
+    :query ask
+    :format literal
+    :files "*.org"
+    :dir denote-directory
+    :menu ("Search" "n" "Denote"))
+  :bind
+  ("M-s r" . rg-menu)
+  ("C-c n f R" . search-denote)
+  (:map isearch-mode-map
+        ("M-s g" . rg-isearch-menu)))
+
+;; ** wgrep
+
+(use-package wgrep)
+
+;; ** substitute
+
+(use-package substitute)
+
+;; ** occur-x
+
+(use-package occur-x
+  :hook (occur-mode . turn-on-occur-x-mode))
+
+;; ** loccur
+
+(use-package loccur
+  :straight (:host codeberg :repo "fourier/loccur")
+  :bind
+  (:map isearch-mode-map
+        ("M-s l" . loccus-isearch)))
+
+;; ** dired
+
+(use-package dired
+  :straight nil)
+(use-package dired-x
   :straight nil
-  :after vertico
-  :init
-  (vertico-multiform-mode)
-  (setq vertico-multiform-commands
-        '((consult-ripgrep buffer)
-          (consult-buffer flat))))
+  :after dired)
+(use-package dired-hacks-utils
+  :after dired
+  :config
+  (use-package dired-subtree))
+(use-package diredfl
+  :after dired
+  :config
+  (diredfl-global-mode))
+(use-package fd-dired)
 
-;; * savehist
 
-(use-package savehist
-  :init
-  (savehist-mode))
+;; ** magit / git
 
-;; * eglot
+(use-package magit)
+
+(use-package diff-hl)
+
+(use-package git-gutter)
+
+;; * LANGUAGE TOOLS
+;; ** eglot
 
 (use-package eglot
   :bind
@@ -1045,23 +1263,151 @@ This function can be used as the value of the user option
   :custom-face
   (eglot-highlight-symbol-face ((t (:inherit highlight)))))
 
-;; * flymake
+;; ** flymake
 
 (use-package flymake
-  :pin gnu-elpa
+  ;;:pin gnu-elpa
   :bind
   (:map flymake-mode-map
 	("C-c M-n" . flymake-goto-next-error)
 	("C-c M-p" . flymake-goto-prev-error)
 	("C-c M-l" . flymake-show-project-diagnostics)))
 
-;; * lisp
+;; ** flycheck flyspell
+
+(use-package flycheck)
+
+(use-package flyspell-correct
+  :after flyspell
+  :bind (:map flyspell-mode-map ("C-," . flyspell-correct-wrapper)))
+
+(use-package flyspell-correct-avy-menu
+  :after flyspell-correct)
+
+(defun flyspell-on-for-buffer-type ()
+  "Enable Flyspell appropriately for the major mode of the current buffer.  Uses `flyspell-prog-mode' for modes derived from `prog-mode', so only strings and comments get checked.  All other buffers get `flyspell-mode' to check all text.  If flyspell is already enabled, does nothing."
+  (interactive)
+  (if (not (symbol-value flyspell-mode)) ; if not already on
+      (progn
+        (if (derived-mode-p 'prog-mode)
+            (progn
+              (message "Flyspell on (code)")
+              (flyspell-prog-mode))
+          ;; else
+          (progn
+            (message "Flyspell on (text)")
+            (flyspell-mode 1)))
+        ;; I tried putting (flyspell-buffer) here but it didn't seem to work
+        )))
+
+(defun flyspell-toggle ()
+  "Turn Flyspell on if it is off, or off if it is on.  When turning on, it uses `flyspell-on-for-buffer-type' so code-vs-text is handled appropriately."
+  (interactive)
+  (if (symbol-value flyspell-mode)
+      (progn ; flyspell is on, turn it off
+        (message "Flyspell off")
+        (flyspell-mode -1))
+                                        ; else - flyspell is off, turn it on
+    (flyspell-on-for-buffer-type)))
+
+;; not being used, as we are not using ispell dicts
+(defun my/switch-dictionary()
+  "UNUSED. Toggle dictionary language between english and german"
+  (interactive)
+  (let* ((dic ispell-current-dictionary)
+         (change (if (string= dic "deutsch8") "english" "deutsch8")))
+    (ispell-change-dictionary change)
+    (message "Dictionary switched from %s to %s" dic change)
+    ))
+
+(use-package flyspell
+  :bind (:map help-map ("t s" . flyspell-toggle))
+  :config
+  (cond
+   ;; try hunspell at first
+   ;; if hunspell does NOT exist, use aspell
+   ((executable-find "hunspell")
+    (setq ispell-program-name "hunspell"
+          flyspell-issue-message-flag nil
+          ispell-local-dictionary "en_US")
+    (setq ispell-local-dictionary-alist
+          ;; Please note the list `("-d" "en_US")` contains ACTUAL parameters passed to hunspell
+          ;; You could use `("-d" "en_US,en_US-med")` to check with multiple dictionaries
+          '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_US,de_DE_frami") nil utf-8)))
+
+    ;; new variable `ispell-hunspell-dictionary-alist' is defined in Emacs
+    ;; If it's nil, Emacs tries to automatically set up the dictionaries.
+    (when (boundp 'ispell-hunspell-dictionary-alist)
+      (setq ispell-hunspell-dictionary-alist ispell-local-dictionary-alist)))
+
+   ((executable-find "aspell")
+    (setq ispell-program-name "aspell")
+    ;; Please note ispell-extra-args contains ACTUAL parameters passed to aspell
+    (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")))))
+
+;; ** tree-sitter
+
+(setq treesit-language-source-alist
+      '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+        (rust "https://github.com/tree-sitter/tree-sitter-rust")
+        (regex "https://github.com/tree-sitter/tree-sitter-regex")
+        (julia "https://github.com/tree-sitter/tree-sitter-julia")
+        (r "https://github.com/r-lib/tree-sitter-r")
+        (svelte "https://github.com/tree-sitter-grammars/tree-sitter-svelte")
+        (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+        (cmake "https://github.com/uyha/tree-sitter-cmake")
+        (css "https://github.com/tree-sitter/tree-sitter-css")
+        (go "https://github.com/tree-sitter/tree-sitter-go")
+        (html "https://github.com/tree-sitter/tree-sitter-html")
+        (javascript "https://github.com/tree-sitter/tree-sitter-javascript"
+		    "master" "src")
+        (json "https://github.com/tree-sitter/tree-sitter-json")
+        (make "https://github.com/alemuller/tree-sitter-make")
+        (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+        (python "https://github.com/tree-sitter/tree-sitter-python")
+        (toml "https://github.com/tree-sitter/tree-sitter-toml")
+        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master"
+             "tsx/src")
+        (typescript "https://github.com/tree-sitter/tree-sitter-typescript"
+		    "master" "typescript/src")
+        (typst "https://github.com/uben0/tree-sitter-typst")
+        (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+(setq treesit-font-lock-level 4)
+
+(use-package treesit-auto
+  :config
+  (global-treesit-auto-mode))
+
+;; ** apheleia
+
+(use-package apheleia
+  :bind
+  (:map prog-mode-map ("C-c f" . apheleia-format-buffer))
+  :config
+
+  (with-eval-after-load 'julia-mode
+    (push
+     '(julia . ((dir-concat user-emacs-directory "scripts/julia-format.sh") inplace ))
+     apheleia-formatters)
+    (add-to-list 'apheleia-mode-alist '(julia-mode . julia)))
+
+  (apheleia-global-mode))
+
+;; ** format-all
+
+;; problem with emacs format region
+;; but apheleia does not have format region.
+(use-package format-all
+  :disabled)
+
+;; * LANGUAGE MODES
+;; ** lisp
 
 (use-package lisp-mode
   :straight nil
   :hook (lisp-data-mode . electric-pair-mode))
 
-;; * elisp
+;; ** elisp
 
 (use-package elisp-mode
   :straight nil
@@ -1072,7 +1418,7 @@ This function can be used as the value of the user option
   (:map lisp-interaction-mode-map
 	("M-i" . completion-at-point)))
 
-;; * python
+;; ** python
 
 (use-package python
   :bind
@@ -1100,7 +1446,7 @@ This function can be used as the value of the user option
     (:map python-ts-mode-map
           ("C-c C-n" . python-pytest-dispatch))))
 
-;; * ein
+;; ** ein
 
 (use-package ein
   :config)
@@ -1111,7 +1457,7 @@ This function can be used as the value of the user option
   :config
   (org-babel-do-load-languages 'org-babel-load-languages '((ein . t))))
 
-;; * ess
+;; ** ess
 
 (use-package ess
   :defer t
@@ -1196,7 +1542,7 @@ This function can be used as the value of the user option
     )
   )
 
-;; * julia
+;; ** julia
 
 (use-package julia-mode
   :hook (julia-mode . (lambda nil (progn (apheleia-mode -1) (setq-local eglot-connect-timeout 300))))
@@ -1221,11 +1567,11 @@ This function can be used as the value of the user option
   :config
   (eglot-jl-init))
 
-;; * markdown
+;; ** markdown
 
 (use-package markdown-mode
   :hook (markdown-mode . visual-line-mode))
-;; * typst
+;; ** typst
 
 (use-package typst-ts-mode
   :straight (:host sourcehut :repo "meow_king/typst-ts-mode")
@@ -1233,257 +1579,12 @@ This function can be used as the value of the user option
   :custom
   (typst-ts-mode-watch-options "--open"))
 
-;; * fish
+;; ** fish
 
 (use-package fish-mode
   :config
   (setq fish-enable-auto-indent t))
-;; * flycheck flyspell
-
-(use-package flycheck)
-
-(use-package flyspell-correct
-  :after flyspell
-  :bind (:map flyspell-mode-map ("C-," . flyspell-correct-wrapper)))
-
-(use-package flyspell-correct-avy-menu
-  :after flyspell-correct)
-
-(defun flyspell-on-for-buffer-type ()
-  "Enable Flyspell appropriately for the major mode of the current buffer.  Uses `flyspell-prog-mode' for modes derived from `prog-mode', so only strings and comments get checked.  All other buffers get `flyspell-mode' to check all text.  If flyspell is already enabled, does nothing."
-  (interactive)
-  (if (not (symbol-value flyspell-mode)) ; if not already on
-      (progn
-        (if (derived-mode-p 'prog-mode)
-            (progn
-              (message "Flyspell on (code)")
-              (flyspell-prog-mode))
-          ;; else
-          (progn
-            (message "Flyspell on (text)")
-            (flyspell-mode 1)))
-        ;; I tried putting (flyspell-buffer) here but it didn't seem to work
-        )))
-
-(defun flyspell-toggle ()
-  "Turn Flyspell on if it is off, or off if it is on.  When turning on, it uses `flyspell-on-for-buffer-type' so code-vs-text is handled appropriately."
-  (interactive)
-  (if (symbol-value flyspell-mode)
-      (progn ; flyspell is on, turn it off
-        (message "Flyspell off")
-        (flyspell-mode -1))
-                                        ; else - flyspell is off, turn it on
-    (flyspell-on-for-buffer-type)))
-
-;; not being used, as we are not using ispell dicts
-(defun my/switch-dictionary()
-  "UNUSED. Toggle dictionary language between english and german"
-  (interactive)
-  (let* ((dic ispell-current-dictionary)
-         (change (if (string= dic "deutsch8") "english" "deutsch8")))
-    (ispell-change-dictionary change)
-    (message "Dictionary switched from %s to %s" dic change)
-    ))
-
-(use-package flyspell
-  :bind (:map help-map ("t s" . flyspell-toggle))
-  :config
-  (cond
-   ;; try hunspell at first
-   ;; if hunspell does NOT exist, use aspell
-   ((executable-find "hunspell")
-    (setq ispell-program-name "hunspell"
-          flyspell-issue-message-flag nil
-          ispell-local-dictionary "en_US")
-    (setq ispell-local-dictionary-alist
-          ;; Please note the list `("-d" "en_US")` contains ACTUAL parameters passed to hunspell
-          ;; You could use `("-d" "en_US,en_US-med")` to check with multiple dictionaries
-          '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_US,de_DE_frami") nil utf-8)))
-
-    ;; new variable `ispell-hunspell-dictionary-alist' is defined in Emacs
-    ;; If it's nil, Emacs tries to automatically set up the dictionaries.
-    (when (boundp 'ispell-hunspell-dictionary-alist)
-      (setq ispell-hunspell-dictionary-alist ispell-local-dictionary-alist)))
-
-   ((executable-find "aspell")
-    (setq ispell-program-name "aspell")
-    ;; Please note ispell-extra-args contains ACTUAL parameters passed to aspell
-    (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")))))
-
-;; * tree-sitter
-
-(setq treesit-language-source-alist
-      '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-        (rust "https://github.com/tree-sitter/tree-sitter-rust")
-        (regex "https://github.com/tree-sitter/tree-sitter-regex")
-        (julia "https://github.com/tree-sitter/tree-sitter-julia")
-        (r "https://github.com/r-lib/tree-sitter-r")
-        (svelte "https://github.com/tree-sitter-grammars/tree-sitter-svelte")
-        (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-        (cmake "https://github.com/uyha/tree-sitter-cmake")
-        (css "https://github.com/tree-sitter/tree-sitter-css")
-        (go "https://github.com/tree-sitter/tree-sitter-go")
-        (html "https://github.com/tree-sitter/tree-sitter-html")
-        (javascript "https://github.com/tree-sitter/tree-sitter-javascript"
-		    "master" "src")
-        (json "https://github.com/tree-sitter/tree-sitter-json")
-        (make "https://github.com/alemuller/tree-sitter-make")
-        (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-        (python "https://github.com/tree-sitter/tree-sitter-python")
-        (toml "https://github.com/tree-sitter/tree-sitter-toml")
-        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master"
-             "tsx/src")
-        (typescript "https://github.com/tree-sitter/tree-sitter-typescript"
-		    "master" "typescript/src")
-        (typst "https://github.com/uben0/tree-sitter-typst")
-        (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-(setq treesit-font-lock-level 4)
-
-(use-package treesit-auto
-  :config
-  (global-treesit-auto-mode))
-
-;; * apheleia
-
-(use-package apheleia
-  :bind
-  (:map prog-mode-map ("C-c f" . apheleia-format-buffer))
-  :config
-
-  (with-eval-after-load 'julia-mode
-    (push
-     '(julia . ((dir-concat user-emacs-directory "scripts/julia-format.sh") inplace ))
-     apheleia-formatters)
-    (add-to-list 'apheleia-mode-alist '(julia-mode . julia)))
-
-  (apheleia-global-mode))
-
-;; * format-all
-
-;; problem with emacs format region
-;; but apheleia does not have format region.
-(use-package format-all
-  :disabled)
-
-;; * eldoc
-
-(use-package eldoc
-  :custom
-  (eldoc-echo-area-display-truncation-message nil)
-  (eldoc-echo-area-use-multiline-p nil)
-  :config
-  (setq eldoc-current-idle-delay 0.3))
-
-;; * pos-tip
-
-(use-package pos-tip)
-
-;; * yasnippet
-
-(use-package yasnippet
-  :disabled 
-  :init
-  (use-package yasnippet-snippets)
-  ;; (setq yas-minor-mode-map
-  ;;       (let ((map (make-sparse-keymap)))
-  ;;         (define-key map (kbd "s") 'yas-insert-snippet)
-  ;;         (define-key map (kbd "n") 'yas-new-snippet)
-  ;;         (define-key map (kbd "v") 'yas-visit-snippet-file)
-  ;;         map))
-  (yas-reload-all)
-  :hook (prog-mode . yas-minor-mode)
-  :config
-  (setq yas-verbosity 0))
-
-(use-package yasnippet-capf
-  :disabled
-  :straight (:host github :repo "elken/yasnippet-capf")
-  :after cape
-  :config
-  (add-to-list 'completion-at-point-functions #'yasnippet-capf))
-;; :bind-keymap ("C-c s" . yas-minor-mode-map))
-
-;; * tempel
-
-(use-package tempel
-  ;; Require trigger prefix before template name when completing.
-  ;; :custom
-  ;; (tempel-trigger-prefix "<")
-  :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
-         ("M-*" . tempel-insert))
-  (:map tempel-map
-	("<tab>" . tempel-next)
-	("<backtab>" . tempel-previous))
-  :init
-  ;; Setup completion at point
-  (defun tempel-setup-capf ()
-    ;; Add the Tempel Capf to `completion-at-point-functions'.
-    ;; `tempel-expand' only triggers on exact matches. Alternatively use
-    ;; `tempel-complete' if you want to see all matches, but then you
-    ;; should also configure `tempel-trigger-prefix', such that Tempel
-    ;; does not trigger too often when you don't expect it. NOTE: We add
-    ;; `tempel-expand' *before* the main programming mode Capf, such
-    ;; that it will be tried first.
-    (setq-local completion-at-point-functions
-                (cons #'tempel-expand
-		      completion-at-point-functions)))
-  ;; Optionally make the Tempel templates available to Abbrev,
-  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
-  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
-  ;; (global-tempel-abbrev-mode)
-  :config
-  (defun tempel-include (elt)
-    (when (eq (car-safe elt) 'i)
-      (if-let (template (alist-get (cadr elt) (tempel--templates)))
-          (cons 'l template)
-	(message "Template %s not found" (cadr elt))
-	nil)))
-  (add-to-list 'tempel-user-elements #'tempel-include)
-
-  (defun tempel-propmt (elt)
-    (when (eq (car-safe elt) 'p)
-      (if-let (prompt (alist-get (cadr elt) (tempel--templates)))
-	  (cons 'l prompt))))
-
-  :hook
-  ((conf-mode prog-mode text-mode) . tempel-setup-capf))
-
-(use-package tempel-collection
-  :after tempel)
-
-;; * projectile
-
-(use-package project)
-
-(use-package projectile
-  :bind-keymap
-  ("C-x p" . projectile-command-map)
-  :bind
-  (:map projectile-command-map ("b" . consult-project-buffer))
-  :config
-  (setq projectile-project-search-path
-        '("~/fun/" "~/fun/web/" "~/fun/python" "~/fun/julia" "~/fun/projects" "~/dotfiles" "~/Dropbox/repos"))
-  (projectile-global-mode 1))
-
-;; * quickrun
-
-(use-package quickrun)
-
-;; * copilot
-
-(use-package copilot
-  :straight (:host github :repo "copilot-emacs/copilot.el" :files ("dist" "*.el"))
-  :hook prog-mode
-  :commands copilot-login
-  :bind (:map copilot-completion-map ("<C-i>" . copilot-accept-completion))
-  (:map help-map ("t C" . copilot-mode))
-  :config
-  (setq copilot-idle-delay 0.3))
-
-(use-package jsonrpc
-  :pin gnu-elpa)
-
-;; * lua
+;; ** lua
 
 (use-package lua-mode
   :config
@@ -1494,107 +1595,19 @@ This function can be used as the value of the user option
   (setq lua-ts-indent-offset 3)
   :straight (:host sourcehut :repo "johnmuhl/lua-ts-mode" :files ("*.el")))
 
-;; * cc-mode
+;; ** cc-mode
 
 (use-package cc-mode
   :hook (awk-mode . (lambda nil (setq tab-width 4))))
 
-;; * emmet
-
-(use-package emmet-mode
-  :commands (emmet-find-left-bound emmet-transform emmet-reposition-cursor)
-  :hook (html-mode . emmet-mode))
-
-;; * grep
-
-(use-package grep
-  :config
-  (when (executable-find "rg")
-    (setq grep-command "rg --no-heading --line-number --color never %s %s")
-    (setq grep-program "rg")))
-
-;; * css
+;; ** css
 
 (use-package css-mode
   :hook ((css-mode css-ts-mode) . (lambda nil (setq tab-width 2)))
   :config
   (setq css-indent-offset 2))
 
-;; * rg
-
-(use-package rg
-  :config
-  (rg-define-search search-denote
-    "Search files including hidden in home directory"
-    :query ask
-    :format literal
-    :files "*.org"
-    :dir denote-directory
-    :menu ("Search" "n" "Denote"))
-  :bind
-  ("M-s r" . rg-menu)
-  ("C-c n f R" . search-denote)
-  (:map isearch-mode-map
-        ("M-s g" . rg-isearch-menu)))
-
-;; * wgrep
-
-(use-package wgrep)
-
-;; * substitute
-
-(use-package substitute)
-
-;; * occur-x
-
-(use-package occur-x
-  :hook (occur-mode . turn-on-occur-x-mode))
-
-;; * loccur
-
-(use-package loccur
-  :straight (:host codeberg :repo "fourier/loccur")
-  :bind
-  (:map isearch-mode-map
-        ("M-s l" . loccus-isearch)))
-
-;; * dired
-
-(use-package dired
-  :straight nil)
-(use-package dired-x
-  :straight nil
-  :after dired)
-(use-package dired-hacks-utils
-  :after dired
-  :config
-  (use-package dired-subtree))
-(use-package diredfl
-  :after dired
-  :config
-  (diredfl-global-mode))
-(use-package fd-dired)
-
-
-;; * magit / git
-
-(use-package magit)
-
-(use-package diff-hl)
-
-(use-package git-gutter)
-
-;; * nerd-icons
-
-(use-package nerd-icons
-  ;; :custom
-  ;; The Nerd Font you want to use in GUI
-  ;; "Symbols Nerd Font Mono" is the default and is recommended
-  ;; but you can use any other Nerd Font if you want
-  ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
-  )
-
-;; * org
+;; * ORG
 
 (defun my/org-open-at-point-other-window ()
   "Open at point other window"
@@ -1610,7 +1623,7 @@ This function can be used as the value of the user option
 
 
 (use-package org
-  :pin manual
+;;  :pin manual
   ;; :custom
   ;; (display-buffer-alist
   ;;  (append display-buffer-alist
@@ -1685,19 +1698,19 @@ This function can be used as the value of the user option
 ;;   (setq org-babel-default-header-args:sh '((:results . "output")))
 ;;   (setq org-babel-default-header-args:shell '((:results . "output"))))
 
-;; * org-appear
+;; ** org-appear
 
 (use-package org-appear
   :hook org-mode
   :custom
   (org-appear-autolinks t))
 
-;; * org-fragtog
+;; ** org-fragtog
 
 (use-package org-fragtog
   :hook org-mode)
 
-;; * TODO org-ref
+;; ** TODO org-ref
 
 (use-package org-ref
   :after org
@@ -1714,10 +1727,190 @@ that."
         (org-ref-process-buffer 'html)))
     (add-to-list 'org-export-before-parsing-hook #'my/org-ref-process-buffer--html)))
 
-;; * ox-hugo
+;; ** org-remark
+
+(use-package org-remark
+  :bind (;; :bind keyword also implicitly defers org-remark itself.
+	 ;; Keybindings before :map is set for global-map.
+	 :map org-remark-mode-map
+	 ("C-c r m" . org-remark-mark)
+	 ("C-c r l" . org-remark-mark-line)
+	 ("C-c r o" . org-remark-open)
+	 ("C-c r n" . org-remark-next)
+	 ("C-c r p" . org-remark-prev)
+	 ("C-c r ]" . org-remark-view-next)
+	 ("C-c r [" . org-remark-view-prev)
+	 ("C-c r r" . org-remark-remove)
+	 ("C-c r d" . org-remark-delete)
+	 ("C-c r v" . org-remark-view))
+  :init
+  ;; (org-remark-global-tracking-mode +1)
+  :hook (org-remark-open . (lambda () (org-cycle-hide-drawers 'all)))
+  :config
+  (setq org-remark-notes-file-name "~/Dropbox/Org/remark.org"
+	org-remark-line-minimum-left-margin-width 1
+	org-remark-line-heading-title-max-length 70))
+;;(use-package org-remark-nov  :after nov  :config (org-remark-nov-mode +1)))
+
+;; ** org-mac-link
+
+(use-package org-mac-link
+  :when (eq system-type 'darwin)
+  :after org
+  :init
+  (setq org-mac-link-brave-app-p nil
+	org-mac-link-chrome-app-p nil
+	org-mac-link-acrobat-app-p nil
+	org-mac-link-outlook-app-p nil
+	org-mac-link-addressbook-app-p nil
+	org-mac-link-qutebrowser-app-p nil
+	org-mac-link-finder-app-p t
+	org-mac-link-mail-app-p t
+	org-mac-link-devonthink-app-p t
+	org-mac-link-safari-app-p nil
+	org-mac-link-librewolf-app-p t
+	org-mac-link-firefox-vimperator-p nil
+	org-mac-link-evernote-app-p nil
+	org-mac-link-together-app-p nil
+	org-mac-link-skim-app-p t)
+  :bind
+  (:map org-mode-map
+	("C-c L" . my/org-mac-link-get-link))
+  :config
+  (defun my/org-mac-link-applescript-librewolf-get-frontmost-url ()
+    "AppleScript to get the links to the frontmost window of the LibreWolf.app."
+    (let ((result
+	   (org-mac-link-do-applescript
+	    (concat
+	     "tell application \"System Events\"\n"
+	     "   tell its application process \"LibreWolf\"\n"
+	     "       set theTitle to get name of window 1\n"
+	     "       set theUrl to get value of UI element 1 of combo box 1 of toolbar \"Navigation\" of first group of front window\n"
+	     "    end tell\n"
+	     "end tell\n"
+	     "set theResult to (get theUrl) & \"::split::\" & (get theTitle)\n"
+	     "set links to {}\n"
+	     "copy theResult to the end of links\n"
+	     "return links as string\n"))))
+      (car (split-string result "[\r\n]+" t))))
+
+  (defun my/org-mac-link-librewolf-get-frontmost-url ()
+    "Get the link to the frontmost window of the LibreWolf.app."
+    (interactive)
+    (message "Applescript: Getting Firefox url...")
+    (org-mac-link-paste-applescript-links (my/org-mac-link-applescript-librewolf-get-frontmost-url)))
+
+  (defun my/org-mac-link-librewolf-insert-frontmost-url ()
+    "Insert the link to the frontmost window of the LibreWolf.app."
+    (interactive)
+    (insert (my/org-mac-link-librewolf-get-frontmost-url)))
+
+  (defun my/org-mac-link-get-link (&optional beg end)
+    "Prompt for an application to grab a link from.
+  When done, go grab the link, and insert it at point. If a region
+  is active, that will be the link's description."
+    (interactive
+     (if (use-region-p)
+	 (list (region-beginning) (region-end))
+       '()))
+    (let* ((descriptors
+	    `(("F" "inder" org-mac-link-finder-insert-selected ,org-mac-link-finder-app-p)
+	      ("m" "ail" org-mac-link-mail-insert-selected ,org-mac-link-mail-app-p)
+	      ("d" "EVONthink Pro Office" org-mac-link-devonthink-item-insert-selected
+	       ,org-mac-link-devonthink-app-p)
+	      ("o" "utlook" org-mac-link-outlook-message-insert-selected ,org-mac-link-outlook-app-p)
+	      ("a" "ddressbook" org-mac-link-addressbook-item-insert-selected ,org-mac-link-addressbook-app-p)
+	      ("s" "afari" org-mac-link-safari-insert-frontmost-url ,org-mac-link-safari-app-p)
+	      ("l" "ibrewolf" my/org-mac-link-librewolf-insert-frontmost-url ,org-mac-link-librewolf-app-p)
+	      ("v" "imperator" org-mac-link-vimperator-insert-frontmost-url ,org-mac-link-firefox-vimperator-p)
+	      ("c" "hrome" org-mac-link-chrome-insert-frontmost-url ,org-mac-link-chrome-app-p)
+	      ("b" "rave" org-mac-link-brave-insert-frontmost-url ,org-mac-link-brave-app-p)
+	      ("e" "evernote" org-mac-link-evernote-note-insert-selected ,org-mac-link-evernote-app-p)
+	      ("t" "ogether" org-mac-link-together-insert-selected ,org-mac-link-together-app-p)
+	      ("S" "kim" org-mac-link-skim-insert-page ,org-mac-link-skim-app-p)
+	      ("A" "crobat" org-mac-link-acrobat-insert-page ,org-mac-link-acrobat-app-p)
+	      ("q" "utebrowser" org-mac-link-qutebrowser-insert-frontmost-url ,org-mac-link-qutebrowser-app-p)))
+	   (menu-string (make-string 0 ?x))
+	   input)
+
+      ;; Create the menu string for the keymap
+      (mapc (lambda (descriptor)
+	      (when (elt descriptor 3)
+		(setf menu-string (concat menu-string
+					  "[" (elt descriptor 0) "]"
+					  (elt descriptor 1) " "))))
+	    descriptors)
+      (setf (elt menu-string (- (length menu-string) 1)) ?:)
+
+      ;; Prompt the user, and grab the link
+      (message menu-string)
+      (setq input (read-char-exclusive))
+      (mapc (lambda (descriptor)
+	      (let ((key (elt (elt descriptor 0) 0))
+		    (active (elt descriptor 3))
+		    (grab-function (elt descriptor 2)))
+		(when (and active (eq input key))
+		  (if (and beg end)
+		      (let ((new-desc (buffer-substring beg end))
+			    end-desc)
+			(delete-region beg end)
+			(call-interactively grab-function)
+			(save-excursion
+			  (backward-char 2)
+			  (setq end-desc (point))
+			  (search-backward "][")
+			  (forward-char 2)
+			  (delete-region (point) end-desc)
+			  (insert new-desc)))
+		    (call-interactively grab-function)))))
+	    descriptors))))
+
+;; ** org-noter
+
+(use-package org-noter
+  :bind
+  (:map org-noter-doc-mode-map ("q" . nil))
+  (:map pdf-view-mode-map ("C-c C-n" . org-noter))
+  (:map org-mode-map
+	("C-c C-x n n" . org-noter)
+	("C-c C-x n k" . org-noter-kill-session)
+	("C-c C-x n s" . org-noter-create-skeleton))
+  :config
+  (add-to-list 'org-noter-notes-search-path "/Users/my/Library/CloudStorage/Dropbox/Org")
+  (setq org-noter-default-notes-file-names '("noter.org")
+	org-noter-always-create-frame nil
+	org-noter-auto-save-last-location t
+	org-noter-doc-split-fraction '(0.5 . 0.5)
+	org-noter-kill-frame-at-session-end nil
+	org-noter-separate-notes-from-heading t))
+
+;; ** org-mind-map
+
+(use-package org-mind-map
+  :init
+  (require 'ox-org)
+  :config
+  (setq org-mind-map-engine "dot")       ; Default. Directed Graph
+  ;; (setq org-mind-map-engine "neato")  ; Undirected Spring Graph
+  ;; (setq org-mind-map-engine "twopi")  ; Radial Layout
+  ;; (setq org-mind-map-engine "fdp")    ; Undirected Spring Force-Directed
+  ;; (setq org-mind-map-engine "sfdp")   ; Multiscale version of fdp for the layout of large graphs
+  ;; (setq org-mind-map-engine "twopi")  ; Radial layouts
+  ;; (setq org-mind-map-engine "circo")  ; Circular Layout
+  )
+;; ** org-ql
+
+(use-package org-ql)
+
+;; ** org-web-tools
+
+(use-package org-web-tools)
+
+;; * ORG EXPORT
+;; ** ox-hugo
 
 (use-package ox-hugo
-  :pin melpa  ;`package-archives' should already have ("melpa" . "https://melpa.org/packages/")
+;;  :pin melpa  ;`package-archives' should already have ("melpa" . "https://melpa.org/packages/")
   :after ox
   :config
   (add-to-list 'org-hugo-special-block-type-properties '("sidenote" . (:trim-pre t :trim-post t))))
@@ -1749,7 +1942,7 @@ of those blocks falls back to the respective exporters."
      (t
       (org-export-with-backend 'md export-block nil nil)))))
 
-;; * ox-pandoc
+;; ** ox-pandoc
 
 (use-package ox-pandoc
   :after ox
@@ -1885,7 +2078,8 @@ of those blocks falls back to the respective exporters."
      )))
 
 
-;; * ob-python
+;; * ORG BABEL
+;; ** ob-python
 
 (use-package ob-python
   :straight nil
@@ -1893,7 +2087,7 @@ of those blocks falls back to the respective exporters."
   :config
   (setq org-babel-python-command "python3"))
 
-;; * ob-ipython
+;; ** ob-ipython
 
 (use-package ob-ipython
   :disabled
@@ -1903,7 +2097,7 @@ of those blocks falls back to the respective exporters."
    'org-babel-load-languages
    '((ipython . t))))
 
-;; * ob-julia
+;; ** ob-julia
 
 (use-package ob-julia
   :straight nil
@@ -1987,7 +2181,7 @@ end #OB-JULIA-VTERM_END\n"))
      (if (not (member (cdr (assq :debug params)) '(nil "no"))) "catch_backtrace()" ""))))
 
 
-;; * ob-shell
+;; ** ob-shell
 
 (use-package ob-shell
   :straight nil
@@ -1995,7 +2189,7 @@ end #OB-JULIA-VTERM_END\n"))
   :config
   (setq org-babel-default-header-args:sh '((:results . "output")))
   (setq org-babel-default-header-args:shell '((:results . "output"))))
-;; * ob-latex
+;; ** ob-latex
 
 (use-package ob-latex
   :straight nil
@@ -2004,7 +2198,7 @@ end #OB-JULIA-VTERM_END\n"))
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((latex . t))))
-;; * ob-async
+;; ** ob-async
 
 ;; python does not work.
 (use-package ob-async
@@ -2015,198 +2209,8 @@ end #OB-JULIA-VTERM_END\n"))
   (add-hook 'ob-async-pre-execute-src-block-hook
             #'(lambda ()
 		(setq inferior-julia-program-name "/usr/local/bin/julia"))))
-;; * htmlize
-
-(use-package htmlize)
-
-;; * org-remark
-
-(use-package org-remark
-  :bind (;; :bind keyword also implicitly defers org-remark itself.
-	 ;; Keybindings before :map is set for global-map.
-	 :map org-remark-mode-map
-	 ("C-c r m" . org-remark-mark)
-	 ("C-c r l" . org-remark-mark-line)
-	 ("C-c r o" . org-remark-open)
-	 ("C-c r n" . org-remark-next)
-	 ("C-c r p" . org-remark-prev)
-	 ("C-c r ]" . org-remark-view-next)
-	 ("C-c r [" . org-remark-view-prev)
-	 ("C-c r r" . org-remark-remove)
-	 ("C-c r d" . org-remark-delete)
-	 ("C-c r v" . org-remark-view))
-  :init
-  ;; (org-remark-global-tracking-mode +1)
-  :hook (org-remark-open . (lambda () (org-cycle-hide-drawers 'all)))
-  :config
-  (setq org-remark-notes-file-name "~/Dropbox/Org/remark.org"
-	org-remark-line-minimum-left-margin-width 1
-	org-remark-line-heading-title-max-length 70))
-;;(use-package org-remark-nov  :after nov  :config (org-remark-nov-mode +1)))
-
-;; * org-mac-link
-
-(use-package org-mac-link
-  :when (eq system-type 'darwin)
-  :after org
-  :init
-  (setq org-mac-link-brave-app-p nil
-	org-mac-link-chrome-app-p nil
-	org-mac-link-acrobat-app-p nil
-	org-mac-link-outlook-app-p nil
-	org-mac-link-addressbook-app-p nil
-	org-mac-link-qutebrowser-app-p nil
-	org-mac-link-finder-app-p t
-	org-mac-link-mail-app-p t
-	org-mac-link-devonthink-app-p t
-	org-mac-link-safari-app-p nil
-	org-mac-link-librewolf-app-p t
-	org-mac-link-firefox-vimperator-p nil
-	org-mac-link-evernote-app-p nil
-	org-mac-link-together-app-p nil
-	org-mac-link-skim-app-p t)
-  :bind
-  (:map org-mode-map
-	("C-c L" . my/org-mac-link-get-link))
-  :config
-  (defun my/org-mac-link-applescript-librewolf-get-frontmost-url ()
-    "AppleScript to get the links to the frontmost window of the LibreWolf.app."
-    (let ((result
-	   (org-mac-link-do-applescript
-	    (concat
-	     "tell application \"System Events\"\n"
-	     "   tell its application process \"LibreWolf\"\n"
-	     "       set theTitle to get name of window 1\n"
-	     "       set theUrl to get value of UI element 1 of combo box 1 of toolbar \"Navigation\" of first group of front window\n"
-	     "    end tell\n"
-	     "end tell\n"
-	     "set theResult to (get theUrl) & \"::split::\" & (get theTitle)\n"
-	     "set links to {}\n"
-	     "copy theResult to the end of links\n"
-	     "return links as string\n"))))
-      (car (split-string result "[\r\n]+" t))))
-
-  (defun my/org-mac-link-librewolf-get-frontmost-url ()
-    "Get the link to the frontmost window of the LibreWolf.app."
-    (interactive)
-    (message "Applescript: Getting Firefox url...")
-    (org-mac-link-paste-applescript-links (my/org-mac-link-applescript-librewolf-get-frontmost-url)))
-
-  (defun my/org-mac-link-librewolf-insert-frontmost-url ()
-    "Insert the link to the frontmost window of the LibreWolf.app."
-    (interactive)
-    (insert (my/org-mac-link-librewolf-get-frontmost-url)))
-
-  (defun my/org-mac-link-get-link (&optional beg end)
-    "Prompt for an application to grab a link from.
-  When done, go grab the link, and insert it at point. If a region
-  is active, that will be the link's description."
-    (interactive
-     (if (use-region-p)
-	 (list (region-beginning) (region-end))
-       '()))
-    (let* ((descriptors
-	    `(("F" "inder" org-mac-link-finder-insert-selected ,org-mac-link-finder-app-p)
-	      ("m" "ail" org-mac-link-mail-insert-selected ,org-mac-link-mail-app-p)
-	      ("d" "EVONthink Pro Office" org-mac-link-devonthink-item-insert-selected
-	       ,org-mac-link-devonthink-app-p)
-	      ("o" "utlook" org-mac-link-outlook-message-insert-selected ,org-mac-link-outlook-app-p)
-	      ("a" "ddressbook" org-mac-link-addressbook-item-insert-selected ,org-mac-link-addressbook-app-p)
-	      ("s" "afari" org-mac-link-safari-insert-frontmost-url ,org-mac-link-safari-app-p)
-	      ("l" "ibrewolf" my/org-mac-link-librewolf-insert-frontmost-url ,org-mac-link-librewolf-app-p)
-	      ("v" "imperator" org-mac-link-vimperator-insert-frontmost-url ,org-mac-link-firefox-vimperator-p)
-	      ("c" "hrome" org-mac-link-chrome-insert-frontmost-url ,org-mac-link-chrome-app-p)
-	      ("b" "rave" org-mac-link-brave-insert-frontmost-url ,org-mac-link-brave-app-p)
-	      ("e" "evernote" org-mac-link-evernote-note-insert-selected ,org-mac-link-evernote-app-p)
-	      ("t" "ogether" org-mac-link-together-insert-selected ,org-mac-link-together-app-p)
-	      ("S" "kim" org-mac-link-skim-insert-page ,org-mac-link-skim-app-p)
-	      ("A" "crobat" org-mac-link-acrobat-insert-page ,org-mac-link-acrobat-app-p)
-	      ("q" "utebrowser" org-mac-link-qutebrowser-insert-frontmost-url ,org-mac-link-qutebrowser-app-p)))
-	   (menu-string (make-string 0 ?x))
-	   input)
-
-      ;; Create the menu string for the keymap
-      (mapc (lambda (descriptor)
-	      (when (elt descriptor 3)
-		(setf menu-string (concat menu-string
-					  "[" (elt descriptor 0) "]"
-					  (elt descriptor 1) " "))))
-	    descriptors)
-      (setf (elt menu-string (- (length menu-string) 1)) ?:)
-
-      ;; Prompt the user, and grab the link
-      (message menu-string)
-      (setq input (read-char-exclusive))
-      (mapc (lambda (descriptor)
-	      (let ((key (elt (elt descriptor 0) 0))
-		    (active (elt descriptor 3))
-		    (grab-function (elt descriptor 2)))
-		(when (and active (eq input key))
-		  (if (and beg end)
-		      (let ((new-desc (buffer-substring beg end))
-			    end-desc)
-			(delete-region beg end)
-			(call-interactively grab-function)
-			(save-excursion
-			  (backward-char 2)
-			  (setq end-desc (point))
-			  (search-backward "][")
-			  (forward-char 2)
-			  (delete-region (point) end-desc)
-			  (insert new-desc)))
-		    (call-interactively grab-function)))))
-	    descriptors))))
-
-;; * org-noter
-
-(use-package org-noter
-  :bind
-  (:map org-noter-doc-mode-map ("q" . nil))
-  (:map pdf-view-mode-map ("C-c C-n" . org-noter))
-  (:map org-mode-map
-	("C-c C-x n n" . org-noter)
-	("C-c C-x n k" . org-noter-kill-session)
-	("C-c C-x n s" . org-noter-create-skeleton))
-  :config
-  (add-to-list 'org-noter-notes-search-path "/Users/my/Library/CloudStorage/Dropbox/Org")
-  (setq org-noter-default-notes-file-names '("noter.org")
-	org-noter-always-create-frame nil
-	org-noter-auto-save-last-location t
-	org-noter-doc-split-fraction '(0.5 . 0.5)
-	org-noter-kill-frame-at-session-end nil
-	org-noter-separate-notes-from-heading t))
-
-;; * org-ql
-
-(use-package org-ql)
-
-;; * org-web-tools
-
-(use-package org-web-tools)
-
-;; * org-mind-map
-
-(use-package org-mind-map
-  :init
-  (require 'ox-org)
-  :config
-  (setq org-mind-map-engine "dot")       ; Default. Directed Graph
-  ;; (setq org-mind-map-engine "neato")  ; Undirected Spring Graph
-  ;; (setq org-mind-map-engine "twopi")  ; Radial Layout
-  ;; (setq org-mind-map-engine "fdp")    ; Undirected Spring Force-Directed
-  ;; (setq org-mind-map-engine "sfdp")   ; Multiscale version of fdp for the layout of large graphs
-  ;; (setq org-mind-map-engine "twopi")  ; Radial layouts
-  ;; (setq org-mind-map-engine "circo")  ; Circular Layout
-  )
-;; * gnuplot
-
-(use-package gnuplot-mode)
-(use-package gnuplot)
-;; * notmuch
-
-(use-package notmuch)
-
-;; * elfeed
+;; * APPLICATIONS
+;; ** elfeed
 
 (use-package elfeed)
 (use-package elfeed-org
@@ -2216,7 +2220,11 @@ end #OB-JULIA-VTERM_END\n"))
   (setq elfeed-search-title-max-width 100)
   (elfeed-org))
 
-;; * eww
+;; ** notmuch
+
+(use-package notmuch)
+
+;; ** eww
 
 (defun my/scroll-up-half ()
   (interactive)
@@ -2253,22 +2261,13 @@ end #OB-JULIA-VTERM_END\n"))
   (:map shr-map
 	("u" . nil)))
 
-;; * shr
+;; ** shr
 
 (use-package shr
   :config
   (setq shr-max-image-proportion 0.4))
 
-;; * which-key
-
-(use-package which-key
-  :config
-  (setq which-key-show-early-on-C-h nil)
-  (setq which-key-idle-delay 1.0)
-  (setq which-key-idle-secondary-delay 0.05)
-  (which-key-mode 1))
-
-;; * TODO hyperbole
+;; ** TODO hyperbole
 
 (use-package hyperbole
   :disabled
@@ -2280,7 +2279,7 @@ end #OB-JULIA-VTERM_END\n"))
   (setq hbmap:dir-user "~/.emacs.d/hyperb")
   (hyperbole-mode 1))
 
-;; * denote
+;; ** denote
 
 (defun my/denote-rename-buffer ()
   (interactive)
@@ -2364,7 +2363,7 @@ end #OB-JULIA-VTERM_END\n"))
    ("C-c n e D" . denote-explore-degree-barchart)))
 
 
-;; * nov-mode
+;; ** nov-mode
 
 (defun my/center-reading-mode ()
   "Center the text in visual column mode"
@@ -2437,11 +2436,11 @@ end #OB-JULIA-VTERM_END\n"))
 	("C-c b" . org-noter))
   :hook (nov-mode . my/nov-mode-setup))
 
-;; * esxml
+;; ** esxml
 
 (use-package esxml)
 
-;; * calibredb
+;; ** calibredb
 
 (defun my/refresh-calibre-bib ()
   (interactive)
@@ -2593,7 +2592,7 @@ Argument BOOK-ALIST ."
 	       (if calibredb-size-show
 		   (propertize "Mb" 'face 'calibredb-size-face) ""))) )))
 
-;; * citar
+;; ** citar
 
 (defun my/citar-toggle-multiple ()
   (interactive)
@@ -2654,29 +2653,29 @@ Argument BOOK-ALIST ."
 	("c" . citar-denote-find-citation)
 	("R" . citar-denote-link-reference)))
 
-;; * ebib
+;; ** ebib
 
 (use-package ebib
   :config
   (setq ebib-preload-bib-files '("~/Zotero/bibtex-export.bib")))
 
-;; * speed-type
+;; ** speed-type
 
 (use-package speed-type)
 
-;; * fireplace
+;; ** fireplace
 
 (use-package fireplace)
 
-;; * gptel
+;; ** gptel
 
 (use-package gptel)
 
-;; * anki-helper
+;; ** anki-helper
 
 (use-package anki-helper
   :straight (anki-helper :type git :host github :repo "Elilif/emacs-anki-helper"))
-;; * pdf-view
+;; ** pdf-view
 
 (defun my/background-pdf-view-refresh (appearance)
   (cl-loop for buf in (buffer-list)
@@ -2716,16 +2715,16 @@ Argument BOOK-ALIST ."
   :config
   (save-place-mode 1))
 
-;; * pdf-tools
+;; ** pdf-tools
 
 (use-package pdf-tools
   :defer 2
   :hook (pdf-outline-buffer-mode . visual-line-mode)
   :config
   (pdf-tools-install :no-query)
-  (use-package pdf-occur))
+  (use-package pdf-occur :straight nil))
 
-;; * pdf-annot
+;; ** pdf-annot
 
 (use-package pdf-annot
   :straight nil
@@ -2742,7 +2741,7 @@ Argument BOOK-ALIST ."
 	("a t" . pdf-annot-add-text-annotation)
 	("a u" . pdf-annot-add-underline-markup-annotation)))
 
-;; * image
+;; ** image
 
 (use-package image
   :straight nil
@@ -2752,7 +2751,12 @@ Argument BOOK-ALIST ."
 	("C-<mouse-5>" . nil)
 	("C-<wheel-up>" . nil)
 	("C-<wheel-down>" . nil)))
-;; * other
+;; ** gnuplot
+
+(use-package gnuplot-mode)
+(use-package gnuplot)
+
+;; * OTHER
 
 (defun enable-all-commands ()
   "Enable all commands, reporting on which were disabled."
@@ -2790,13 +2794,14 @@ Argument BOOK-ALIST ."
   (my/remove-launch-note-hook)
   (delete-frame))
 
-;; * ox-11ty
+;; * CUSTOM LISP
+;; ** ox-11ty
 
 (require 'ox-11ty)
 
-;; * custom-org
+;; ** custom-org
 (require 'custom-org)
-;; * xah
+;; ** xah
 
 (use-package xah
   :straight nil
@@ -2834,13 +2839,13 @@ Argument BOOK-ALIST ."
 	("C-e" . end-of-line)
 	("M-<DEL>" . xah-delete-backward-bracket-text)))
 
-;; * lorem-ipsum
+;; ** lorem-ipsum
 
 (use-package lorem-ipsum
   :straight nil
   :commands (Lorem-ipsum-insert-sentences Lorem-ipsum-insert-list Lorem-ipsum-insert-paragraphs))
 
-;; * svelte-ts-mode
+;; ** svelte-ts-mode
 
 (use-package svelte-ts-mode
   :straight nil
@@ -2855,7 +2860,7 @@ Argument BOOK-ALIST ."
 ;; outline that you see in this document is represented in the Lisp files as
 ;; Org-style collapsible outline headings. See [[*OUTLINE MODE][Outline Mode]].
 
-;; eval:(outline-hide-sublevels 5)
+;; eval:(outline-hide-sublevels 2)
 
 ;; Local Variables:
 ;; outline-regexp: ";; \\*+"
