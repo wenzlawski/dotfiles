@@ -20,6 +20,7 @@
   (setq native-comp-async-report-warnings-errors 'silent) ; Emacs 28 with native compilation
   (setq native-compile-prune-cache t)) ; Emacs 29
 
+
 ;; decouple C-i and TAB
 ;; https://emacs.stackexchange.com/questions/220/how-to-bind-c-i-as-different-from-tab/221#221
 (define-key input-decode-map [?\C-i] [C-i])
@@ -56,6 +57,12 @@
 (unless IS-MAC   (setq command-line-ns-option-alist nil))
 (unless IS-LINUX (setq command-line-x-option-alist nil))
 
+(use-package server
+  :defer 5
+  :config
+  (unless (server-running-p)
+    (server-start)))
+
 ;; * Packages
 
 (require 'package)
@@ -82,7 +89,7 @@
 ;; solution to set to non-nil if I ever switch to a stable release.
 (setq package-install-upgrade-built-in nil)
 
-(require 'use-package-ensure)
+;;(require 'use-package-ensure)
 (setq use-package-always-ensure nil)
 
 (defvar bootstrap-version)
@@ -101,6 +108,7 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 (straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
 
 ;; * Themes
 
@@ -269,6 +277,7 @@
 ;; * rainbow-delimiters
 
 (use-package rainbow-delimiters
+  :disabled
   :custom-face
   (rainbow-delimiters-depth-1-face ((t (:foreground "#D19A66"))))
   (rainbow-delimiters-depth-2-face ((t (:foreground "#C678DD"))))
@@ -339,6 +348,7 @@
   (global-auto-revert-mode)
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
   (add-to-list 'default-frame-alist '(font . "Iosevka Comfy-18"))
+    (setq fit-window-to-buffer-horizontally t)
   :hook (prog-mode . show-paren-mode)
   :custom-face
   (show-paren-match ((t (:underline nil :inverse-video nil))))
@@ -350,6 +360,10 @@
   ("C-c o" .  occur)
   ("C-x M-k" . kill-this-buffer)
   ("C-x <C-i>" . tab-to-tab-stop)
+    ("C-<mouse-4>" . nil)
+  ("C-<mouse-5>" . nil)
+  ("C-<wheel-down>" . nil)
+  ("C-<wheel-up>" . nil)
   (:map tab-prefix-map
         ("h" . tab-bar-mode)
         ("s" . tab-switcher))
@@ -376,23 +390,10 @@
 
 (use-package info)
 
-;; * mwheel
-
-(use-package mwheel
-  :bind
-  ("C-<mouse-4>" . nil)
-  ("C-<mouse-5>" . nil)
-  ("C-<wheel-down>" . nil)
-  ("C-<wheel-up>" . nil))
-
-;; * window
-
-(use-package window
-  :config
-  (setq fit-window-to-buffer-horizontally t))
 ;; * CUSTOM FILE
 
 (use-package cus-edit
+  :straight nil
   :config
   ;; Get custom-set-variables out of init.el
   (defvar my/custom-file (dir-concat user-emacs-directory "custom.el"))
@@ -563,8 +564,7 @@ _t_: body          _e_: entry       _n_: next visible
 _o_: other         _i_: children    _p_: previous visible
 _c_: entry         _k_: branches    _f_: forward same level
 _l_: leaves        _s_: subtree     _b_: backward same level
-_d_: subtree
-
+_d_: subtree                      _/_: outline
 "
       ;; Hide
       ("q" outline-hide-sublevels)    ; Hide everything but the top-level headings
@@ -585,6 +585,7 @@ _d_: subtree
       ("p" outline-previous-visible-heading)  ; Previous
       ("f" outline-forward-same-level)        ; Forward - same level
       ("b" outline-backward-same-level)       ; Backward - same level
+      ("/" consult-outline)
       ("z" nil "leave"))))
 
 ;; * ns-auto-titlebar
@@ -772,6 +773,7 @@ _d_: subtree
 ;; * abbrev
 
 (use-package abbrev
+  :straight nil
   :config
   (setq save-abbrevs 'silently)
   (quietly-read-abbrev-file))
@@ -780,6 +782,7 @@ _d_: subtree
 
 ;; Use Dabbrev with Corfu!
 (use-package dabbrev
+  :straight nil
   ;; Swap M-/ and C-M-/
   :bind (("M-/" . dabbrev-completion)
          ("C-M-/" . dabbrev-expand))
@@ -1015,6 +1018,7 @@ This function can be used as the value of the user option
 ;;(setq vertico-count-format '("" . "")))
 
 (use-package vertico-multiform
+  :straight nil
   :after vertico
   :init
   (vertico-multiform-mode)
@@ -1054,11 +1058,13 @@ This function can be used as the value of the user option
 ;; * lisp
 
 (use-package lisp-mode
+  :straight nil
   :hook (lisp-data-mode . electric-pair-mode))
 
 ;; * elisp
 
 (use-package elisp-mode
+  :straight nil
   :hook (emacs-lisp-mode . electric-pair-mode)
   :bind
   (:map emacs-lisp-mode-map
@@ -1100,6 +1106,7 @@ This function can be used as the value of the user option
   :config)
 
 (use-package ob-ein
+  :straight nil
   :after ein python-ts-mode
   :config
   (org-babel-do-load-languages 'org-babel-load-languages '((ein . t))))
@@ -1553,8 +1560,10 @@ This function can be used as the value of the user option
 
 ;; * dired
 
-(use-package dired)
+(use-package dired
+  :straight nil)
 (use-package dired-x
+  :straight nil
   :after dired)
 (use-package dired-hacks-utils
   :after dired
@@ -1879,6 +1888,7 @@ of those blocks falls back to the respective exporters."
 ;; * ob-python
 
 (use-package ob-python
+  :straight nil
   :after org
   :config
   (setq org-babel-python-command "python3"))
@@ -1896,6 +1906,7 @@ of those blocks falls back to the respective exporters."
 ;; * ob-julia
 
 (use-package ob-julia
+  :straight nil
   :after org
   :config
   (org-babel-do-load-languages
@@ -1979,6 +1990,7 @@ end #OB-JULIA-VTERM_END\n"))
 ;; * ob-shell
 
 (use-package ob-shell
+  :straight nil
   :after org
   :config
   (setq org-babel-default-header-args:sh '((:results . "output")))
@@ -1986,6 +1998,7 @@ end #OB-JULIA-VTERM_END\n"))
 ;; * ob-latex
 
 (use-package ob-latex
+  :straight nil
   :after org
   :config
   (org-babel-do-load-languages
@@ -1995,6 +2008,7 @@ end #OB-JULIA-VTERM_END\n"))
 
 ;; python does not work.
 (use-package ob-async
+  :disabled
   :after org
   :config
   (setq ob-async-no-async-languages-alist '("python" "ipython"))
@@ -2312,6 +2326,7 @@ end #OB-JULIA-VTERM_END\n"))
   ("C-c n z" . denote-signature)) ; "zettelkasten" mnemonic
 
 (use-package denote-org-extras
+  :straight nil
   :after denote)
 
 
@@ -2657,6 +2672,10 @@ Argument BOOK-ALIST ."
 
 (use-package gptel)
 
+;; * anki-helper
+
+(use-package anki-helper
+  :straight (anki-helper :type git :host github :repo "Elilif/emacs-anki-helper"))
 ;; * pdf-view
 
 (defun my/background-pdf-view-refresh (appearance)
@@ -2679,6 +2698,7 @@ Argument BOOK-ALIST ."
   (shell-command (concat "open '" buffer-file-name "'")))
 
 (use-package pdf-view
+  :straight nil
   :after pdf-tools
   :custom
   (pdf-view-resize-factor 1.05)
@@ -2708,6 +2728,7 @@ Argument BOOK-ALIST ."
 ;; * pdf-annot
 
 (use-package pdf-annot
+  :straight nil
   :after pdf-tools
   :bind
   (:map pdf-annot-minor-mode-map
@@ -2724,6 +2745,7 @@ Argument BOOK-ALIST ."
 ;; * image
 
 (use-package image
+  :straight nil
   :bind
   (:map image-slice-map
 	("C-<mouse-4>" . nil)
@@ -2777,6 +2799,7 @@ Argument BOOK-ALIST ."
 ;; * xah
 
 (use-package xah
+  :straight nil
   :bind
   (:map lisp-interaction-mode-map
         ("M-a" . xah-backward-left-bracket)
@@ -2814,7 +2837,16 @@ Argument BOOK-ALIST ."
 ;; * lorem-ipsum
 
 (use-package lorem-ipsum
+  :straight nil
   :commands (Lorem-ipsum-insert-sentences Lorem-ipsum-insert-list Lorem-ipsum-insert-paragraphs))
+
+;; * svelte-ts-mode
+
+(use-package svelte-ts-mode
+  :straight nil
+  :commands (svelte-ts-mode)
+  :custom-face
+  (font-lock-bracket-face ((t (:foreground "tan3")))))
 
 ;; * LOCAL-VARIABLES
 

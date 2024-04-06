@@ -3,6 +3,10 @@ fundamental-mode ;; Available everywhere
 (today (format-time-string "%Y-%m-%d"))
 (todayde (format-time-string "%d/%m/%Y"))
 
+emacs-lisp-mode lisp-interaction-mode
+
+(note ";; NOTE: " q)
+
 python-ts-mode python-mode
 
 (ife "if " p ":" n> (p "pass") n> "else:" n> q)
