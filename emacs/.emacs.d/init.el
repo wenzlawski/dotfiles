@@ -283,7 +283,6 @@
 ;; ** rainbow-delimiters
 
 (use-package rainbow-delimiters
-  :disabled
   :custom-face
   (rainbow-delimiters-depth-1-face ((t (:foreground "#D19A66"))))
   (rainbow-delimiters-depth-2-face ((t (:foreground "#C678DD"))))
@@ -426,7 +425,7 @@
   (global-auto-revert-mode)
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
   (add-to-list 'default-frame-alist '(font . "Iosevka Comfy-18"))
-    (setq fit-window-to-buffer-horizontally t)
+  (setq fit-window-to-buffer-horizontally t)
   :hook (prog-mode . show-paren-mode)
   :custom-face
   (show-paren-match ((t (:underline nil :inverse-video nil))))
@@ -438,7 +437,7 @@
   ("C-c o" .  occur)
   ("C-x M-k" . kill-this-buffer)
   ("C-x <C-i>" . tab-to-tab-stop)
-    ("C-<mouse-4>" . nil)
+  ("C-<mouse-4>" . nil)
   ("C-<mouse-5>" . nil)
   ("C-<wheel-down>" . nil)
   ("C-<wheel-up>" . nil)
@@ -1253,6 +1252,9 @@ This function can be used as the value of the user option
 ;; ** eglot
 
 (use-package eglot
+  :config
+  (add-to-list 'eglot-server-programs
+               '((svelte-mode svelte-ts-mode) . ("svelteserver" "--stdio")))
   :bind
   (:map eglot-mode-map
 	("C-c e f" . eglot-format)
@@ -1623,7 +1625,7 @@ This function can be used as the value of the user option
 
 
 (use-package org
-;;  :pin manual
+  ;;  :pin manual
   ;; :custom
   ;; (display-buffer-alist
   ;;  (append display-buffer-alist
@@ -1910,7 +1912,7 @@ that."
 ;; ** ox-hugo
 
 (use-package ox-hugo
-;;  :pin melpa  ;`package-archives' should already have ("melpa" . "https://melpa.org/packages/")
+  ;;  :pin melpa  ;`package-archives' should already have ("melpa" . "https://melpa.org/packages/")
   :after ox
   :config
   (add-to-list 'org-hugo-special-block-type-properties '("sidenote" . (:trim-pre t :trim-post t))))
@@ -2850,6 +2852,10 @@ Argument BOOK-ALIST ."
 (use-package svelte-ts-mode
   :straight nil
   :commands (svelte-ts-mode)
+  :mode "\\.svelte\\'"
+  :hook
+  (svelte-ts-mode . (lambda () (apheleia-mode -1)))
+  (svelte-ts-mode . (lambda () (setq tab-width 2)))
   :custom-face
   (font-lock-bracket-face ((t (:foreground "tan3")))))
 

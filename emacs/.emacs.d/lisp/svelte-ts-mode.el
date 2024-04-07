@@ -50,13 +50,15 @@
 
 ;; TODO indent rules for typescript and css work but we need initial indent to account
 ;; for the parent node
+;; NOTE: indentation for css is fixed, but there are issues for typescript.
 
 (defvar svelte-ts-mode--indent-rules
   `((svelte
-     ((parent-is "fragment") column-0 0)
-     ((node-is "frontmatter") column-0 0)
+     ((parent-is "document") column-0 0)
      ((node-is "/>") parent-bol 0)
      ((node-is ">") parent-bol 0)
+     ;; ((and (parent-is "script_element")
+     ;; 	   (node-is "end_tag")) column-0 0)
      ((node-is "end_tag") parent-bol 0)
      ((node-is "if_end") parent-bol 0)
      ((node-is "each_end") parent-bol 0)
@@ -81,7 +83,9 @@
      ((parent-is "then_block") parent-bol svelte-ts-mode-indent-offset)
      ((parent-is "catch_block") parent-bol svelte-ts-mode-indent-offset))
     (css . ,(append (alist-get 'css css--treesit-indent-rules)
-                    '(((parent-is "stylesheet") parent-bol 0))))
+                    '(((parent-is "stylesheet") column-0 0))))
+    ;;(typescript . ,(append '(((parent-is "program") column-0 0))
+    ;;			   (alist-get 'typescript (typescript-ts-mode--indent-rules 'typescript)))))
     (typescript . ,(alist-get 'typescript (typescript-ts-mode--indent-rules 'typescript))))
   "Tree-sitter indentation rules for `svelte-ts-mode'.")
 
@@ -148,17 +152,7 @@
   (treesit-range-rules
    :embed 'typescript
    :host 'svelte
-   '(;; TODO: this doesn't really parse correctly, because emacs' tree-sitter
-     ;;       integration just shoves everything in the same language into one
-     ;;       long chunk to parse, instead of parsing each range individually.
-     ;;       syntax highlighting doesn't look awful with it though, so i'm
-     ;;       leaving it in for now. better than nothing. need to investigate
-     ;;       alternatives though.
-     ;; (expression (svelte_raw_text) @cap)
-     ;; (if_start (svelte_raw_text) @cap)
-     ;; (each_start (svelte_raw_text) @cap)
-     ;; (else_if_block (svelte_raw_text) @cap)
-     (script_element (raw_text) @cap))
+   '((script_element (raw_text) @cap))
 
    :embed 'typescript
    :host 'svelte
@@ -167,13 +161,14 @@
 
    :embed 'css
    :host 'svelte
-   '((style_element (raw_text) @cap)
-     ;; (attribute
-     ;;  ((attribute_name) @name
-     ;;  (:match "style" @name))
-     ;;  (quoted_attribute_value (attribute_value) @cap)
-     ;;  )
-     )))
+   '((style_element (raw_text) @cap))
+
+   :embed 'css
+   :host 'svelte
+   :local t
+   '((attribute
+      ((attribute_name) @_name (:match "style" @_name))
+      (quoted_attribute_value (attribute_value) @capture)))))
 
 (defun svelte-ts-mode--advice-for-treesit-buffer-root-node (&optional lang)
   "Return the current ranges for the LANG parser in the current buffer.
@@ -212,6 +207,9 @@ Return nil if there is no name or if NODE is not a defun node."
            if range
            return (treesit-parser-language parser))))
     (or language-in-range 'svelte)))
+
+;; TODO Make this for for JS, TS, CSS, Less, SCSS, etc. basically all the thing
+;; that are legal in Svelte.
 
 ;;;###autoload
 (define-derived-mode svelte-ts-mode html-mode "Svelte"
