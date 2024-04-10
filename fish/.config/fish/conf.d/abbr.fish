@@ -1,6 +1,6 @@
 abbr c command
 abbr em "emacsclient -nw"
-abbr emc "emacsclient -nc"
+abbr emc "emacsclient -t"
 abbr exi exiftool
 abbr g git
 abbr h z
