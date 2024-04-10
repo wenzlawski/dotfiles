@@ -107,12 +107,13 @@
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	 f         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
          'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 (straight-use-package 'use-package)
+(straight-use-package 'org)
 (setq straight-use-package-by-default t)
 
 ;; * THEMES
@@ -179,13 +180,14 @@
 	    (bg-region bg-sage)
 	    (fg-region unspecified)
 	    (name blue-warmer)
-	    (fg-heading-2 blue-faint)
-	    (fg-heading-3 magenta-faint)
-	    (fg-heading-4 blue-faint)
-	    (fg-heading-5 magenta-faint)
-	    (fg-heading-6 blue-faint)
-	    (fg-heading-7 magenta-faint)
-	    (fg-heading-8 blue-faint)
+	    (fg-heading-1 blue)
+	    (fg-heading-2 olive)
+	    (fg-heading-3 slate)
+	    (fg-heading-4 maroon)
+	    (fg-heading-5 olive)
+	    (fg-heading-6 slate)
+	    (fg-heading-7 maroon)
+	    (fg-heading-8 olive)
 	    (identifier magenta-faint)
 	    (keybind magenta-cooler)
 	    (accent-0 magenta-cooler)
@@ -201,7 +203,10 @@
 	    (border-mode-line-inactive bg-mode-line-inactive)
 	    (bg-tab-bar bg-main)
 	    (bg-tab-current bg-active)
-	    (bg-tab-other bg-main))))
+	    (bg-tab-other bg-main)
+	    (prose-done green-faint)
+            (prose-todo red-faint)
+	    )))
 
 ;; ** Timu theme
 
@@ -587,19 +592,21 @@
 ;; *** yasnippet
 
 (use-package yasnippet
-  :disabled 
-  :init
-  (use-package yasnippet-snippets)
+  ;; (use-package yasnippet-snippets)
   ;; (setq yas-minor-mode-map
   ;;       (let ((map (make-sparse-keymap)))
   ;;         (define-key map (kbd "s") 'yas-insert-snippet)
   ;;         (define-key map (kbd "n") 'yas-new-snippet)
   ;;         (define-key map (kbd "v") 'yas-visit-snippet-file)
   ;;         map))
-  (yas-reload-all)
-  :hook (prog-mode . yas-minor-mode)
+  ;; :hook (prog-mode . yas-minor-mode)
   :config
-  (setq yas-verbosity 0))
+  (setq yas-verbosity 0)
+  (yas-reload-all))
+
+(use-package yankpad
+  :init
+  (setq yankpad-file "~/.emacs.d/yankpad.org"))
 
 (use-package yasnippet-capf
   :disabled
@@ -804,6 +811,8 @@
   (:map outline-minor-mode-map
 	("C-c <tab>" . hydra-outline/body))
   :config
+  (use-package major-mode-hydra)
+  
   (with-eval-after-load 'outline
     (defhydra hydra-outline (:color pink :hint nil)
       "
@@ -842,7 +851,13 @@ _d_: subtree                      _/_: outline
       ("D" outline-move-subtree-down)
       ("<" outline-promote)           ; Promote
       (">" outline-demote)            ; Demote
-      ("z" nil "leave"))))
+      ("z" nil "leave")))	      ; end hydra
+
+  (with-eval-after-load 'anki-helper
+    ))
+
+
+
 
 ;; ** undo-fu
 
@@ -1031,8 +1046,6 @@ This function can be used as the value of the user option
 
 (use-package consult
   :after org
-  :config
-  (consult-customize consult-notes my/consult-notes-other-window :preview-key "M-.")
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :bind
   ([remap Info-search] . consult-info)
@@ -1093,6 +1106,7 @@ This function can be used as the value of the user option
 
 (use-package consult-notes
   :after consult denote
+  :demand t
   :custom-face
   (consult-notes-sep ((t (:foreground "CornFlowerBlue"))))
   :bind
@@ -1100,6 +1114,8 @@ This function can be used as the value of the user option
   ("C-c n X" . consult-notes-search-in-all-notes)
   ("C-c n 4 o" . my/consult-notes-other-window)
   :config
+  (consult-customize consult-notes my/consult-notes-other-window :preview-key "M-.")
+
   (setq consult-notes-file-dir-sources
         '(("Org"             ?o "~/Dropbox/Org/")))
   (setq consult-notes-org-headings-files '("~/Dropbox/Org/"))
@@ -1109,7 +1125,54 @@ This function can be used as the value of the user option
     (consult-notes-denote-mode))
 
   ;; search only for text files in denote dir
-  (setq consult-notes-denote-files-function (function denote-directory-text-only-files)))
+  (setq consult-notes-denote-files-function (function denote-directory-text-only-files))
+  (setq consult-notes-denote-truncate-title 60))
+
+(with-eval-after-load 'consult-notes-denote
+  (defvar consult-notes-denote-truncate-title nil
+    "Truncate title in Denote notes. Can be nil or a number.")
+  
+  (defconst consult-notes-denote--source
+    (list :name     (propertize "Denote notes" 'face 'consult-notes-sep)
+          :narrow   ?d
+          :category consult-notes-category
+          :annotate consult-notes-denote-annotate-function
+          :items    (lambda ()
+                      (let* ((max-width (if consult-notes-denote-truncate-title consult-notes-denote-truncate-title 0))
+                             (cands (mapcar (lambda (f)
+                                              (let* ((id (denote-retrieve-filename-identifier f))
+                                                     (title-1 (or (denote-retrieve-title-value f (denote-filetype-heuristics f)) (denote-retrieve-filename-title f)))
+                                                     (title (if consult-notes-denote-display-id
+								(concat id " " title-1)
+                                                              title-1))
+						     (title (if consult-notes-denote-truncate-title
+								(truncate-string-to-width title consult-notes-denote-truncate-title) title))
+                                                     (dir (file-relative-name (file-name-directory f) denote-directory))
+                                                     (keywords (denote-extract-keywords-from-path f)))
+						(if (not consult-notes-denote-truncate-title)
+						    (let ((current-width (string-width title)))
+                                                      (when (> current-width max-width)
+							(setq max-width current-width))))
+						(propertize title 'denote-path f 'denote-keywords keywords)))
+                                            (funcall consult-notes-denote-files-function))))
+			(mapcar (lambda (c)
+                                  (let* ((keywords (get-text-property 0 'denote-keywords c))
+					 (path (get-text-property 0 'denote-path c))
+					 (dirs (directory-file-name (file-relative-name (file-name-directory path) denote-directory))))
+                                    (concat c
+                                            ;; align keywords
+                                            (propertize " " 'display `(space :align-to (+ left ,(+ 2 max-width))))
+                                            (format "%18s"
+                                                    (if keywords
+							(concat (propertize "#" 'face 'consult-notes-name)
+								(propertize (mapconcat 'identity keywords " ") 'face 'consult-notes-name))
+                                                      ""))
+                                            (when consult-notes-denote-dir (format "%18s" (propertize (concat "/" dirs) 'face 'consult-notes-name))))))
+				cands)))
+          ;; Custom preview
+          :state  #'consult-notes-denote--state
+          ;; Create new note on match fail
+          :new     #'consult-notes-denote--new-note)))
 
 (defun consult-notes-my-embark-function (cand)
   "Do something with CAND"
@@ -1377,6 +1440,8 @@ This function can be used as the value of the user option
 (setq treesit-font-lock-level 4)
 
 (use-package treesit-auto
+  :disabled
+
   :config
   (global-treesit-auto-mode))
 
@@ -1625,7 +1690,48 @@ This function can be used as the value of the user option
 
 
 (use-package org
-  ;;  :pin manual
+  :hook
+  (org-mode . auto-fill-mode)
+  (org-mode . visual-line-mode)
+  (org-mode . variable-pitch-mode)
+  (org-mode . (lambda nil (setq cursor-type 'bar)))
+  :bind
+  ("C-x c" . org-capture)
+  ("C-c l" . org-store-link)
+  ("C-c a" . org-agenda)
+  (:map org-mode-map
+        ("C-c C-." . org-time-stamp-inactive)
+        ("C-c 4 o" . my/org-open-at-point-other-window)
+        ("C-c 4 C-o" . my/org-open-at-point-other-window)
+        ("C-c 5 C-o" . my/org-open-at-point-other-frame)
+        ("C-c 5 o" . my/org-open-at-point-other-frame)
+        ("C-c e" . org-emphasize)
+	("<C-i>" . org-delete-backward-char)
+	("M-i" . backward-kill-word)
+	("C-c C-x h" . org-edit-headline))
+
+  :custom-face
+  (org-level-1 ((t (:bold nil))))
+  (org-level-2 ((t (:bold nil))))
+  (org-level-3 ((t (:bold nil))))
+  (org-level-4 ((t (:bold nil))))
+  (org-level-5 ((t (:bold nil))))
+  (org-level-6 ((t (:bold nil))))
+  (org-level-7 ((t (:bold nil))))
+  (org-level-8 ((t (:bold nil))))
+  (org-document-title ((t (:height 1.7))))
+  (org-table ((t (:inherit 'fixed-pitch))))
+  (org-block ((t (:inherit 'fixed-pitch))))
+  (org-block-begin-line ((t (:inherit 'fixed-pitch))))
+  (org-document-info-keyword ((t (:inherit 'fixed-pitch))))
+  (org-meta-line ((t (:inherit 'fixed-pitch))))
+  (org-document-info ((t (:inherit 'fixed-pitch))))
+  (org-property-value ((t (:inherit 'fixed-pitch))))
+  (org-drawer ((t (:inherit 'fixed-pitch))))
+  (org-special-keyword ((t (:inherit 'fixed-pitch))))
+  (org-column-title ((t (:inherit 'fixed-pitch))))
+  (org-agenda-structure ((t (:height 1.5))))
+  (org-agenda-date ((t (:height 1.2))))
   ;; :custom
   ;; (display-buffer-alist
   ;;  (append display-buffer-alist
@@ -1636,278 +1742,68 @@ This function can be used as the value of the user option
   :config
   (setf (cdr (assoc 'file org-link-frame-setup)) 'find-file)
   (setq org-directory "~/Dropbox/Org/")
-  (setq org-agenda-files '("daily.org" "refile.org" "future.org"))
-  ;;(setq org-todo-keywords '((sequence "TODO" "IN-PROGRESS" "WAITING") "DONE"))
+  (setq org-todo-keywords '((sequence "TODO" "IN-PROGRESS" "WAITING" "|" "DONE")))
   (setq org-hide-emphasis-markers t)
   (setq org-latex-compiler "xelatex")
+
+
   (setq org-refile-targets
         '((nil :maxlevel . 3)
           (org-agenda-files :maxlevel . 2)))
   (setq org-ellipsis "↴")
-
-  ;; after https://emacs.stackexchange.com/questions/75822/ignoring-non-existent-org-mode-agenda-files
-  (setq org-agenda-skip-unavailable-files t)
   (setq org-src-preserve-indentation t)
   (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
   (setq org-fast-tag-selection-single-key t)
   (setq org-special-ctrl-a/e t)
   (setq org-outline-path-complete-in-steps nil)
   (setq org-goto-max-level 5)
-  (setq org-highlight-latex-and-related '(latex script entities))
+  ;;(setq org-highlight-latex-and-related '(latex script entities))
+  (setq org-highlight-latex-and-related nil)
   (setq org-blank-before-new-entry '((heading . auto) (plain-list-item . auto)))
-  (add-to-list 'org-babel-load-languages '(shell . t))
   (setq org-src-window-setup 'current-window)
-  (setq org-capture-templates
-        '(("r" "refile" entry (file "~/Dropbox/Org/refile.org") "* %^{Title} %^g\n%U\n\n%?" :prepend t :empty-lines-after 1)
-          ("t" "today" entry (file+olp+datetree "~/Dropbox/Org/daily.org") "* %^{Title}\n\n%?")
-          ("j" "Journal" entry (file+olp+datetree "~/Dropbox/Org/journal.org") "* %U %^{Title}\n%i\n\n%?")))
-  :hook
-  (org-mode . auto-fill-mode)
-  (org-mode . visual-line-mode)
-  (org-mode . variable-pitch-mode)
-  (org-mode . (lambda nil (setq cursor-type 'bar)))
-  :bind
-  ("C-x c" . org-capture)
-  ("C-c l" . org-store-link)
-  (:map org-mode-map
-        ("C-c C-." . org-time-stamp-inactive)
-        ("C-c a" . org-agenda)
-        ("C-c 4 o" . my/org-open-at-point-other-window)
-        ("C-c 4 C-o" . my/org-open-at-point-other-window)
-        ("C-c 5 C-o" . my/org-open-at-point-other-frame)
-        ("C-c 5 o" . my/org-open-at-point-other-frame)
-        ("C-c e" . org-emphasize)
-	("<C-i>" . org-delete-backward-char)
-	("M-i" . backward-kill-word))
+  (add-to-list 'org-babel-load-languages '(shell . t))
+  (setq org-tags-column 0)
+  (setq org-auto-align-tags nil)
+  (setq org-tags-exclude-from-inheritance '("ARCHIVE" "ATTACH" "project"))
+  (setq org-global-properties '(("Effort_ALL" . "0:15 0:30 1:00 2:00 4:00 8:00")))
+  (setq org-refile-use-outline-path t)
+  (setq org-log-into-drawer t)
+
+  ;; ** org-agenda
   
-
-  :custom-face
-  (org-document-title ((t (:height 1.7))))
-  (org-table ((t (:inherit 'fixed-pitch))))
-  (org-block ((t (:inherit 'fixed-pitch))))
-  (org-block-begin-line ((t (:inherit 'fixed-pitch))))
-  (org-document-info-keyword ((t (:inherit 'fixed-pitch))))
-  (org-meta-line ((t (:inherit 'fixed-pitch))))
-  (org-document-info ((t (:inherit 'fixed-pitch))))
-  (org-property-value ((t (:inherit 'fixed-pitch))))
-  (org-drawer ((t (:inherit 'fixed-pitch))))
-  (org-special-keyword ((t (:inherit 'fixed-pitch)))))
-
-
-;; (use-package ob-shell
-;;   :after org
-;;   :config
-;;   (setq org-babel-default-header-args:sh '((:results . "output")))
-;;   (setq org-babel-default-header-args:shell '((:results . "output"))))
-
-;; ** org-appear
-
-(use-package org-appear
-  :hook org-mode
-  :custom
-  (org-appear-autolinks t))
-
-;; ** org-fragtog
-
-(use-package org-fragtog
-  :hook org-mode)
-
-;; ** TODO org-ref
-
-(use-package org-ref
-  :after org
-  :init
-  (with-eval-after-load 'ox
-    (defun my/org-ref-process-buffer--html (backend)
-      "Preprocess `org-ref' citations to HTML format.
-
-Do this only if the export backend is `html' or a derivative of
-that."
-      ;; `ox-hugo' is derived indirectly from `ox-html'.
-      ;; ox-hugo <- ox-blackfriday <- ox-md <- ox-html
-      (when (org-export-derived-backend-p backend 'html)
-        (org-ref-process-buffer 'html)))
-    (add-to-list 'org-export-before-parsing-hook #'my/org-ref-process-buffer--html)))
-
-;; ** org-remark
-
-(use-package org-remark
-  :bind (;; :bind keyword also implicitly defers org-remark itself.
-	 ;; Keybindings before :map is set for global-map.
-	 :map org-remark-mode-map
-	 ("C-c r m" . org-remark-mark)
-	 ("C-c r l" . org-remark-mark-line)
-	 ("C-c r o" . org-remark-open)
-	 ("C-c r n" . org-remark-next)
-	 ("C-c r p" . org-remark-prev)
-	 ("C-c r ]" . org-remark-view-next)
-	 ("C-c r [" . org-remark-view-prev)
-	 ("C-c r r" . org-remark-remove)
-	 ("C-c r d" . org-remark-delete)
-	 ("C-c r v" . org-remark-view))
-  :init
-  ;; (org-remark-global-tracking-mode +1)
-  :hook (org-remark-open . (lambda () (org-cycle-hide-drawers 'all)))
-  :config
-  (setq org-remark-notes-file-name "~/Dropbox/Org/remark.org"
-	org-remark-line-minimum-left-margin-width 1
-	org-remark-line-heading-title-max-length 70))
-;;(use-package org-remark-nov  :after nov  :config (org-remark-nov-mode +1)))
-
-;; ** org-mac-link
-
-(use-package org-mac-link
-  :when (eq system-type 'darwin)
-  :after org
-  :init
-  (setq org-mac-link-brave-app-p nil
-	org-mac-link-chrome-app-p nil
-	org-mac-link-acrobat-app-p nil
-	org-mac-link-outlook-app-p nil
-	org-mac-link-addressbook-app-p nil
-	org-mac-link-qutebrowser-app-p nil
-	org-mac-link-finder-app-p t
-	org-mac-link-mail-app-p t
-	org-mac-link-devonthink-app-p t
-	org-mac-link-safari-app-p nil
-	org-mac-link-librewolf-app-p t
-	org-mac-link-firefox-vimperator-p nil
-	org-mac-link-evernote-app-p nil
-	org-mac-link-together-app-p nil
-	org-mac-link-skim-app-p t)
-  :bind
-  (:map org-mode-map
-	("C-c L" . my/org-mac-link-get-link))
-  :config
-  (defun my/org-mac-link-applescript-librewolf-get-frontmost-url ()
-    "AppleScript to get the links to the frontmost window of the LibreWolf.app."
-    (let ((result
-	   (org-mac-link-do-applescript
-	    (concat
-	     "tell application \"System Events\"\n"
-	     "   tell its application process \"LibreWolf\"\n"
-	     "       set theTitle to get name of window 1\n"
-	     "       set theUrl to get value of UI element 1 of combo box 1 of toolbar \"Navigation\" of first group of front window\n"
-	     "    end tell\n"
-	     "end tell\n"
-	     "set theResult to (get theUrl) & \"::split::\" & (get theTitle)\n"
-	     "set links to {}\n"
-	     "copy theResult to the end of links\n"
-	     "return links as string\n"))))
-      (car (split-string result "[\r\n]+" t))))
-
-  (defun my/org-mac-link-librewolf-get-frontmost-url ()
-    "Get the link to the frontmost window of the LibreWolf.app."
-    (interactive)
-    (message "Applescript: Getting Firefox url...")
-    (org-mac-link-paste-applescript-links (my/org-mac-link-applescript-librewolf-get-frontmost-url)))
-
-  (defun my/org-mac-link-librewolf-insert-frontmost-url ()
-    "Insert the link to the frontmost window of the LibreWolf.app."
-    (interactive)
-    (insert (my/org-mac-link-librewolf-get-frontmost-url)))
-
-  (defun my/org-mac-link-get-link (&optional beg end)
-    "Prompt for an application to grab a link from.
-  When done, go grab the link, and insert it at point. If a region
-  is active, that will be the link's description."
-    (interactive
-     (if (use-region-p)
-	 (list (region-beginning) (region-end))
-       '()))
-    (let* ((descriptors
-	    `(("F" "inder" org-mac-link-finder-insert-selected ,org-mac-link-finder-app-p)
-	      ("m" "ail" org-mac-link-mail-insert-selected ,org-mac-link-mail-app-p)
-	      ("d" "EVONthink Pro Office" org-mac-link-devonthink-item-insert-selected
-	       ,org-mac-link-devonthink-app-p)
-	      ("o" "utlook" org-mac-link-outlook-message-insert-selected ,org-mac-link-outlook-app-p)
-	      ("a" "ddressbook" org-mac-link-addressbook-item-insert-selected ,org-mac-link-addressbook-app-p)
-	      ("s" "afari" org-mac-link-safari-insert-frontmost-url ,org-mac-link-safari-app-p)
-	      ("l" "ibrewolf" my/org-mac-link-librewolf-insert-frontmost-url ,org-mac-link-librewolf-app-p)
-	      ("v" "imperator" org-mac-link-vimperator-insert-frontmost-url ,org-mac-link-firefox-vimperator-p)
-	      ("c" "hrome" org-mac-link-chrome-insert-frontmost-url ,org-mac-link-chrome-app-p)
-	      ("b" "rave" org-mac-link-brave-insert-frontmost-url ,org-mac-link-brave-app-p)
-	      ("e" "evernote" org-mac-link-evernote-note-insert-selected ,org-mac-link-evernote-app-p)
-	      ("t" "ogether" org-mac-link-together-insert-selected ,org-mac-link-together-app-p)
-	      ("S" "kim" org-mac-link-skim-insert-page ,org-mac-link-skim-app-p)
-	      ("A" "crobat" org-mac-link-acrobat-insert-page ,org-mac-link-acrobat-app-p)
-	      ("q" "utebrowser" org-mac-link-qutebrowser-insert-frontmost-url ,org-mac-link-qutebrowser-app-p)))
-	   (menu-string (make-string 0 ?x))
-	   input)
-
-      ;; Create the menu string for the keymap
-      (mapc (lambda (descriptor)
-	      (when (elt descriptor 3)
-		(setf menu-string (concat menu-string
-					  "[" (elt descriptor 0) "]"
-					  (elt descriptor 1) " "))))
-	    descriptors)
-      (setf (elt menu-string (- (length menu-string) 1)) ?:)
-
-      ;; Prompt the user, and grab the link
-      (message menu-string)
-      (setq input (read-char-exclusive))
-      (mapc (lambda (descriptor)
-	      (let ((key (elt (elt descriptor 0) 0))
-		    (active (elt descriptor 3))
-		    (grab-function (elt descriptor 2)))
-		(when (and active (eq input key))
-		  (if (and beg end)
-		      (let ((new-desc (buffer-substring beg end))
-			    end-desc)
-			(delete-region beg end)
-			(call-interactively grab-function)
-			(save-excursion
-			  (backward-char 2)
-			  (setq end-desc (point))
-			  (search-backward "][")
-			  (forward-char 2)
-			  (delete-region (point) end-desc)
-			  (insert new-desc)))
-		    (call-interactively grab-function)))))
-	    descriptors))))
-
-;; ** org-noter
-
-(use-package org-noter
-  :bind
-  (:map org-noter-doc-mode-map ("q" . nil))
-  (:map pdf-view-mode-map ("C-c C-n" . org-noter))
-  (:map org-mode-map
-	("C-c C-x n n" . org-noter)
-	("C-c C-x n k" . org-noter-kill-session)
-	("C-c C-x n s" . org-noter-create-skeleton))
-  :config
-  (add-to-list 'org-noter-notes-search-path "/Users/my/Library/CloudStorage/Dropbox/Org")
-  (setq org-noter-default-notes-file-names '("noter.org")
-	org-noter-always-create-frame nil
-	org-noter-auto-save-last-location t
-	org-noter-doc-split-fraction '(0.5 . 0.5)
-	org-noter-kill-frame-at-session-end nil
-	org-noter-separate-notes-from-heading t))
-
-;; ** org-mind-map
-
-(use-package org-mind-map
-  :init
-  (require 'ox-org)
-  :config
-  (setq org-mind-map-engine "dot")       ; Default. Directed Graph
-  ;; (setq org-mind-map-engine "neato")  ; Undirected Spring Graph
-  ;; (setq org-mind-map-engine "twopi")  ; Radial Layout
-  ;; (setq org-mind-map-engine "fdp")    ; Undirected Spring Force-Directed
-  ;; (setq org-mind-map-engine "sfdp")   ; Multiscale version of fdp for the layout of large graphs
-  ;; (setq org-mind-map-engine "twopi")  ; Radial layouts
-  ;; (setq org-mind-map-engine "circo")  ; Circular Layout
-  )
-;; ** org-ql
-
-(use-package org-ql)
-
-;; ** org-web-tools
-
-(use-package org-web-tools)
-
+  (setq org-agenda-files '("daily.org" "future.org" "personal.org"))
+  ;; after https://emacs.stackexchange.com/questions/75822/ignoring-non-existent-org-mode-agenda-files
+  (setq org-agenda-skip-unavailable-files t)
+  (setq org-agenda-custom-commands 	; a,e,t,m,s,T,M,S,C
+	'(("p"  . "project+state search")
+	  ("pp" tags "+project")
+	  ("pa" tags "+project-TODO=\"MAYBE\"")
+	  ("pm" tags "+project+TODO=\"MAYBE\"")
+	  ("n" "Agenda / INTR / PROG / NEXT"
+	   ((agenda "" nil)
+	    (todo "INTR" nil)
+	    (todo "PROG" nil)
+	    (todo "NEXT" nil))
+	   nil)))
+  (setq org-agenda-include-diary nil)
+  
+  ;; ** org-capture
+  
+  (setq org-capture-templates
+        '(("r" "refile" entry (file "refile.org")
+	   "* %^{Title}\n%U\n\n%?" :prepend t :empty-lines-after 1)
+          ;; ("t" "today" entry (file+olp+datetree "daily.org")
+	  ;;  "* %^{Title}\n\n%?")
+	  ;; ("T" "today+open" entry (file+olp+datetree "daily.org")
+	  ;;  "* %^{Title}\n\n%?" :jump-to-captured t)
+          ("j" "Journal" entry (file+olp+datetree "journal.org")
+	   "* %U %^{Title}\n%i\n\n%?")
+	  ("p" "project" entry (file+headline "personal.org")
+	   (file "~/.emacs.d/capture/project.org") :prepend t :empty-lines-before 1)
+	  ("t" "Task" entry (file "personal.org")
+	   (file "~/.emacs.d/capture/task.org") :prepend t :empty-lines-before 1)
+	  ("h" "Habit" entry (file "personal.org")
+	   (file "~/.emacs.d/capture/habit.org") :prepend t :empty-lines-before 1))))
 ;; * ORG EXPORT
 ;; ** ox-hugo
 
@@ -2211,6 +2107,274 @@ end #OB-JULIA-VTERM_END\n"))
   (add-hook 'ob-async-pre-execute-src-block-hook
             #'(lambda ()
 		(setq inferior-julia-program-name "/usr/local/bin/julia"))))
+;; ** mixed-pitch-mode
+
+(use-package mixed-pitch
+  :hook
+  ;; If you want it in all text modes:
+  (text-mode . mixed-pitch-mode))
+
+;; * org-contrib
+
+(use-package org-contrib)
+;; * org-super-agenda
+
+(use-package org-super-agenda
+  :after org
+  :custom
+  (org-super-agenda-groups
+   '(;; Each group has an implicit boolean OR operator between its selectors.
+     (:name "Today"  ; Optionally specify section name
+            :time-grid t  ; Items that appear on the time grid
+            :todo "TODAY")  ; Items that have this TODO keyword
+     (:name "Important"
+            ;; Single arguments given alone
+            :tag "bills"
+            :priority "A")
+     (:priority<= "B"
+                  ;; Show this section after "Today" and "Important", because
+                  ;; their order is unspecified, defaulting to 0. Sections
+                  ;; are displayed lowest-number-first.
+                  :order 1)
+     (:name "Habits"
+	    :habit t
+	    :order 2)))
+  :config
+  (org-super-agenda-mode)
+  ;; (setq org-super-agenda-groups
+  ;; 	'((:name "Today"
+  ;; 		 :time-grid t
+  ;; 		 :scheduled today)
+  ;; 	  (:name "Due today"
+  ;; 		 :deadline today)
+  ;; 	  (:name "Important"
+  ;; 		 :priority "A")
+  ;; 	  (:name "Overdue"
+  ;; 		 :deadline past)
+  ;; 	  (:name "Due soon"
+  ;; 		 :deadline future)
+  ;; 	  (:name "Waiting"
+  ;; 		 :todo "WAITING")
+  ;; 	  (:name "Scheduled earlier"
+  ;; 		 :scheduled past)
+  ;; 	  (:name "Scheduled later"
+  ;; 		 :scheduled future)
+  ;; 	  (:name "Unimportant"
+  ;; 		 :priority<= "C")
+  ;; 	  (:name "All other agenda items"
+  ;; 		 :auto-category t)))
+  :bind
+  (:map org-agenda-mode-map
+	("C-c C-x C-a" . org-agenda-archive-default)))
+
+;; * org-appear
+
+(use-package org-appear
+  :hook org-mode
+  :custom
+  (org-appear-autolinks t))
+
+;; * org-fragtog
+
+(use-package org-fragtog
+  :hook org-mode)
+
+;; * TODO org-ref
+
+(use-package org-ref
+  :after org
+  :init
+  (with-eval-after-load 'ox
+    (defun my/org-ref-process-buffer--html (backend)
+      "Preprocess `org-ref' citations to HTML format.
+
+Do this only if the export backend is `html' or a derivative of
+that."
+      ;; `ox-hugo' is derived indirectly from `ox-html'.
+      ;; ox-hugo <- ox-blackfriday <- ox-md <- ox-html
+      (when (org-export-derived-backend-p backend 'html)
+        (org-ref-process-buffer 'html)))
+    (add-to-list 'org-export-before-parsing-hook #'my/org-ref-process-buffer--html)))
+
+;; * org-remark
+
+(use-package org-remark
+  :bind (;; :bind keyword also implicitly defers org-remark itself.
+	 ;; Keybindings before :map is set for global-map.
+	 :map org-remark-mode-map
+	 ("C-c r m" . org-remark-mark)
+	 ("C-c r l" . org-remark-mark-line)
+	 ("C-c r o" . org-remark-open)
+	 ("C-c r n" . org-remark-next)
+	 ("C-c r p" . org-remark-prev)
+	 ("C-c r ]" . org-remark-view-next)
+	 ("C-c r [" . org-remark-view-prev)
+	 ("C-c r r" . org-remark-remove)
+	 ("C-c r d" . org-remark-delete)
+	 ("C-c r v" . org-remark-view))
+  :init
+  ;; (org-remark-global-tracking-mode +1)
+  :hook (org-remark-open . (lambda () (org-cycle-hide-drawers 'all)))
+  :config
+  (setq org-remark-notes-file-name "~/Dropbox/Org/remark.org"
+	org-remark-line-minimum-left-margin-width 1
+	org-remark-line-heading-title-max-length 70))
+;;(use-package org-remark-nov  :after nov  :config (org-remark-nov-mode +1)))
+
+;; * org-mac-link
+
+(use-package org-mac-link
+  :when (eq system-type 'darwin)
+  :after org
+  :init
+  (setq org-mac-link-brave-app-p nil
+	org-mac-link-chrome-app-p nil
+	org-mac-link-acrobat-app-p nil
+	org-mac-link-outlook-app-p nil
+	org-mac-link-addressbook-app-p nil
+	org-mac-link-qutebrowser-app-p nil
+	org-mac-link-finder-app-p t
+	org-mac-link-mail-app-p t
+	org-mac-link-devonthink-app-p t
+	org-mac-link-safari-app-p nil
+	org-mac-link-librewolf-app-p t
+	org-mac-link-firefox-vimperator-p nil
+	org-mac-link-evernote-app-p nil
+	org-mac-link-together-app-p nil
+	org-mac-link-skim-app-p t)
+  :bind
+  (:map org-mode-map
+	("C-c L" . my/org-mac-link-get-link))
+  :config
+  (defun my/org-mac-link-applescript-librewolf-get-frontmost-url ()
+    "AppleScript to get the links to the frontmost window of the LibreWolf.app."
+    (let ((result
+	   (org-mac-link-do-applescript
+	    (concat
+	     "tell application \"System Events\"\n"
+	     "   tell its application process \"LibreWolf\"\n"
+	     "       set theTitle to get name of window 1\n"
+	     "       set theUrl to get value of UI element 1 of combo box 1 of toolbar \"Navigation\" of first group of front window\n"
+	     "    end tell\n"
+	     "end tell\n"
+	     "set theResult to (get theUrl) & \"::split::\" & (get theTitle)\n"
+	     "set links to {}\n"
+	     "copy theResult to the end of links\n"
+	     "return links as string\n"))))
+      (car (split-string result "[\r\n]+" t))))
+
+  (defun my/org-mac-link-librewolf-get-frontmost-url ()
+    "Get the link to the frontmost window of the LibreWolf.app."
+    (interactive)
+    (message "Applescript: Getting Firefox url...")
+    (org-mac-link-paste-applescript-links (my/org-mac-link-applescript-librewolf-get-frontmost-url)))
+
+  (defun my/org-mac-link-librewolf-insert-frontmost-url ()
+    "Insert the link to the frontmost window of the LibreWolf.app."
+    (interactive)
+    (insert (my/org-mac-link-librewolf-get-frontmost-url)))
+
+  (defun my/org-mac-link-get-link (&optional beg end)
+    "Prompt for an application to grab a link from.
+  When done, go grab the link, and insert it at point. If a region
+  is active, that will be the link's description."
+    (interactive
+     (if (use-region-p)
+	 (list (region-beginning) (region-end))
+       '()))
+    (let* ((descriptors
+	    `(("F" "inder" org-mac-link-finder-insert-selected ,org-mac-link-finder-app-p)
+	      ("m" "ail" org-mac-link-mail-insert-selected ,org-mac-link-mail-app-p)
+	      ("d" "EVONthink Pro Office" org-mac-link-devonthink-item-insert-selected
+	       ,org-mac-link-devonthink-app-p)
+	      ("o" "utlook" org-mac-link-outlook-message-insert-selected ,org-mac-link-outlook-app-p)
+	      ("a" "ddressbook" org-mac-link-addressbook-item-insert-selected ,org-mac-link-addressbook-app-p)
+	      ("s" "afari" org-mac-link-safari-insert-frontmost-url ,org-mac-link-safari-app-p)
+	      ("l" "ibrewolf" my/org-mac-link-librewolf-insert-frontmost-url ,org-mac-link-librewolf-app-p)
+	      ("v" "imperator" org-mac-link-vimperator-insert-frontmost-url ,org-mac-link-firefox-vimperator-p)
+	      ("c" "hrome" org-mac-link-chrome-insert-frontmost-url ,org-mac-link-chrome-app-p)
+	      ("b" "rave" org-mac-link-brave-insert-frontmost-url ,org-mac-link-brave-app-p)
+	      ("e" "evernote" org-mac-link-evernote-note-insert-selected ,org-mac-link-evernote-app-p)
+	      ("t" "ogether" org-mac-link-together-insert-selected ,org-mac-link-together-app-p)
+	      ("S" "kim" org-mac-link-skim-insert-page ,org-mac-link-skim-app-p)
+	      ("A" "crobat" org-mac-link-acrobat-insert-page ,org-mac-link-acrobat-app-p)
+	      ("q" "utebrowser" org-mac-link-qutebrowser-insert-frontmost-url ,org-mac-link-qutebrowser-app-p)))
+	   (menu-string (make-string 0 ?x))
+	   input)
+
+      ;; Create the menu string for the keymap
+      (mapc (lambda (descriptor)
+	      (when (elt descriptor 3)
+		(setf menu-string (concat menu-string
+					  "[" (elt descriptor 0) "]"
+					  (elt descriptor 1) " "))))
+	    descriptors)
+      (setf (elt menu-string (- (length menu-string) 1)) ?:)
+
+      ;; Prompt the user, and grab the link
+      (message menu-string)
+      (setq input (read-char-exclusive))
+      (mapc (lambda (descriptor)
+	      (let ((key (elt (elt descriptor 0) 0))
+		    (active (elt descriptor 3))
+		    (grab-function (elt descriptor 2)))
+		(when (and active (eq input key))
+		  (if (and beg end)
+		      (let ((new-desc (buffer-substring beg end))
+			    end-desc)
+			(delete-region beg end)
+			(call-interactively grab-function)
+			(save-excursion
+			  (backward-char 2)
+			  (setq end-desc (point))
+			  (search-backward "][")
+			  (forward-char 2)
+			  (delete-region (point) end-desc)
+			  (insert new-desc)))
+		    (call-interactively grab-function)))))
+	    descriptors))))
+
+;; * org-noter
+
+(use-package org-noter
+  :bind
+  (:map org-noter-doc-mode-map ("q" . nil))
+  (:map pdf-view-mode-map ("C-c C-n" . org-noter))
+  (:map org-mode-map
+	("C-c C-x n n" . org-noter)
+	("C-c C-x n k" . org-noter-kill-session)
+	("C-c C-x n s" . org-noter-create-skeleton))
+  :config
+  (add-to-list 'org-noter-notes-search-path "/Users/my/Library/CloudStorage/Dropbox/Org")
+  (setq org-noter-default-notes-file-names '("noter.org")
+	org-noter-always-create-frame nil
+	org-noter-auto-save-last-location t
+	org-noter-doc-split-fraction '(0.5 . 0.5)
+	org-noter-kill-frame-at-session-end nil
+	org-noter-separate-notes-from-heading t))
+
+;; * org-mind-map
+
+(use-package org-mind-map
+  :init
+  (require 'ox-org)
+  :config
+  (setq org-mind-map-engine "dot")       ; Default. Directed Graph
+  ;; (setq org-mind-map-engine "neato")  ; Undirected Spring Graph
+  ;; (setq org-mind-map-engine "twopi")  ; Radial Layout
+  ;; (setq org-mind-map-engine "fdp")    ; Undirected Spring Force-Directed
+  ;; (setq org-mind-map-engine "sfdp")   ; Multiscale version of fdp for the layout of large graphs
+  ;; (setq org-mind-map-engine "twopi")  ; Radial layouts
+  ;; (setq org-mind-map-engine "circo")  ; Circular Layout
+  )
+;; * org-ql
+
+(use-package org-ql)
+
+;; * org-web-tools
+
+(use-package org-web-tools)
+
 ;; * APPLICATIONS
 ;; ** elfeed
 
@@ -2605,7 +2769,8 @@ Argument BOOK-ALIST ."
 (use-package citar
   :hook (org-mode . citar-capf-setup)
   :custom
-  (org-cite-global-bibliography '("~/Zotero/bibtex-export.bib" "~/cat.bib"))
+  ;; NOTE: Having large bibtex files slows down org-mode through bibtex
+  ;;(org-cite-global-bibliography '("~/Zotero/bibtex-export.bib" "~/cat.bib"))
   (org-cite-insert-processor 'citar)
   (org-cite-follow-processor 'citar)
   (org-cite-activate-processor 'citar)
@@ -2675,8 +2840,21 @@ Argument BOOK-ALIST ."
 
 ;; ** anki-helper
 
+(defun my/show-anki ()
+  (interactive)
+  (shell-command "open -a Anki"))
+
 (use-package anki-helper
-  :straight (anki-helper :type git :host github :repo "Elilif/emacs-anki-helper"))
+  :straight (anki-helper :type git :host github :repo "Elilif/emacs-anki-helper")
+  :bind (:map org-mode-map
+	      ("C-c r a" . anki-helper-entry-sync)
+	      ("C-c r A" . anki-helper-entry-sync-all)
+	      ("C-c r d" . anki-helper-entry-delete)
+	      ("C-c r D" . anki-helper-entry-delete-all)
+	      ("C-c r u" . anki-helper-entry-update)
+	      ("C-c r U" . anki-helper-entry-update-all)
+	      ("C-c r s" . my/show-anki)))
+
 ;; ** pdf-view
 
 (defun my/background-pdf-view-refresh (appearance)
@@ -2757,6 +2935,10 @@ Argument BOOK-ALIST ."
 
 (use-package gnuplot-mode)
 (use-package gnuplot)
+
+;; ** ebdb
+
+(use-package bbdb)
 
 ;; * OTHER
 
@@ -2860,7 +3042,7 @@ Argument BOOK-ALIST ."
   (font-lock-bracket-face ((t (:foreground "tan3")))))
 
 ;; * LOCAL-VARIABLES
-
+;; ** this
 ;; This is not a literate config tangled from an Org-mode document! So I include
 ;; some file-specific settings to make it easier to parse. Specifically, the
 ;; outline that you see in this document is represented in the Lisp files as
@@ -2869,8 +3051,8 @@ Argument BOOK-ALIST ."
 ;; eval:(outline-hide-sublevels 2)
 
 ;; Local Variables:
-;; outline-regexp: ";; \\*+"
-;; page-delimiter: ";; \\**"
+;; outline-regexp: " *;; \\*+"
+;; page-delimiter: " *;; \\**"
 ;; eval:(outline-minor-mode 1)
 ;; eval:(outline-hide-body)
 ;; End:

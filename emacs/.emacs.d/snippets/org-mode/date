@@ -1,5 +1,4 @@
 # -*- mode: snippet -*-
-# name: ;date
-# key: ;date
+# name: date
 # --
 #+date: $1[`(format-time-string "%Y-%m-%d %a")`]$0

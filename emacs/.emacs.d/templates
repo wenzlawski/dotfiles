@@ -16,6 +16,8 @@ python-ts-mode python-mode
 
 org-mode
 
+(todoh "#+TODO: " r)
+(prop "#+PROPERTY: " q)
 (scr "#+begin_src " p n r n "#+end_src" :post (org-edit-src-code))
 (julia "#+begin_src julia" n r n "#+end_src" :post (org-edit-src-code))
 (sh "#+begin_src sh" n r n "#+end_src" :post (org-edit-src-code))
@@ -27,9 +29,9 @@ org-mode
 (slatex "#+begin_src latex :results raw :exports results" n r n "#+end_src" :post (org-edit-src-code))
 (startup "#+startup: " q )
 (el "#+begin_src emacs-lisp" n r n "#+end_src" :post (org-edit-src-code))
-
 (lorems (Lorem-ipsum-insert-sentences (read-number "Sentences: ")))
 (loremp (Lorem-ipsum-insert-paragraphs (read-number "Paragraphs: ")))
+(title (cadar (org-collect-keywords '("TITLE"))))
 
 ;; Local Variables:
 ;; mode: lisp-data

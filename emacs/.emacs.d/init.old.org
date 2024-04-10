@@ -18,6 +18,7 @@
 - [[https://github.com/oantolin/emacs-config]]
 - [[https://www.lucacambiaghi.com/vanilla-emacs/readme.html]]
 - https://github.com/howardabrams/dot-files/
+- https://github.com/yantar92/emacs-config/tree/master
 * The =early-init.el= file
 ** Set the initial frame dimensions
 
