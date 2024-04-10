@@ -446,6 +446,7 @@
   ("C-<mouse-5>" . nil)
   ("C-<wheel-down>" . nil)
   ("C-<wheel-up>" . nil)
+  ("C-c C" . calendar)
   (:map tab-prefix-map
         ("h" . tab-bar-mode)
         ("s" . tab-switcher))
@@ -1785,7 +1786,7 @@ This function can be used as the value of the user option
 	    (todo "PROG" nil)
 	    (todo "NEXT" nil))
 	   nil)))
-  (setq org-agenda-include-diary nil)
+  (setq org-agenda-include-diary t)
   
   ;; ** org-capture
   
@@ -2938,7 +2939,7 @@ Argument BOOK-ALIST ."
 
 ;; ** ebdb
 
-(use-package bbdb)
+(use-package ebdb)
 
 ;; * OTHER
 
