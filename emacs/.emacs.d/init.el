@@ -431,6 +431,8 @@
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
   (add-to-list 'default-frame-alist '(font . "Iosevka Comfy-18"))
   (setq fit-window-to-buffer-horizontally t)
+  (setq calendar-latitude '[50 50 north])
+  (setq calendar-longitude '[12 55 east])
   :hook (prog-mode . show-paren-mode)
   :custom-face
   (show-paren-match ((t (:underline nil :inverse-video nil))))
@@ -1709,7 +1711,9 @@ This function can be used as the value of the user option
         ("C-c e" . org-emphasize)
 	("<C-i>" . org-delete-backward-char)
 	("M-i" . backward-kill-word)
-	("C-c C-x h" . org-edit-headline))
+	("C-c <C-i>" . org-cycle)
+	("C-c C-x h" . org-edit-headline)
+	("C-c C-x <DEL>" . org-cut-subtree))
 
   :custom-face
   (org-level-1 ((t (:bold nil))))
@@ -1733,6 +1737,7 @@ This function can be used as the value of the user option
   (org-column-title ((t (:inherit 'fixed-pitch))))
   (org-agenda-structure ((t (:height 1.5))))
   (org-agenda-date ((t (:height 1.2))))
+  (org-archived ((t (:background nil :foreground "grey"))))
   ;; :custom
   ;; (display-buffer-alist
   ;;  (append display-buffer-alist
@@ -1747,10 +1752,10 @@ This function can be used as the value of the user option
   (setq org-hide-emphasis-markers t)
   (setq org-latex-compiler "xelatex")
 
-
   (setq org-refile-targets
         '((nil :maxlevel . 3)
-          (org-agenda-files :maxlevel . 2)))
+          (org-agenda-files :maxlevel . 2)
+	  ("refile.org" :level . 0)))
   (setq org-ellipsis "↴")
   (setq org-src-preserve-indentation t)
   (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
@@ -1765,14 +1770,16 @@ This function can be used as the value of the user option
   (add-to-list 'org-babel-load-languages '(shell . t))
   (setq org-tags-column 0)
   (setq org-auto-align-tags nil)
-  (setq org-tags-exclude-from-inheritance '("ARCHIVE" "ATTACH" "project"))
+  (setq org-tags-exclude-from-inheritance '("ARCHIVE" "project"))
   (setq org-global-properties '(("Effort_ALL" . "0:15 0:30 1:00 2:00 4:00 8:00")))
-  (setq org-refile-use-outline-path t)
+  (setq org-refile-use-outline-path 'file)
   (setq org-log-into-drawer t)
+  (setq org-habit-graph-column 55)
+  (setq org-attach-use-inheritance t)
 
   ;; ** org-agenda
   
-  (setq org-agenda-files '("daily.org" "future.org" "personal.org"))
+  (setq org-agenda-files '("daily.org" "personal.org" "phone.org" "read.org"))
   ;; after https://emacs.stackexchange.com/questions/75822/ignoring-non-existent-org-mode-agenda-files
   (setq org-agenda-skip-unavailable-files t)
   (setq org-agenda-custom-commands 	; a,e,t,m,s,T,M,S,C
@@ -1780,6 +1787,13 @@ This function can be used as the value of the user option
 	  ("pp" tags "+project")
 	  ("pa" tags "+project-TODO=\"MAYBE\"")
 	  ("pm" tags "+project+TODO=\"MAYBE\"")
+	  ("o" . "todo related")
+	  ("os" tags "TODO=\"TODO\"" ((org-agenda-skip-function
+				       '(org-agenda-skip-entry-if 'timestamp))))
+	  ("ot" todo "TODO" nil)
+	  ("op" todo "PROG" nil)
+	  ("op" todo "NEXT" nil)
+	  ("om" todo "MAYBE" nil)
 	  ("n" "Agenda / INTR / PROG / NEXT"
 	   ((agenda "" nil)
 	    (todo "INTR" nil)
@@ -1789,22 +1803,167 @@ This function can be used as the value of the user option
   (setq org-agenda-include-diary t)
   
   ;; ** org-capture
+
+  (defun my/read-later-template (url)
+    "capture template for read later"
+    (let* ((article (my/read-it-later-attach url))
+	   (name (nth 0 article))
+	   (file (nth 1 article))
+	   (dir (nth 2 article))
+	   (url (nth 3 article))
+	   (effort (org-minutes-to-clocksum-string
+		    ( / (string-to-number
+			 (string-trim (shell-command-to-string
+				       (concat "wc -w < '" (expand-file-name file dir)"'")))) 100))))
+      (concat "* TODO " name "\n:PROPERTIES:\n:URL: " url "\n:Effort: " effort "\n:END:\n%U\nAvailable at: [[attachment:" file "][" name "]]\n%?")))
+
+  (defun my/read-later-template-from-kill ()
+    (require 'org-web-tools)
+    (my/read-later-template (org-web-tools--get-first-url)))
+
+  (defun my/read-later-template-from-prompt ()
+    (my/read-later-template (read-string "URL: ")))
   
   (setq org-capture-templates
         '(("r" "refile" entry (file "refile.org")
 	   "* %^{Title}\n%U\n\n%?" :prepend t :empty-lines-after 1)
-          ;; ("t" "today" entry (file+olp+datetree "daily.org")
+	  ;; ("t" "today" entry (file+olp+datetree "daily.org")
 	  ;;  "* %^{Title}\n\n%?")
 	  ;; ("T" "today+open" entry (file+olp+datetree "daily.org")
 	  ;;  "* %^{Title}\n\n%?" :jump-to-captured t)
-          ("j" "Journal" entry (file+olp+datetree "journal.org")
+	  ("j" "Journal" entry (file+olp+datetree "journal.org")
 	   "* %U %^{Title}\n%i\n\n%?")
-	  ("p" "project" entry (file+headline "personal.org")
-	   (file "~/.emacs.d/capture/project.org") :prepend t :empty-lines-before 1)
+	  ("p" "project simple" entry (file "personal.org")
+	   "* %^{Title} %^{CATEGORY}p [/]\n- [ ] %?" :prepend t)
+	  ("P" "project elaborate" entry (file "personal.org")
+	   (file "~/.emacs.d/capture/project.org") :prepend t)
 	  ("t" "Task" entry (file "personal.org")
-	   (file "~/.emacs.d/capture/task.org") :prepend t :empty-lines-before 1)
+	   (file "~/.emacs.d/capture/task.org") :prepend t)
 	  ("h" "Habit" entry (file "personal.org")
-	   (file "~/.emacs.d/capture/habit.org") :prepend t :empty-lines-before 1))))
+	   (file "~/.emacs.d/capture/habit.org") :prepend t)
+	  ("l" "Read later prompt" entry (id "F86FBB48-767F-436D-926E-D118F57AE534")
+	   (function my/read-later-template-from-prompt))
+	  ("L" "Read later kill" entry (id "F86FBB48-767F-436D-926E-D118F57AE534")
+	   (function my/read-later-template-from-kill))))
+
+  ;; ** org align tags
+
+  (defun my-org--align-tags-here (to-col)
+    "Align tags on the current headline to TO-COL.
+Since TO-COL is derived from `org-tags-column', a negative value is
+interpreted as alignment flush-right, a positive value as flush-left,
+and 0 means insert a single space in between the headline and the tags."
+    ;; source: https://list.orgmode.org/[email protected]/
+    (save-excursion
+      (when (org-match-line org-tag-line-re)
+	(let* ((tags-start (match-beginning 1))
+	       (tags-end (match-end 1))
+	       (tags-pixel-width
+		(car (window-text-pixel-size (selected-window)
+					     tags-start tags-end)))
+	       (blank-start (progn
+			      (goto-char tags-start)
+			      (skip-chars-backward " \t")
+			      (point)))
+	       ;; use this to avoid a 0-width space before tags on long lines:
+	       (blank-start-col (progn
+				  (goto-char blank-start)
+				  (current-column)))
+	       ;; this is to makes it work with org-indent-mode:
+	       (lpref (if (org-fold-folded-p) 0
+			(length (get-text-property (point) 'line-prefix)))))
+	  ;; If there is more than one space between the headline and
+	  ;; tags, delete the extra spaces.  Might be better to make the
+	  ;; delete region one space smaller rather than inserting a new
+	  ;; space?
+	  (when (> tags-start (1+  blank-start))
+	    (delete-region blank-start tags-start)
+	    (goto-char blank-start)
+	    (insert " "))
+	  (if (or (= to-col 0) (< (abs to-col) (1- blank-start-col)))
+	      ;; Just leave one normal space width
+	      (remove-text-properties blank-start (1+  blank-start)
+				      '(my-display nil))
+	    (message "In here: %s" lpref)
+	    (let ((align-expr
+		   (if (> to-col 0)
+		       ;; Left-align positive values
+		       (+ to-col lpref)
+		     ;; Right-align negative values by subtracting the
+		     ;; width of the tags.  Conveniently, the pixel
+		     ;; specification allows us to mix units,
+		     ;; subtracting a pixel width from a column number.
+		     `(-  ,(- lpref to-col) (,tags-pixel-width)))))
+	      (put-text-property blank-start (1+  blank-start)
+				 'my-display
+				 `(space . (:align-to ,align-expr)))))))))
+
+  (defun my-fix-tag-alignment ()
+    (setq org-tags-column 70) ;; adjust this
+    (advice-add 'org--align-tags-here :override #'my-org--align-tags-here)
+    ;; this is needed to make it work with https://github.com/minad/org-modern:
+    (add-to-list 'char-property-alias-alist '(display my-display))
+    ;; this is needed to align tags upon opening an org file:
+    (org-align-tags t))
+
+  ;;(add-hook 'org-mode-hook #'my-fix-tag-alignment)
+
+  
+  ;; ** org read it later
+
+  (defun my/org-web-tools--url-as-readable-org-file (&optional url)
+    "Return string containing Org entry of URL's web page content.
+Content is processed with `eww-readable' and Pandoc.  Entry will
+be a top-level heading, with article contents below a
+second-level \"Article\" heading, and a timestamp in the
+first-level entry for writing comments."
+    ;; By taking an optional URL, and getting it from the clipboard if
+    ;; none is given, this becomes suitable for use in an org-capture
+    ;; template, like:
+
+    ;; ("wr" "Capture Web site with eww-readable" entry
+    ;;  (file "~/org/articles.org")
+    ;;  "%(org-web-tools--url-as-readable-org)")
+    (-let* ((url (or url (org-web-tools--get-first-url)))
+            (dom (plz 'get url :as #'org-web-tools--sanitized-dom))
+            ((title . readable) (org-web-tools--eww-readable dom))
+            (title (org-web-tools--cleanup-title (or title "")))
+            (converted (org-web-tools--html-to-org-with-pandoc readable))
+            (link (org-link-make-string url title))
+            (timestamp (format-time-string (org-time-stamp-format 'with-time 'inactive))))
+      (with-temp-buffer
+	(org-mode)
+	;; Insert article text
+	(insert converted)
+	;; Demote in-article headings
+	;; MAYBE: Use `org-paste-subtree' instead of demoting headings ourselves.
+	;;(org-web-tools--demote-headings-below 1)
+	;; Insert headings at top
+	(goto-char (point-min))
+	(insert "#+title: " title "\n"
+		"#+date: " timestamp "\n\n"
+		link "\n\n")
+	(buffer-string))))
+
+  (defun my/read-it-later-attach (url)
+    "Attach the URL as readable Org to the entry at point."
+    (interactive "sURL: ")
+    (save-window-excursion
+      (org-id-open "F86FBB48-767F-436D-926E-D118F57AE534" nil)
+      (let ((attach-dir (org-attach-dir)))
+	(with-temp-buffer
+	  (message "Getting Article...")
+	  (insert (my/org-web-tools--url-as-readable-org-file url))
+	  (goto-char (point-min))
+	  (let ((name (cadar (org-collect-keywords '("TITLE")))))
+	    (message (org-get-title))
+	    (write-file (expand-file-name
+			 (concat (denote-sluggify-title name) ".org")
+			 attach-dir))
+	    (org-link--add-to-stored-links (concat "attachment:" (buffer-name)) name)
+	    (list name (buffer-name) attach-dir url))))))
+  )
+
 ;; * ORG EXPORT
 ;; ** ox-hugo
 
@@ -2121,7 +2280,8 @@ end #OB-JULIA-VTERM_END\n"))
 ;; * org-super-agenda
 
 (use-package org-super-agenda
-  :after org
+  :after org-agenda
+  :hook (org-agenda-mode . org-super-agenda-mode)
   :custom
   (org-super-agenda-groups
    '(;; Each group has an implicit boolean OR operator between its selectors.
@@ -2140,30 +2300,8 @@ end #OB-JULIA-VTERM_END\n"))
      (:name "Habits"
 	    :habit t
 	    :order 2)))
-  :config
-  (org-super-agenda-mode)
-  ;; (setq org-super-agenda-groups
-  ;; 	'((:name "Today"
-  ;; 		 :time-grid t
-  ;; 		 :scheduled today)
-  ;; 	  (:name "Due today"
-  ;; 		 :deadline today)
-  ;; 	  (:name "Important"
-  ;; 		 :priority "A")
-  ;; 	  (:name "Overdue"
-  ;; 		 :deadline past)
-  ;; 	  (:name "Due soon"
-  ;; 		 :deadline future)
-  ;; 	  (:name "Waiting"
-  ;; 		 :todo "WAITING")
-  ;; 	  (:name "Scheduled earlier"
-  ;; 		 :scheduled past)
-  ;; 	  (:name "Scheduled later"
-  ;; 		 :scheduled future)
-  ;; 	  (:name "Unimportant"
-  ;; 		 :priority<= "C")
-  ;; 	  (:name "All other agenda items"
-  ;; 		 :auto-category t)))
+  :custom-face
+  (org-super-agenda-header ((t (:height 0.75))))
   :bind
   (:map org-agenda-mode-map
 	("C-c C-x C-a" . org-agenda-archive-default)))
@@ -2171,7 +2309,7 @@ end #OB-JULIA-VTERM_END\n"))
 ;; * org-appear
 
 (use-package org-appear
-  :hook org-mode
+  ;;:hook org-mode
   :custom
   (org-appear-autolinks t))
 
@@ -2940,6 +3078,13 @@ Argument BOOK-ALIST ."
 ;; ** ebdb
 
 (use-package ebdb)
+
+;; ** zotra
+
+(use-package zotra
+  :config
+  (setq zotra-backend 'zotra-server)
+  (setq zotra-local-server-directory "~/repos/zotra-server"))
 
 ;; * OTHER
 

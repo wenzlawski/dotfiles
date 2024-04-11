@@ -32,6 +32,7 @@ org-mode
 (lorems (Lorem-ipsum-insert-sentences (read-number "Sentences: ")))
 (loremp (Lorem-ipsum-insert-paragraphs (read-number "Paragraphs: ")))
 (title (cadar (org-collect-keywords '("TITLE"))))
+(ttl "#+TITLE: " p n "#+date: Created on " (format-time-string "[%Y-%m-%d %a]") n n q)
 
 ;; Local Variables:
 ;; mode: lisp-data
