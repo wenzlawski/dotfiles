@@ -113,7 +113,7 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 (straight-use-package 'use-package)
-(straight-use-package 'org)
+(straight-use-package '(org :type built-in))
 (setq straight-use-package-by-default t)
 
 ;; * THEMES
@@ -795,7 +795,7 @@
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
   :config
-
+  (use-package embark-org :after org :demand t)
   ;; Hide the mode line of the Embark live/completions buffers
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
@@ -2930,6 +2930,7 @@ Argument BOOK-ALIST ."
   ("C-c c" . citar-map))
 
 (use-package citar-embark
+  :disabled
   :after citar embark
   :no-require
   :config (citar-embark-mode))
@@ -3188,7 +3189,7 @@ Argument BOOK-ALIST ."
   (font-lock-bracket-face ((t (:foreground "tan3")))))
 
 ;; * LOCAL-VARIABLES
-;; ** this
+
 ;; This is not a literate config tangled from an Org-mode document! So I include
 ;; some file-specific settings to make it easier to parse. Specifically, the
 ;; outline that you see in this document is represented in the Lisp files as
