@@ -1,8 +1,6 @@
 matches:
   - trigger: "ofc"
     replace: "of course"
-  - trigger: "fo "
-    replace: "of "
   - trigger: ";eg"
     replace: "e.g."
   - trigger: "aee"
