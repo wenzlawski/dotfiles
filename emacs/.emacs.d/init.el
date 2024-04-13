@@ -556,6 +556,10 @@
 
 (use-package htmlize)
 
+;; ** noflet
+
+(use-package noflet)
+
 ;; * HELP
 ;; ** tldr
 
@@ -1291,7 +1295,16 @@ This function can be used as the value of the user option
 ;; ** dired
 
 (use-package dired
-  :straight nil)
+  :straight nil
+  :bind
+  (:map dired-mode-map
+	("M-o" . dired-do-open)
+	("M-RET" . my/open-current-dir-in-finder))
+  :config
+  (defun my/open-current-dir-in-finder ()
+    "Open current directory in Finder."
+    (interactive)
+    (shell-command "open .")))
 (use-package dired-x
   :straight nil
   :after dired)
@@ -1698,6 +1711,12 @@ This function can be used as the value of the user option
   (org-mode . visual-line-mode)
   (org-mode . variable-pitch-mode)
   (org-mode . (lambda nil (setq cursor-type 'bar)))
+  (org-capture-mode . (lambda nil (setq-local
+				   header-line-format
+				   (substitute-command-keys
+				    "\\<org-capture-mode-map>Capture buffer.  Finish \
+`\\[my/org-capture-finalize]', refile `\\[org-capture-refile]', \
+abort `\\[org-capture-kill]'."))))
   :bind
   ("C-x c" . org-capture)
   ("C-c l" . org-store-link)
@@ -1713,7 +1732,10 @@ This function can be used as the value of the user option
 	("M-i" . backward-kill-word)
 	("C-c <C-i>" . org-cycle)
 	("C-c C-x h" . org-edit-headline)
-	("C-c C-x <DEL>" . org-cut-subtree))
+	("C-c C-x <DEL>" . org-cut-subtree)
+	("C-c C-x C-<backspace>" . org-cut-subtree))
+  (:map org-capture-mode-map
+	("C-c C-c" . my/org-capture-finalize))
 
   :custom-face
   (org-level-1 ((t (:bold nil))))
@@ -1737,7 +1759,7 @@ This function can be used as the value of the user option
   (org-column-title ((t (:inherit 'fixed-pitch))))
   (org-agenda-structure ((t (:height 1.5))))
   (org-agenda-date ((t (:height 1.2))))
-  (org-archived ((t (:background nil :foreground "grey"))))
+  (org-archived ((t (:background unspecified :foreground "grey"))))
   ;; :custom
   ;; (display-buffer-alist
   ;;  (append display-buffer-alist
@@ -1755,7 +1777,8 @@ This function can be used as the value of the user option
   (setq org-refile-targets
         '((nil :maxlevel . 3)
           (org-agenda-files :maxlevel . 2)
-	  ("refile.org" :level . 0)))
+	  ("refile.org" :level . 0)
+	  ("resources.org" :level . 0)))
   (setq org-ellipsis "↴")
   (setq org-src-preserve-indentation t)
   (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
@@ -1804,7 +1827,7 @@ This function can be used as the value of the user option
   
   ;; ** org-capture
 
-  (defun my/read-later-template (url)
+    (defun my/read-later-template (url)
     "capture template for read later"
     (let* ((article (my/read-it-later-attach url))
 	   (name (nth 0 article))
@@ -1823,6 +1846,16 @@ This function can be used as the value of the user option
 
   (defun my/read-later-template-from-prompt ()
     (my/read-later-template (read-string "URL: ")))
+
+  (defun my/url-librewolf-capture-to-org ()
+    "Call `org-capture-string' on the current front most Safari window.
+Use `org-mac-link-safari-get-frontmost-url' to capture url from Safari.
+Triggered by a custom macOS Quick Action with a keyboard shortcut."
+    (interactive)
+    (org-capture-string (my/org-mac-link-librewolf-get-frontmost-url) "lz")
+    (ignore-errors)
+    (org-capture-finalize)
+    nil)
   
   (setq org-capture-templates
         '(("r" "refile" entry (file "refile.org")
@@ -1841,10 +1874,62 @@ This function can be used as the value of the user option
 	   (file "~/.emacs.d/capture/task.org") :prepend t)
 	  ("h" "Habit" entry (file "personal.org")
 	   (file "~/.emacs.d/capture/habit.org") :prepend t)
-	  ("l" "Read later prompt" entry (id "F86FBB48-767F-436D-926E-D118F57AE534")
+	  ("l" "later")
+	  ("lp" "Read later prompt" entry (id "F86FBB48-767F-436D-926E-D118F57AE534")
 	   (function my/read-later-template-from-prompt))
-	  ("L" "Read later kill" entry (id "F86FBB48-767F-436D-926E-D118F57AE534")
-	   (function my/read-later-template-from-kill))))
+	  ("lk" "Read later kill" entry (id "F86FBB48-767F-436D-926E-D118F57AE534")
+	   (function my/read-later-template-from-kill))
+	  ("ll" "Read later librewolf" entry (file "refile.org")
+	   "* %(my/org-mac-link-librewolf-get-frontmost-url) :link:\n%U" :immediate-finish t :prepend t)
+	  ("lL" "Read later librewolf edit" entry (file "refile.org")
+	   "* %(my/org-mac-link-librewolf-get-frontmost-url) :link:\n%U\n%?" :prepend t)
+	  ("w" "Web template" entry (file+headline "/tmp/notes.org" "Notes")
+           "* %?Capture from web\nSource: %:link,\n\nTitle: %:description\n\n#+begin_quote\n%i\n#+end_quote" :empty-lines 1)
+	  ))
+
+  ;; ** org-capture frame
+
+  (defun my/make-capture-frame ()
+    "Create a new frame and run `org-capture'."
+    (interactive)
+    (make-frame '((name . "capture")
+                  (top . 300)
+                  (left . 700)
+                  (width . 80)
+                  (height . 25)))
+    (select-frame-by-name "capture")
+    (delete-other-windows)
+    (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
+      (condition-case ex
+	  (org-capture)
+	('error
+	 ;;(message "org-capture: %s" (error-message-string ex))
+	 (delete-frame)))))
+
+  (defun my/close-if-capture (&optional a)
+    (if (equal "capture" (frame-parameter nil 'name))
+	(delete-frame)))
+
+  (defun my/org-capture-finalize (&optional stay-with-capture)
+    (interactive "P")
+    (org-capture-finalize stay-with-capture))
+
+  (advice-add 'my/org-capture-finalize :after #'my/close-if-capture)
+
+  ;;(advice-add 'org-capture-finalize :after #'my/close-if-capture)
+  (advice-add 'org-capture-refile :after #'my/close-if-capture)
+  (advice-add 'org-capture-kill :after #'my/close-if-capture)
+  (advice-add 'my/read-later-template-from-prompt :after #'my/close-if-capture)
+  (advice-add 'org-protocol-capture :before
+	      (lambda (_) (progn
+			    (make-frame '((name . "capture")
+					  (top . 300)
+					  (left . 700)
+					  (width . 80)
+					  (height . 25)))
+			    (select-frame-by-name "capture")
+			    (my/frame-recenter))))
+  (advice-add 'org-protocol-capture :after (lambda (_) (delete-other-windows)))
 
   ;; ** org align tags
 
@@ -1908,7 +1993,7 @@ and 0 means insert a single space in between the headline and the tags."
 
   ;;(add-hook 'org-mode-hook #'my-fix-tag-alignment)
 
-  
+
   ;; ** org read it later
 
   (defun my/org-web-tools--url-as-readable-org-file (&optional url)
@@ -1962,6 +2047,8 @@ first-level entry for writing comments."
 			 attach-dir))
 	    (org-link--add-to-stored-links (concat "attachment:" (buffer-name)) name)
 	    (list name (buffer-name) attach-dir url))))))
+
+
   )
 
 ;; * ORG EXPORT
@@ -2274,6 +2361,26 @@ end #OB-JULIA-VTERM_END\n"))
   ;; If you want it in all text modes:
   (text-mode . mixed-pitch-mode))
 
+;; * org-protocol
+
+(use-package org-protocol
+  :straight nil
+  :after org
+  :custom
+  (org-protocol-protocol-alist
+   '(("eww" :protocol "eww" :function my/open-in-eww-protocol)
+     ("body" :protocol "body" :function my/org-protcol-capture-body)))
+  :config
+  (defun my/open-in-eww-protocol (info)
+    (x-focus-frame nil)
+    (let ((url (plist-get info :url)))
+      (eww url)))
+
+  (defun my/org-protcol-capture-body (info)
+    (let ((body (plist-get info :body)))
+      (message "have body")
+      (eww-open-file (make-temp-file "org-protocol" nil ".html" body)))))
+
 ;; * org-contrib
 
 (use-package org-contrib)
@@ -2364,6 +2471,7 @@ that."
 
 (use-package org-mac-link
   :when (eq system-type 'darwin)
+  :commands (my/org-mac-link-librewolf-get-frontmost-url)
   :after org
   :init
   (setq org-mac-link-brave-app-p nil
@@ -3083,11 +3191,12 @@ Argument BOOK-ALIST ."
 ;; ** zotra
 
 (use-package zotra
+  :disabled
   :config
   (setq zotra-backend 'zotra-server)
   (setq zotra-local-server-directory "~/repos/zotra-server"))
 
-;; * OTHER
+;; * enable all commands
 
 (defun enable-all-commands ()
   "Enable all commands, reporting on which were disabled."
@@ -3101,29 +3210,16 @@ Argument BOOK-ALIST ."
 	  (prin1 symbol)
 	  (princ "\n")))))))
 
-(defun my/launch-note (&optional initial-input key)
-  (select-frame-set-input-focus (selected-frame))
-  (set-frame-size (selected-frame) 80 15)
-  (set-frame-name "org-capture")
-  (add-hook 'org-capture-after-finalize-hook 'my/post-org-launch-note)
-  (letf! ((#'pop-to-buffer #'switch-to-buffer))
-	 (interactive)
-	 (switch-to-buffer (doom-fallback-buffer))
-	 (let ((org-capture-initial initial-input)
-	       org-capture-entry)
-	   (when (and key (not (string-empty-p key)))
-	     (setq org-capture-entry (org-capture-select-template key)))
-	   (funcall #'org-capture))
-	 )
-  )
-
-(defun my/remove-launch-note-hook ()
+;; * center frame
+;; from https://christiantietze.de/posts/2022/04/emacs-center-window-current-monitor-simplified/
+(defun my/frame-recenter (&optional frame)
+  "Center FRAME on the screen.
+FRAME can be a frame name, a terminal name, or a frame.
+If FRAME is omitted or nil, use currently selected frame."
   (interactive)
-  (remove-hook 'org-capture-after-finalize-hook 'my/post-org-launch-note))
-
-(defun my/post-org-launch-note ()
-  (my/remove-launch-note-hook)
-  (delete-frame))
+  (unless (eq 'maximised (frame-parameter nil 'fullscreen))
+    (modify-frame-parameters
+     frame '((user-position . t) (top . 0.5) (left . 0.5)))))
 
 ;; * CUSTOM LISP
 ;; ** ox-11ty
