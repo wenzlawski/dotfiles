@@ -11,4 +11,4 @@
 # Documentation:
 # @raycast.description Org-capture emacsclient
 
-emacsclient -c -F "((name . \"doom-capture\"))" --eval '(mw/launch-note)'
+emacsclient -ne "(my/make-capture-frame)"
