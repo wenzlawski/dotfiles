@@ -114,6 +114,7 @@
   (load bootstrap-file nil 'nomessage))
 (straight-use-package 'use-package)
 (straight-use-package '(org :type built-in))
+;; (straight-use-package '(org))
 (setq straight-use-package-by-default t)
 
 ;; * THEMES
@@ -454,7 +455,7 @@
         ("s" . tab-switcher))
   (:map help-map
         ("t" . nil)
-        ("W" . woman)
+        ("W" . man)
         ("t t" . consult-theme)
         ("t c" . centered-cursor-mode)
         ("t h" . hl-line-mode)
@@ -726,7 +727,7 @@
           ("message" message)
           ("vterm-clear-scrollback" vterm-clear-scrollback)
           ("dired" dired)
-	  ("woman" woman)
+	  ("man" man)
 	  ("tldr" tldr)
           ("ediff-files" ediff-files)))
   (setq vterm-max-scrollback 10000)
@@ -799,7 +800,6 @@
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
   :config
-  (use-package embark-org :after org :demand t)
   ;; Hide the mode line of the Embark live/completions buffers
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
@@ -1093,9 +1093,10 @@ This function can be used as the value of the user option
   (:map minibuffer-local-map
         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
         ("M-r" . consult-history))
-
   (:map org-mode-map
-        ("C-c h" . consult-org-heading)))
+        ("C-c h" . consult-org-heading))
+  (:map Man-mode-map
+	("g" . consult-imenu)))
 
 ;; *** consult-flycheck
 
@@ -1715,6 +1716,7 @@ This function can be used as the value of the user option
 
 
 (use-package org
+  :straight nil
   :hook
   (org-mode . auto-fill-mode)
   (org-mode . visual-line-mode)
