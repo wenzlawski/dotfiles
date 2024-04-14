@@ -1426,6 +1426,12 @@ This function can be used as the value of the user option
     ;; Please note ispell-extra-args contains ACTUAL parameters passed to aspell
     (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")))))
 
+;; ** flymake ruff
+
+(use-package flymake-ruff
+  :after flymake
+  :hook ((python-mode python-ts-mode) . flymake-ruff-load))
+
 ;; ** tree-sitter
 
 (setq treesit-language-source-alist
@@ -1473,6 +1479,9 @@ This function can be used as the value of the user option
      '(julia . ((dir-concat user-emacs-directory "scripts/julia-format.sh") inplace ))
      apheleia-formatters)
     (add-to-list 'apheleia-mode-alist '(julia-mode . julia)))
+
+  (add-to-list 'apheleia-mode-alist '(python-mode . ruff))
+  (add-to-list 'apheleia-mode-alist '(python-ts-mode . ruff))
 
   (apheleia-global-mode))
 
@@ -1827,7 +1836,7 @@ abort `\\[org-capture-kill]'."))))
   
   ;; ** org-capture
 
-    (defun my/read-later-template (url)
+  (defun my/read-later-template (url)
     "capture template for read later"
     (let* ((article (my/read-it-later-attach url))
 	   (name (nth 0 article))
