@@ -379,6 +379,12 @@
 (setq user-full-name "Marc Wenzlawski"
       user-mail-address "marcwenzlawski@gmail.com")
 
+;; (require 'secret)
+
+;; ** secrets
+
+(setq auth-sources '("~/.emacs.d/.authinfo.gpg"))
+
 ;; ** Emacs
 
 (use-package emacs
@@ -493,6 +499,14 @@
 ;; Always start with *scratch*
 ;;(setq initial-buffer-choice t)
 
+
+;; ** Man
+
+(use-package man
+  :straight nil
+  :bind
+  (:map Man-mode-map
+	("g" . consult-imenu)))
 
 ;; ** editorconfig
 
@@ -1094,9 +1108,7 @@ This function can be used as the value of the user option
         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
         ("M-r" . consult-history))
   (:map org-mode-map
-        ("C-c h" . consult-org-heading))
-  (:map Man-mode-map
-	("g" . consult-imenu)))
+        ("C-c h" . consult-org-heading)))
 
 ;; *** consult-flycheck
 
@@ -1699,6 +1711,13 @@ This function can be used as the value of the user option
   :hook ((css-mode css-ts-mode) . (lambda nil (setq tab-width 2)))
   :config
   (setq css-indent-offset 2))
+
+;; ** nix
+
+(use-package nix-mode
+  :mode "\\.nix\\'")
+
+(use-package nix-buffer)
 
 ;; * ORG
 

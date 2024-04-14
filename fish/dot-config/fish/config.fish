@@ -14,6 +14,7 @@ set -x XDG_CONFIG_HOME ~/.config
 set -x VOLTA_FEATURE_PNPM 1
 set -x VOLTA_HOME ~/.volta
 set -gx PNPM_HOME ~/Library/pnpm
+set -gx GPG_TTY $tty
 
 # Path variables
 fish_add_path ~/.cargo/bin
