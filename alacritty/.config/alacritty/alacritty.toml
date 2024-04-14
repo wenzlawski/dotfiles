@@ -1,0 +1,40 @@
+[bell]
+animation = "EaseOutExpo"
+color = "0xffffff"
+duration = 0
+
+[colors]
+draw_bold_text_with_bright_colors = false
+
+[env]
+TERM = "screen-256color"
+
+[font]
+size = 18.0
+normal = { family = "Iosevka Comfy" }
+
+[font.glyph_offset]
+x = 0
+y = 0
+
+[font.offset]
+x = 0
+y = 0
+
+[scrolling]
+history = 1000
+multiplier = 3
+
+[window]
+decorations = "full"
+dynamic_padding = true
+opacity = 1.0
+startup_mode = "Windowed"
+
+[window.dimensions]
+columns = 80
+lines = 25
+
+[window.padding]
+x = 2
+y = 2
