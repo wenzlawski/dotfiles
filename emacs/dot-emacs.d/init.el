@@ -261,16 +261,21 @@
 ;; ** Pulsar
 
 (use-package pulsar
+  :hook
+  (xref-after-return . pulsar-pulse-line)
+  (xref-after-jump . pulsar-pulse-line)
+  :custom
+  (window-selection-change-functions '((lambda (_) (pulsar-pulse-line))))
+  (window-buffer-change-functions '((lambda (_) (pulsar-pulse-line))))
+  :custom-face
+  (pulsar-green ((t (:background "#c0e7d4"))))
   :config
   (setq pulsar-pulse t)
   (setq pulsar-delay 0.05)
   (setq pulsar-iterations 10)
-  (setq pulsar-face 'pulsar-magenta)
+  (setq pulsar-face 'pulsar-green)
   (setq pulsar-highlight-face 'pulsar-yellow)
-  (pulsar-global-mode 1)
-  :hook
-  (xref-after-return . pulsar-pulse-line)
-  (xref-after-jump . pulsar-pulse-line))
+  (pulsar-global-mode 1))
 
 (remove-hook 'xref-after-return-hook 'xref-pulse-momentarily)
 (remove-hook 'xref-after-jump-hook 'xref-pulse-momentarily)
@@ -580,7 +585,7 @@
 
 (use-package noflet)
 
-;; ** config profiler
+;; ** config profiler esup
 
 (use-package esup)
 
@@ -636,6 +641,7 @@
   (yas-reload-all))
 
 (use-package yankpad
+  :disabled
   :init
   (setq yankpad-file "~/.emacs.d/yankpad.org"))
 
@@ -1741,7 +1747,8 @@ This function can be used as the value of the user option
 ;; * APPLICATIONS
 ;; ** elfeed
 
-(use-package elfeed)
+(use-package elfeed
+  :disabled)
 (use-package elfeed-org
   :after elfeed
   :config
