@@ -73,7 +73,7 @@ abort `\\[org-capture-kill]'."))))
 
   (setq org-refile-targets
         '((nil :maxlevel . 3)
-          (org-agenda-files :maxlevel . 2)
+          (org-agenda-files :maxlevel . 5)
 	  ("refile.org" :level . 0)
 	  ("resources.org" :level . 0)))
   (setq org-ellipsis "↴")
@@ -212,9 +212,10 @@ Triggered by a custom macOS Quick Action with a keyboard shortcut."
 
   (defun my/close-if-capture (&optional a)
     (if (equal "capture" (frame-parameter nil 'name))
-	(delete-frame))
-    (if (eq 'darwin system-type)
-	(ns-do-applescript "tell application \"LibreWolf\" to activate")))
+	(progn
+	  (delete-frame)
+	  (if (eq 'darwin system-type)
+	      (ns-do-applescript "tell application \"LibreWolf\" to activate")))))
 
   (defun my/org-capture-finalize (&optional stay-with-capture)
     (interactive "P")

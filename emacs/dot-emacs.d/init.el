@@ -412,7 +412,7 @@
   (setq require-final-newline t)
   (setq frame-inhibit-implied-resize t)
   (setq scroll-margin 0)
-  (setq scroll-conservatively 5)
+  (setq scroll-conservatively 0)
   ;;(setq frame-title-format '("" "what the %b"))
   (setq frame-title-format "\n")
   (setq ns-use-proxy-icon t)
@@ -1790,7 +1790,19 @@ This function can be used as the value of the user option
   (setq eww-browse-url-new-window-is-tab nil)
   (setq eww-restore-desktop t)
   (setq eww-desktop-remove-duplicates t)
-  (setq eww-header-line-format nil))
+  (setq eww-header-line-format nil)
+
+  (defun eww-browse-with-external-browser (&optional url)
+    "Browse the current URL with an external browser.
+The browser to used is specified by the
+`browse-url-secondary-browser-function' variable."
+    (interactive nil eww-mode)
+    (let ((url (or url (plist-get eww-data :url))))
+      (if (s-starts-with? "https://html.duckduckgo.com/html/" url)
+	  (setq url (concat "https://duckduckgo.com/?q=" (cadar (url-parse-query-string url)))))
+      (funcall browse-url-secondary-browser-function
+               (or url (plist-get eww-data :url)))))
+  )
 
 (use-package shr
   :bind
