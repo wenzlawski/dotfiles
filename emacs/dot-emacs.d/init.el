@@ -383,7 +383,12 @@
 
 ;; ** secrets
 
-(setq auth-sources '("~/.emacs.d/.authinfo.gpg"))
+(setq auth-sources '("~/.authinfo.gpg"))
+(setopt epa-pinentry-mode 'loopback)
+;; https://stackoverflow.com/questions/76388376/emacs-org-encrypt-entry-hangs-when-file-is-modified
+;; DO NOT USE THIS WITH SYMMETRICALLY ENCRYPTED FILES.
+;; MAY CAUSE FILE CORRUPTION.
+(fset 'epg-wait-for-status 'ignore)
 
 ;; ** Emacs
 
