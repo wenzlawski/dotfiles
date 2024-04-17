@@ -516,6 +516,8 @@ than `split-width-threshold'."
         (prot-modeline--vc-details file branch face)))
   "Mode line construct to return propertized VC branch.")
 
+;;;; Flycheck errors, warnings, notes
+
 ;;;; Flymake errors, warnings, notes
 
 (declare-function flymake--severity "flymake" (type))

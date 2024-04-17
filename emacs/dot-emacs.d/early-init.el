@@ -109,6 +109,13 @@ New frames are instructed to call `prot-emacs-re-enable-frame-theme'."
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 
+;; Set the frame padding and fringe
+(modify-all-frames-parameters
+ '((right-divider-width . 20)
+   (internal-border-width . 10)))
+
+(set-face-background 'fringe (face-attribute 'default :background))
+
 ;; Temporarily increase the garbage collection threshold.  These
 ;; changes help shave off about half a second of startup time.  The
 ;; `most-positive-fixnum' is DANGEROUS AS A PERMANENT VALUE.  See the
