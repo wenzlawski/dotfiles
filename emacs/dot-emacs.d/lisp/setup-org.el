@@ -742,6 +742,17 @@ end #OB-JULIA-VTERM_END\n"))
 (require 'org-modern)
 (set-face-attribute 'org-modern-symbol nil :family "Iosevka")
 (set-face-attribute 'org-modern-label nil :height 0.85)
+(set-face-attribute 'org-modern-date-active nil :height 1.1 :overline "gray80"
+		    :box '(:line-width
+			   (-1 . -1)
+			   :color "gray80" :style flat-button)
+		    :background "gray96")
+(set-face-attribute 'org-modern-date-inactive nil :height 1.1 :overline "gray80"
+		    :box '(:line-width
+			   (-1 . -1)
+			   :color "gray80" :style flat-button)
+		    :background "gray96")
+
 (setopt org-modern-keyword nil
 	org-modern-checkbox nil
 	org-modern-table nil)
@@ -827,11 +838,14 @@ end #OB-JULIA-VTERM_END\n"))
 
 (use-package org-ref
   :straight t
+  :disabled
   :demand t
   :bind
   (:map org-mode-map
 	("<f7>" . org-ref-insert-link-hydra/body)
-	("C-<f7>" . org-ref-citation-hydra/body)))
+	("C-<f7>" . org-ref-citation-hydra/body))
+  (:map bibtex-mode-map
+	("<f7>" . org-ref-bibtex-hydra/body)))
 
 (with-eval-after-load 'org-ref
   (defun my/org-ref-cite-insert-consult ()
@@ -842,21 +856,26 @@ end #OB-JULIA-VTERM_END\n"))
       (if key
 	  (org-ref-insert-cite-key key))))
 
-  (setopt org-ref-insert-cite-function 'my/org-ref-cite-insert-consult))
+  (setopt org-ref-insert-cite-function 'my/org-ref-cite-insert-consult)
 
+  (defun doi-utils-crossref (doi)
+    "Search DOI in CrossRef."
+    (interactive "sDOI: ")
+    (browse-url
+     (format "http://search.crossref.org/search/works?q=%s&from_ui=yes" (url-hexify-string doi))))
 
-(defun my/org-ref-process-buffer--html (backend)
-  "Preprocess `org-ref' citations to HTML format.
+  (defun my/org-ref-process-buffer--html (backend)
+    "Preprocess `org-ref' citations to HTML format.
 
 Do this only if the export backend is `html' or a derivative of
 that."
-  ;; `ox-hugo' is derived indirectly from `ox-html'.
-  ;; ox-hugo <- ox-blackfriday <- ox-md <- ox-html
-  (when (org-export-derived-backend-p backend 'html)
-    (org-ref-process-buffer 'html)))
+    ;; `ox-hugo' is derived indirectly from `ox-html'.
+    ;; ox-hugo <- ox-blackfriday <- ox-md <- ox-html
+    (when (org-export-derived-backend-p backend 'html)
+      (org-ref-process-buffer 'html)))
 
-(with-eval-after-load 'org-compat
-  (add-to-list 'org-export-before-parsing-hook #'my/org-ref-process-buffer--html))
+  (with-eval-after-load 'org-compat
+    (add-to-list 'org-export-before-parsing-hook #'my/org-ref-process-buffer--html))  )
 
 ;; ** org-remark
 (require 'org-cycle)

@@ -147,12 +147,23 @@
 	  ;; Custom preview
 	  :state  #'consult-notes-denote--state
 	  ;; Create new note on match fail
-	  :new     #'consult-notes-denote--new-note)))
+	  :new     #'consult-notes-denote--new-note))
 
-(defun consult-notes-my-embark-function (cand)
-  "Do something with CAND."
-  (interactive "fNote: ")
-  (message cand))
+  (defun consult-notes-my-embark-function (cand)
+    "Do something with CAND."
+    (interactive "fNote: ")
+    (message cand))
+
+  (with-eval-after-load 'embark
+    (defvar-keymap consult-notes-map
+      :doc "Keymap for Embark notes actions."
+      :parent embark-file-map
+      "m" #'consult-notes-my-embark-function)
+
+    (add-to-list 'embark-keymap-alist `(,consult-notes-category . consult-notes-map))
+
+    ;; make embark-export use dired for notes
+    (setf (alist-get consult-notes-category embark-exporters-alist) #'embark-export-dired)))
 
 (use-package consult-flyspell
   :straight t
@@ -166,12 +177,12 @@
   (consult-flyspell-set-point-after-word t)
   (consult-flyspell-always-check-buffer nil))
 
-(use-package consult-bibtex
-  :after consult
-  :straight '(consult-bibtex :host github :repo "mohkale/consult-bibtex")
-  :config
-  (with-eval-after-load 'embark
-    (add-to-list 'embark-keymap-alist '(bibtex-completion . consult-bibtex-embark-map))))
+;; (use-package consult-bibtex
+;;   :after consult
+;;   :straight '(consult-bibtex :host github :repo "mohkale/consult-bibtex")
+;;   :config
+;;   (with-eval-after-load 'embark
+;;     (add-to-list 'embark-keymap-alist '(bibtex-completion . consult-bibtex-embark-map))))
 
 
 (provide 'setup-consult)

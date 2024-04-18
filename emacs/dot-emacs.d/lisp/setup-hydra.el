@@ -47,20 +47,22 @@
     (defvar my/hydra-toggle-menu)
     (pretty-hydra-define my/hydra-toggle-menu
       (:title "Toggle Menu" :quit-key "q" :color pink)
-      ("Display 1"
-       (("d" #'toggle-frame-fullscreen "fullscreen" :toggle (frame-parameter nil 'fullscreen))
-	("c" centered-cursor-mode "center cursor" :toggle t)
-	("v" visual-fill-column-mode "fill column" :toggle t)
-	("h" hl-line-mode "hl-line" :toggle t)
-	("w" #'my/distraction-free "writing" :toggle (default-value (bound-and-true-p olivetti-mode)))
-	("L" display-line-numbers-mode "line numbers" :toggle t))
-       "Display 2"
+      ("Modes"
        (("l" visual-line-mode "visual line" :toggle t)
-	("t" #'consult-theme "theme")
+	("v" visual-fill-column-mode "fill column" :toggle t)
+	("p" variable-pitch-mode "variable pitch" :toggle (default-value (bound-and-true-p buffer-face-mode)))
+	("h" hl-line-mode "hl-line" :toggle t)
 	("m" hide-mode-line-mode "mode line" :toggle t)
-	("p" variable-pitch-mode "variable pitch" :toggle (default-value (bound-and-true-p buffer-face-mode))))
+	("c" centered-cursor-mode "center cursor" :toggle t))
+       "Display"
+       (("t" #'consult-theme "theme")
+	("d" #'toggle-frame-fullscreen "fullscreen" :toggle (frame-parameter nil 'fullscreen))
+	("w" #'my/distraction-free "writing" :toggle (default-value (bound-and-true-p olivetti-mode)))
+	("e" (lambda () (interactive) (setq visual-fill-column-center-text (not (bound-and-true-p visual-fill-column-center-text)))) "center text"
+	 :toggle (default-value (bound-and-true-p visual-fill-column-center-text))))
        "Editing"
        (("i" #'indent-guide-mode "indent guide")
+	("s" display-line-numbers-mode "line numbers" :toggle t)
 	("a" copilot-mode "copilot" :toggle t)
 	("f" flycheck-mode "flycheck" :toggle t))
        )))
@@ -127,8 +129,42 @@
        (("n" consult-bibtex-edit-notes "Notes")
 	("P" consult-bibtex-add-PDF-attachment "Add PDF Attachment")
 	("L" consult-bibtex-add-pdf-to-library "Add PDF to Library"))))
-    ;; (bind-key "<f7>" #'my/hydra-bibtex/body 'org-mode-map)
-    ))
+    (bind-key "C-c c" #'my/hydra-bibtex/body)
+    )
+
+  (with-eval-after-load 'citar
+    (defvar my/hydra-citar)
+    (pretty-hydra-define my/hydra-citar
+      (:title "Citar" :color teal :quit-key "q")
+      ("Denote"
+       (("n" citar-denote-open-note "Open Note")
+	("r" citar-denote-open-reference-entry "Open Entry")
+	("R" citar-denote-link-reference "Link Reference")
+	("L" citar-denote-link-note "Link Note")
+	("C" citar-denote-link-citation "Link Citation")
+	("f" citar-denote-find-reference "Find Reference")
+	("S" citar-denote-find-citation "Find Citation")
+	("d" citar-denote-dwim "DWIM"))
+       "Open"
+       (("oo" citar-open "Open")
+	("oe" citar-open-entry "Entry")
+	("of" citar-open-files "Files")
+	("on" citar-open-notes "Notes")
+	("ol" citar-open-links "Links"))
+       "Link"
+       (("ik" citar-insert-keys "Insert Keys")
+	("ic" citar-insert-citation "Citation")
+	("ir" citar-insert-reference "Reference")
+	("ib" citar-insert-bibtex "Bibtex")
+	("ip" citar-insert-preset "Preset")
+	("ie" citar-insert-edit "Edit"))
+       "Other"
+       (("N" citar-create-note "Note")
+	("x" my/citar-toggle-multiple "Toggle Multiple" :toggle (bound-and-true-p citar-select-multiple))
+	("y" citar-copy-reference "Copy Reference")
+	("z" citar-run-default-action "Default Action")
+	)))
+    (bind-key "<f7>" #'my/hydra-citar/body)))
 
 (provide 'setup-hydra)
 ;;; setup-hydra.el ends here

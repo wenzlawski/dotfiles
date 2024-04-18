@@ -151,8 +151,8 @@
   (modus-themes-custom-auto-reload t)
   :config
   (setopt modus-vivendi-palette-overrides
-	  '((bg-main "#1A1A1A")
-	    (bg-dim "#0E0E0E")
+	  '((bg-main "#070707") ; 1A1A1A
+	    (bg-dim "#1A1A1A") ; 0E0E0E
 	    (fg-main "#E2E2E2")
 	    (fg-dim "#999999")))
   (setopt modus-operandi-palette-overrides
@@ -431,7 +431,7 @@ Containing LEFT, and RIGHT aligned respectively."
   ;; "Symbols Nerd Font Mono" is the default and is recommended
   ;; but you can use any other Nerd Font if you want
   (nerd-icons-font-family "Symbols Nerd Font Mono")
-  (nerd-icons-scale-factor 1.8)
+  (nerd-icons-scale-factor 1.0)
   )
 
 ;; * CONFIGURATION
@@ -1660,9 +1660,10 @@ See URL `http://pypi.python.org/pypi/ruff'."
 ;; {{ firstCreator suffix=" - " }}{{ year suffix=" - " }}{{ title truncate="100" }}
 
 (use-package bibtex-completion
+  :when (package-installed-p 'org-ref)
   :straight (bibtex-completion :type git :flavor melpa :files ("bibtex-completion.el" "bibtex-completion-pkg.el") :host github :repo "tmalsburg/helm-bibtex")
   :custom
-  (bibtex-completion-bibliography '("~/zotero/bibtex-export.bib"))
+  (bibtex-completion-bibliography '("~/zotero/bibtex-export.bib" "~/cat.bib"))
   (bibtex-completion-library-path '("~/zotero/storage"))
   (bibtex-completion-notes-path "~/Dropbox/Org/articles.org")
   (bibtex-completion-notes-template-multiple-files "* ${author-or-editor}, ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:&${=key=}]]\n")
@@ -1676,7 +1677,8 @@ See URL `http://pypi.python.org/pypi/ruff'."
      (t             . "${=has-pdf=:1} ${=has-note=:1} ${year:4} ${author:36} ${title:*}")))
 
   (bibtex-completion-pdf-symbol "")
-  (bibtex-completion-notes-symbol ""))
+  (bibtex-completion-notes-symbol "")
+  (bibtex-completion-notes-template-one-file "\n* ${author-or-editor} (${year}): ${title}\n:PROPERTIES:\n:Custom_ID: ${=key=}\n:END:\n\n"))
 
 (with-eval-after-load 'bibtex-completion
   (defun my/org-ref-format-citation (keys)
@@ -1687,6 +1689,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (add-to-list 'bibtex-completion-format-citation-functions '(org-mode . my/org-ref-format-citation)))
 
 (use-package bibtex
+  :when (package-installed-p 'org-ref)
   :custom
   (bibtex-autokey-year-length 4)
   (bibtex-autokey-name-year-separator "-")
@@ -1702,6 +1705,10 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 
 ;; * APPLICATIONS
+;; ** citar
+
+(require 'setup-citar)
+
 ;; ** calibre
 
 (require 'setup-calibre)

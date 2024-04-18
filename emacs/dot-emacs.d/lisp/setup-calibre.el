@@ -24,9 +24,6 @@
 	     calibredb-tag-width
 	     calibredb-ids-width
 	     calibredb-condense-comments)
-  :bind
-  ("C-c d" . calibredb)
-  ("C-c D" . calibredb-consult-read)
   :config
   (setq calibredb-root-dir "~/Dropbox/Calibre Library"
 	calibredb-db-dir (expand-file-name "metadata.db" calibredb-root-dir)
