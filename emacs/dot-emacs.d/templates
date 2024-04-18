@@ -24,8 +24,8 @@ python-ts-mode python-mode
 
 org-mode
 
-(tc "[/] " (org-ctrl-c-ctrl-c))
-(tp "[%] " (org-ctrl-c-ctrl-c))
+(tc "[/]" :post (org-ctrl-c-ctrl-c))
+(tp "[%]" :post (org-ctrl-c-ctrl-c))
 (todoh "#+TODO: " r)
 (prop "#+PROPERTY: " q)
 (scr "#+begin_src " p n r n "#+end_src" :post (org-edit-src-code))

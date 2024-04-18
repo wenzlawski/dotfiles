@@ -3,6 +3,7 @@
 ;;; Code:
 
 (require 'straight)
+(require 'noflet)
 
 ;; * ORG
 
@@ -119,7 +120,7 @@ abort `\\[org-capture-kill]'."))))
   (setq org-agenda-custom-commands 	; a,e,t,m,s,T,M,S,C
 	'(("p"  . "project+state search")
 	  ("pp" tags "+project")
-	  ("pa" tags "+project-TODO=\"MAYBE\"")
+	  ("pa" tags "+project-maybe")
 	  ("pm" tags "+project+TODO=\"MAYBE\"")
 	  ("o" . "todo related")
 	  ("os" tags "TODO=\"TODO\"" ((org-agenda-skip-function
@@ -180,16 +181,16 @@ Triggered by a custom macOS Quick Action with a keyboard shortcut."
 	   "* %U %^{Title}\n%i\n\n%?")
 	  ("p" "project")
 	  ("pn" "project simple" entry (id "316F33BA-71DE-41B9-B21B-928D3778A097")
-	   "* TODO %^{Title} %^{CATEGORY}p [/] :project:\n- [ ] %?" :prepend t)
+	   "* TODO [/] %^{Title} %^{CATEGORY}p :project:\n- [ ] %?" :prepend t)
 	  ("pN" "project elaborate" entry (id "316F33BA-71DE-41B9-B21B-928D3778A097")
 	   (file "~/.emacs.d/capture/project.org") :prepend t)
 	  ("c" "clock")
 	  ("ct" "clock task" entry (clock) (file "~/.emacs.d/capture/task.org") :prepend t)
 	  ("cp" "clock project" entry (clock) (file "~/.emacs.d/capture/project.org")
 	   "* TODO %^{Title} [/] :project:\n- [ ] %?" :prepend t)
-	  ("t" "Task" entry (id "316F33BA-71DE-41B9-B21B-928D3778A097")
+	  ("t" "Task" entry (id "6FA6128F-4291-4508-8EB8-8951D736D81C")
 	   (file "~/.emacs.d/capture/task.org") :prepend t)
-	  ("h" "Habit" entry (id "316F33BA-71DE-41B9-B21B-928D3778A097")
+	  ("h" "Habit" entry (id "7F689015-46F8-4BD8-9B09-164AA168A16A")
 	   (file "~/.emacs.d/capture/habit.org") :prepend t)
 	  ("l" "later")
 	  ("lp" "Read later prompt" entry (id "F86FBB48-767F-436D-926E-D118F57AE534")
@@ -205,7 +206,7 @@ Triggered by a custom macOS Quick Action with a keyboard shortcut."
 	  ))
 
   ;; ** org-capture frame
-
+  
   (defun my/make-capture-frame ()
     "Create a new frame and run `org-capture'."
     (interactive)
@@ -215,13 +216,14 @@ Triggered by a custom macOS Quick Action with a keyboard shortcut."
                   (width . 80)
                   (height . 25)))
     (select-frame-by-name "capture")
+    (my/frame-recenter)
     (delete-other-windows)
     (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
-	    (condition-case ex
-		(org-capture)
-	      ('error
-	       ;;(message "org-capture: %s" (error-message-string ex))
-	       (delete-frame)))))
+      (condition-case ex
+	  (org-capture)
+	('error
+	 ;;(message "org-capture: %s" (error-message-string ex))
+	 (delete-frame)))))
 
   (defun my/close-if-capture (&optional a)
     (if (equal "capture" (frame-parameter nil 'name))
@@ -403,6 +405,15 @@ first-level entry for writing comments."
      (screen . nil)
      (sql . nil)
      (sqlite . t)))
+  ;; ** org-refile
+
+  (defun my/refile (file &optional headline arg)
+    "Refile HEADLINE in FILE."
+    (let ((pos (save-excursion
+		 (find-file file)
+		 (if headline (org-find-exact-headline-in-buffer headline)))))
+      (org-refile arg nil (list headline file nil pos)))
+    (switch-to-buffer (current-buffer)))
   
   ;; ** END
 
@@ -731,9 +742,9 @@ end #OB-JULIA-VTERM_END\n"))
 (require 'org-modern)
 (set-face-attribute 'org-modern-symbol nil :family "Iosevka")
 (set-face-attribute 'org-modern-label nil :height 0.85)
-(setq org-modern-keyword nil
-      org-modern-checkbox nil
-      org-modern-table nil)
+(setopt org-modern-keyword nil
+	org-modern-checkbox nil
+	org-modern-table nil)
 (global-org-modern-mode)
 
 ;; ** org-protocol
@@ -795,7 +806,9 @@ end #OB-JULIA-VTERM_END\n"))
   :straight t
   :hook org-mode
   :custom
-  (org-appear-autolinks t))
+  (org-appear-autolinks t)
+  (org-appear-autoentities t)
+  (org-appear-autokeywords t))
 
 ;; ** org-fragtog
 
@@ -814,11 +827,23 @@ end #OB-JULIA-VTERM_END\n"))
 
 (use-package org-ref
   :straight t
-  :after org
-  :commands (org-ref-process-buffer)
+  :demand t
   :bind
   (:map org-mode-map
-	("C-c ]" . org-ref-insert-link-hydra/body)))
+	("<f7>" . org-ref-insert-link-hydra/body)
+	("C-<f7>" . org-ref-citation-hydra/body)))
+
+(with-eval-after-load 'org-ref
+  (defun my/org-ref-cite-insert-consult ()
+    "Insert a citation using `consult-bibtex'."
+    (interactive)
+    
+    (let ((key (consult-bibtex--read-entry)))
+      (if key
+	  (org-ref-insert-cite-key key))))
+
+  (setopt org-ref-insert-cite-function 'my/org-ref-cite-insert-consult))
+
 
 (defun my/org-ref-process-buffer--html (backend)
   "Preprocess `org-ref' citations to HTML format.
@@ -875,13 +900,13 @@ that."
   (org-mac-link-qutebrowser-app-p nil)
   (org-mac-link-finder-app-p t)
   (org-mac-link-mail-app-p t)
-  (org-mac-link-devonthink-app-p t)
+  (org-mac-link-devonthink-app-p nil)
   (org-mac-link-safari-app-p nil)
   (org-mac-link-librewolf-app-p t)
   (org-mac-link-firefox-vimperator-p nil)
   (org-mac-link-evernote-app-p nil)
   (org-mac-link-together-app-p nil)
-  (org-mac-link-skim-app-p t))
+  (org-mac-link-skim-app-p nil))
 
 (defcustom org-mac-link-librewolf-app-p nil
   "Whether to use the LibreWolf.app for `org-mac-link' functions."

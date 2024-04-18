@@ -229,10 +229,7 @@
 (use-package timu-macos-theme
   :straight (:host github :repo "emacsmirror/timu-macos-theme")
   :init
-  (setq timu-macos-flavour (symbol-name ns-system-appearance))
-  :bind (:map help-map
-	      ("t" . nil)
-	      ("t s" . timu-macos-toggle-dark-light)))
+  (setq timu-macos-flavour (symbol-name ns-system-appearance)))
 
 (defun my/timu-theme-change (appearance)
   "Load theme, taking current system APPEARANCE into consideration."
@@ -257,8 +254,6 @@
   :hook (writeroom-mode . my/writeroom-mode-hook)
   :custom
   (writeroom-width 100)
-  :bind
-  (:map help-map ("t w" . writeroom-mode))
   :config
   (defun my/writeroom-mode-hook ()
     "Custom behaviours for `writeroom-mode'."
@@ -294,9 +289,7 @@
 
 (use-package olivetti
   :straight t
-  :hook (olivetti-mode-on . my/olivetti-org-indent)
-  :bind
-  (:map help-map ("t o" . my/distraction-free)))
+  :hook (olivetti-mode-on . my/olivetti-org-indent))
 
 (use-package centered-cursor-mode
   :straight t)
@@ -425,6 +418,22 @@ Containing LEFT, and RIGHT aligned respectively."
   :config
   (global-hl-todo-mode))
 
+;; ** nerd-icons
+
+(use-package nerd-icons
+  :straight (nerd-icons
+             :type git
+             :host github
+             :repo "rainstormstudio/nerd-icons.el"
+             :files (:defaults "data"))
+  :custom
+  ;; The Nerd Font you want to use in GUI
+  ;; "Symbols Nerd Font Mono" is the default and is recommended
+  ;; but you can use any other Nerd Font if you want
+  (nerd-icons-font-family "Symbols Nerd Font Mono")
+  (nerd-icons-scale-factor 1.8)
+  )
+
 ;; * CONFIGURATION
 ;; ** user details
 
@@ -466,14 +475,7 @@ Containing LEFT, and RIGHT aligned respectively."
 	("h" . tab-bar-mode)
 	("s" . tab-switcher))
   (:map help-map
-	("t" . nil)
-	("W" . man)
-	("t c" . centered-cursor-mode)
-	("t f" . visual-fill-column-mode)
-	("t h" . hl-line-mode)
-	("t l" . visual-line-mode)
-	("t t" . consult-theme)
-	("t v" . variable-pitch-mode))
+	("W" . man))
   ;;  (:map dired-mode-map
   ;;    ("K" . dired-kill-subdir))
   (:map completion-list-mode-map
@@ -647,12 +649,6 @@ Containing LEFT, and RIGHT aligned respectively."
 (use-package htmlize
   :straight t)
 
-;; ** noflet
-
-(use-package noflet
-  :straight t
-  :disabled)
-
 ;; ** config profiler esup
 
 (use-package esup
@@ -790,67 +786,7 @@ Containing LEFT, and RIGHT aligned respectively."
 
 ;; ** hydra
 
-(use-package hydra
-  :straight t)
-
-(use-package pretty-hydra
-  :after hydra
-  :straight t
-  :bind
-  ("C-`" . my/launch-menu/body)
-  (:map outline-minor-mode-map
-	("C-c <tab>" . hydra-outline/body))
-  :config
-  (with-eval-after-load 'emacs
-    (defvar my/launch-menu)
-    (pretty-hydra-define my/launch-menu
-      (:title "Launch Menu" :quit-key "q" :color teal)
-      ("Applications"
-       (("a" #'org-agenda "Agenda")
-	("e" #'eww "EWW")
-	("c" #'calendar "Calendar")
-	("i" (lambda () (interactive) (find-file user-init-file)) "Emacs")
-	("f" #'dired "Files")
-	("m" #'notmuch "Mail")
-	("n" (lambda () (interactive) (find-file "~/Org/personal.org")) "Notes")
-	("t" #'vterm "Terminal")
-	("b" #'calibredb "Calibre"))
-       "Utilities"
-       (("h" #'helpful-at-point "Help")
-	("l" #'consult-line "Lookup")
-	("r" #'ielm "REPL")
-	("s" (lambda () (interactive) (switch-to-buffer "*scratch*")) "Scratch")))))
-  
-  (with-eval-after-load 'outline
-    (defvar hydra-outline)
-    (pretty-hydra-define hydra-outline
-      (:title "Outline Menu" :color pink :hint nil :quit-key "z")
-      ("Hide"
-       (("q" #'outline-hide-sublevels "sublevels")
-	("t" #'outline-hide-body "body")
-	("o" #'outline-hide-other "other")
-	("c" #'outline-hide-entry "entry")
-	("l" #'outline-hide-leaves "leaves")
-	("d" #'outline-hide-subtree "subtree"))
-       "Show"
-       (("a" #'outline-show-all "all")
-	("e" #'outline-show-entry "entry")
-	("i" #'outline-show-children "children")
-	("k" #'outline-show-branches "branches")
-	("s" #'outline-show-subtree "subtree"))
-       "Move"
-       (("u" #'outline-up-heading "up")
-	("n" #'outline-next-visible-heading "next")
-	("p" #'outline-previous-visible-heading "previous")
-	("f" #'outline-forward-same-level "forward")
-	("b" #'outline-backward-same-level "backward")
-	("/" #'consult-outline "outline"))
-       "Edit"
-       (("k" #'outline-headers-as-kill "kill")
-	("U" #'outline-move-subtree-up "move up")
-	("D" #'outline-move-subtree-down "move down")
-	("<" #'outline-promote "promote")
-	(">" #'outline-demote "demote"))))))
+(require 'setup-hydra)
 
 ;; ** undo-fu
 
@@ -878,8 +814,7 @@ Containing LEFT, and RIGHT aligned respectively."
 ;; ** hide-mode-line
 
 (use-package hide-mode-line
-  :straight t
-  :bind (:map help-map ("t m" . hide-mode-line-mode)))
+  :straight t)
 
 ;; ** bookmark
 
@@ -1288,7 +1223,6 @@ See URL `http://pypi.python.org/pypi/ruff'."
     ))
 
 (use-package flyspell
-  :bind (:map help-map ("t s" . flyspell-toggle))
   :config
   (cond
    ;; try hunspell at first
@@ -1397,7 +1331,6 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :hook prog-mode
   :commands copilot-login
   :bind (:map copilot-completion-map ("<C-i>" . copilot-accept-completion))
-  (:map help-map ("t C" . copilot-mode))
   :config
   (setq copilot-idle-delay 0.3)
   (add-to-list 'copilot-indentation-alist '(lisp-interaction-mode 2)))
@@ -1726,28 +1659,42 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 ;; {{ firstCreator suffix=" - " }}{{ year suffix=" - " }}{{ title truncate="100" }}
 
-(setopt bibtex-completion-bibliography '("~/zotero/bibtex-export.bib")
-	bibtex-completion-library-path '("~/zotero/storage")
-	bibtex-completion-notes-path "~/Dropbox/Org/articles.org"
-	bibtex-completion-notes-template-multiple-files "* ${author-or-editor}, ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:&${=key=}]]\n"
-	bibtex-completion-pdf-field "file"
+(use-package bibtex-completion
+  :straight (bibtex-completion :type git :flavor melpa :files ("bibtex-completion.el" "bibtex-completion-pkg.el") :host github :repo "tmalsburg/helm-bibtex")
+  :custom
+  (bibtex-completion-bibliography '("~/zotero/bibtex-export.bib"))
+  (bibtex-completion-library-path '("~/zotero/storage"))
+  (bibtex-completion-notes-path "~/Dropbox/Org/articles.org")
+  (bibtex-completion-notes-template-multiple-files "* ${author-or-editor}, ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:&${=key=}]]\n")
+  (bibtex-completion-pdf-field "file")
+  (bibtex-completion-additional-search-fields '("keywords"))
+  (bibtex-completion-display-formats
+   '((article       . "${=has-pdf=:1} ${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
+     (inbook        . "${=has-pdf=:1} ${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+     (incollection  . "${=has-pdf=:1} ${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+     (inproceedings . "${=has-pdf=:1} ${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+     (t             . "${=has-pdf=:1} ${=has-note=:1} ${year:4} ${author:36} ${title:*}")))
 
-	bibtex-completion-additional-search-fields '("keywords")
-	bibtex-completion-display-formats
-	'((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
-	  (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
-	  (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-	  (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
-	  (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}")))
+  (bibtex-completion-pdf-symbol "")
+  (bibtex-completion-notes-symbol ""))
 
-(setopt bibtex-autokey-year-length 4
-	bibtex-autokey-name-year-separator "-"
-	bibtex-autokey-year-title-separator "-"
-	bibtex-autokey-titleword-separator "-"
-	bibtex-autokey-titlewords 2
-	bibtex-autokey-titlewords-stretch 1
-	bibtex-autokey-titleword-length 5)
+(with-eval-after-load 'bibtex-completion
+  (defun my/org-ref-format-citation (keys)
+    "Format ebib references for keys in KEYS."
+    (s-join ", "
+            (--map (format "cite:&%s" it) keys)))
 
+  (add-to-list 'bibtex-completion-format-citation-functions '(org-mode . my/org-ref-format-citation)))
+
+(use-package bibtex
+  :custom
+  (bibtex-autokey-year-length 4)
+  (bibtex-autokey-name-year-separator "-")
+  (bibtex-autokey-year-title-separator "-")
+  (bibtex-autokey-titleword-separator "-")
+  (bibtex-autokey-titlewords 2)
+  (bibtex-autokey-titlewords-stretch 1)
+  (bibtex-autokey-titleword-length 5))
 
 ;; * ORG
 
@@ -1994,6 +1941,7 @@ The browser to used is specified by the
 ;; ** ebib
 
 (use-package ebib
+  :disabled
   :straight t
   :config
   (setq ebib-preload-bib-files '("~/Zotero/bibtex-export.bib")))

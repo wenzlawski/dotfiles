@@ -1,4 +1,4 @@
-* %^{Title} %^{CATEGORY}p [/] :project:
+* [/] %^{Title} %^{CATEGORY}p :project:
 ** Project Statement
 %?
 ** Project Plan
