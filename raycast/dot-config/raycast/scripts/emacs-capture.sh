@@ -6,9 +6,6 @@
 # @raycast.mode silent
 
 # Optional parameters:
-# @raycast.icon 🦄
-
-# Documentation:
-# @raycast.description Org-capture emacsclient
+# @raycast.icon 🧙‍♂️
 
 emacsclient -ne "(my/make-capture-frame)"
