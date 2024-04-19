@@ -116,6 +116,7 @@
 ;; (straight-use-package '(org :type built-in))
 (straight-use-package '(org))
 
+(require 'utils)
 
 ;; * THEMES
 
@@ -446,10 +447,7 @@ Containing LEFT, and RIGHT aligned respectively."
 
 (setq auth-sources '("~/.authinfo.gpg"))
 (setopt epa-pinentry-mode 'loopback)
-;; https://stackoverflow.com/questions/76388376/emacs-org-encrypt-entry-hangs-when-file-is-modified
-;; DO NOT USE THIS WITH SYMMETRICALLY ENCRYPTED FILES.
-;; MAY CAUSE FILE CORRUPTION.
-(fset 'epg-wait-for-status 'ignore)
+
 
 ;; ** Emacs
 
@@ -1705,6 +1703,10 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 
 ;; * APPLICATIONS
+;; ** smudge spotify
+
+(require 'setup-smudge)
+
 ;; ** citar
 
 (require 'setup-citar)
@@ -2209,6 +2211,11 @@ If FRAME is omitted or nil, use currently selected frame."
   (font-lock-bracket-face ((t (:foreground "tan3")))))
 
 ;; * LOCAL-VARIABLES
+
+;; https://stackoverflow.com/questions/76388376/emacs-org-encrypt-entry-hangs-when-file-is-modified
+;; DO NOT USE THIS WITH SYMMETRICALLY ENCRYPTED FILES.
+;; MAY CAUSE FILE CORRUPTION.
+(fset 'epg-wait-for-status 'ignore)
 
 ;; Local Variables:
 ;; outline-regexp: " *;; \\*+"

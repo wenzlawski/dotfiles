@@ -181,7 +181,7 @@ Triggered by a custom macOS Quick Action with a keyboard shortcut."
 	   "* %U %^{Title}\n%i\n\n%?")
 	  ("p" "project")
 	  ("pn" "project simple" entry (id "316F33BA-71DE-41B9-B21B-928D3778A097")
-	   "* TODO [/] %^{Title} %^{CATEGORY}p :project:\n- [ ] %?" :prepend t)
+	   "* [/] %^{Title} %^{CATEGORY}p :project:\n- [ ] %?" :prepend t)
 	  ("pN" "project elaborate" entry (id "316F33BA-71DE-41B9-B21B-928D3778A097")
 	   (file "~/.emacs.d/capture/project.org") :prepend t)
 	  ("c" "clock")

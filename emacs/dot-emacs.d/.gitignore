@@ -30,3 +30,4 @@ speed-type
 tramp
 nix-buffer
 flycheck_*.el
+smudge
