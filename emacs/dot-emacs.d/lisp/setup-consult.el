@@ -177,6 +177,20 @@
   (consult-flyspell-set-point-after-word t)
   (consult-flyspell-always-check-buffer nil))
 
+(use-package consult-eglot
+  :straight t
+  :bind
+  (:map eglot-mode-map
+	("C-c e c" . consult-eglot-symbols)))
+
+(use-package consult-eglot-embark
+  :straight t
+  :after consult-eglot
+  :config
+  (consult-eglot-embark-mode))
+
+
+
 ;; (use-package consult-bibtex
 ;;   :after consult
 ;;   :straight '(consult-bibtex :host github :repo "mohkale/consult-bibtex")

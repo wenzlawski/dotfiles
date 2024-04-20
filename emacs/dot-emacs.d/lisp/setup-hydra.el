@@ -58,8 +58,10 @@
    (("i" #'indent-guide-mode "indent guide")
     ("s" display-line-numbers-mode "line numbers" :toggle t)
     ("a" copilot-mode "copilot" :toggle t)
-    ("f" flycheck-mode "flycheck" :toggle t))
-   ))
+    ("f" flycheck-mode "flycheck" :toggle t)
+    ("x" (lambda () (interactive) (setopt corfu-auto (not corfu-auto)) (corfu-mode -1) (corfu-mode)) "corfu auto" :toggle (default-value corfu-auto))
+    ("y" yas-minor-mode "yasnippet" :toggle t)
+    )))
 
 (bind-key "t" #'my/hydra-toggle-menu/body 'help-map)
 
@@ -198,6 +200,23 @@
      )))
 
 (bind-key "<f6>" #'my/hydra-smudge/body)
+
+;; (defvar my/c-mode-hydra)
+;; (pretty-hydra-define my/c-mode-hydra
+;;   (:title "C Mode" :color teal :quit-key "q")
+;;   ("Compile"
+;;    (("c" compile "Compile")
+;;     ("r" recompile "Recompile")
+;;     ("C" recompile "Recompile"))
+;;    "Run"
+;;    ()
+;;    "Xref"
+;;    (("xd" xref-find-definitions "Find Definitions")
+;;     ("xr" xref-find-references "Find References")
+;;     ("xD" xref-find-definitions-other-window "Find Definitions Other Window")
+;;     ("xR" xref-find-references-other-window "Find References Other Window"))
+;;    "Debug"
+;;    (("g" gdb "GDB"))))
 
 (provide 'setup-hydra)
 ;;; setup-hydra.el ends here

@@ -14,6 +14,11 @@ prog-mode
 emacs-lisp-mode lisp-interaction-mode
 
 (bat "(bound-and-true-p " r ")")
+(todo ";; TODO: " q)
+(note ";; NOTE: " q)
+(fail ";; FAIL: " q)
+(fixme ";; FIXME: " q)
+(review ";; REVIEW: " q)
 
 python-ts-mode python-mode
 

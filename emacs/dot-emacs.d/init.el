@@ -479,7 +479,7 @@ Containing LEFT, and RIGHT aligned respectively."
   (:map completion-list-mode-map
 	("e" . switch-to-minibuffer))
   :config
-  (setq-default fill-column 80
+  (setq-default fill-column 79
 		line-spacing 0.1
 		electric-indent-inhibit t)
 
@@ -845,29 +845,47 @@ Containing LEFT, and RIGHT aligned respectively."
 
 ;; ** corfu
 
+;; TODO: Add prescient
 (use-package corfu
   :straight t
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  ;; (corfu-auto nil)               ;; Enable auto completion
+  (corfu-auto t)               ;; Enable auto completion
+  (corfu-auto-delay 0.05)
   ;; (corfu-separator ?\s)          ;; Orderless field separator
   ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
   (corfu-quit-no-match 'separator) ;; Never quit, even if there is no match
-  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+  (corfu-preview-current nil)    ;; Disable current candidate preview
   ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  (corfu-on-exact-match nil)     ;; Configure handling of exact matches
   ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
   ;; Enable Corfu only for certain modes.
-  ;; :hook ((prog-mode . corfu-mode)
-  ;;        (shell-mode . corfu-mode)
-  ;;        (eshell-mode . corfu-mode))
+  :hook ((prog-mode . corfu-mode)
+         (shell-mode . corfu-mode)
+         (eshell-mode . corfu-mode))
 
   ;; Recommended: Enable Corfu globally.  This is recommended since Dabbrev can
   ;; be used globally (M-/).  See also the customization variable
   ;; `global-corfu-modes' to exclude certain modes.
-  :init
-  (global-corfu-mode))
+  ;; :init
+  ;; (global-corfu-mode)
+  :config
+  (use-package corfu-popupinfo
+    :custom
+    (corfu-popupinfo-delay 0.3))
+  (use-package corfu-info))
+
+(with-eval-after-load 'corfu
+  (defun corfu-move-to-minibuffer ()
+    (interactive)
+    (pcase completion-in-region--data
+      (`(,beg ,end ,table ,pred ,extras)
+       (let ((completion-extra-properties extras)
+	     completion-cycle-threshold completion-cycling)
+	 (consult-completion-in-region beg end table pred)))))
+  (keymap-set corfu-map "M-m" #'corfu-move-to-minibuffer)
+  (add-to-list 'corfu-continue-commands #'corfu-move-to-minibuffer))
 
 ;; ** abbrev
 
@@ -892,7 +910,30 @@ Containing LEFT, and RIGHT aligned respectively."
 ;; ** cape
 
 (use-package cape
-  :straight t)
+  :straight t
+  :config
+  (add-to-list 'completion-at-point-functions #'cape-file))
+
+(defun my/ignore-elisp-keywords (cand)
+  (or (not (keywordp cand))
+      (eq (char-after (car completion-in-region--data)) ?:)))
+
+(defun my/setup-elisp ()
+  (setq-local completion-at-point-functions
+              `(,(cape-capf-super
+                  (cape-capf-predicate
+                   #'elisp-completion-at-point
+                   #'my/ignore-elisp-keywords)
+                  #'cape-dabbrev
+		  #'tempel-complete)
+                cape-file)
+              cape-dabbrev-min-length 5))
+
+(defun my/superduperfunction ()
+  (interactive)
+  (message "Superduperfunction"))
+
+(add-hook 'emacs-lisp-mode-hook #'my/setup-elisp)
 
 ;; ** expand-region
 
@@ -1249,9 +1290,13 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 (use-package yasnippet
   :straight t
+  :hook (prog-mode . yas-minor-mode)
   :config
   (setq yas-verbosity 0)
+  (use-package yasnippet-snippets
+    :straight t)
   (yas-reload-all))
+
 
 (use-package yankpad
   :straight t
@@ -1260,7 +1305,6 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (setq yankpad-file "~/.emacs.d/yankpad.org"))
 
 (use-package yasnippet-capf
-  :disabled
   :straight (:host github :repo "elken/yasnippet-capf")
   :after cape
   :config
@@ -1314,6 +1358,8 @@ See URL `http://pypi.python.org/pypi/ruff'."
   ((conf-mode prog-mode text-mode) . tempel-setup-capf))
 
 (use-package tempel-collection
+  :
+  :straight t
   :after tempel)
 
 
@@ -1352,9 +1398,20 @@ See URL `http://pypi.python.org/pypi/ruff'."
 	("C-c e q" . eglot-shutdown)
 	("C-c e Q" . eglot-shutdown-all)
 	("C-c e l" . eglot-list-connections)
-	("C-c e r" . eglot-rename))
-  :custom-face
-  (eglot-highlight-symbol-face ((t (:inherit highlight)))))
+	("C-c e r" . eglot-rename)))
+
+(with-eval-after-load 'eglot
+  (set-face-attribute 'eglot-highlight-symbol-face nil :bold nil :underline nil :background (modus-themes-get-color-value 'bg-hover))
+  
+  (defun my/eglot-capf ()
+    (setq-local completion-at-point-functions
+		(list (cape-capf-super
+		       #'yasnippet-capf
+		       #'eglot-completion-at-point
+                       #'tempel-expand
+                       #'cape-file))))
+
+  (add-hook 'eglot-managed-mode-hook #'my/eglot-capf))
 
 ;; ** tree-sitter
 
@@ -1382,12 +1439,12 @@ See URL `http://pypi.python.org/pypi/ruff'."
 	  (typescript "https://github.com/tree-sitter/tree-sitter-typescript"
 		      "master" "typescript/src")
 	  (typst "https://github.com/uben0/tree-sitter-typst")
-	  (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+	  (yaml "https://github.com/ikatyang/tree-sitter-yaml")
+	  (zig "https://github.com/maxxnino/tree-sitter-zig")))
 (setopt treesit-font-lock-level 4)
 
 (use-package treesit-auto
   :straight t
-  :commands (global-treesit-auto-mode)
   :config
   (global-treesit-auto-mode))
 
@@ -1423,6 +1480,36 @@ See URL `http://pypi.python.org/pypi/ruff'."
 (use-package format-all
   :straight t
   :disabled)
+
+;; ** dumb-jump
+
+(use-package dumb-jump
+  :straight t
+  :custom
+  (xref-show-definitions-function 'xref-show-definitions-completing-read)
+  (dumb-jump-prefer-searcher 'rg)
+  (dumb-jump-force-searcher 'rg)
+  :config
+  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
+;; ** irony
+
+(use-package irony
+  :straight t
+  :hook (c-ts-base-mode . irony-mode))
+
+(use-package irony-eldoc
+  :straight t
+  :hook (irony-mode . irony-eldoc))
+
+(with-eval-after-load 'irony
+  (defun my/irony-capf ()
+    (setq-local completion-at-point-functions
+		(list (cape-capf-super
+                       #'irony-completion-at-point
+                       #'tempel-expand
+                       #'cape-file))))
+
+  (add-hook 'irony-mode-hook #'my/irony-capf))
 
 ;; * LANGUAGE MODES
 ;; ** lisp
@@ -1635,6 +1722,12 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 (use-package cc-mode
   :hook (awk-mode . (lambda nil (setq tab-width 4))))
+
+(use-package c-ts-mode
+  :hook (c-ts-base-mode . hs-minor-mode)
+  :bind
+  (:map c-ts-base-mode-map
+	("<C-i>" . indent-for-tab-command)))
 
 ;; ** css
 
