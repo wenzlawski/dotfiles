@@ -217,18 +217,21 @@ If given a SOURCE, execute the CMD on it."
        :language 'zig
        :feature 'function
        '((SuffixExpr
-	  variable_type_function: (IDENTIFIER) @font-lock-function-call-face)
-	 field_constant: (IDENTIFIER) @font-lock-function-call-face
-	 [(FieldOrFnCall
-           [
-	    field_access: (IDENTIFIER) @font-lock-function-call-face
-	    function_call: (IDENTIFIER) @font-lock-function-call-face])]
+	  [
+	   variable_type_function: (IDENTIFIER) @font-lock-function-call-face
+	   field_constant: (IDENTIFIER) @font-lock-function-call-face])
+	 (FieldOrFnCall
+          [
+	   field_access: (IDENTIFIER) @font-lock-function-call-face
+	   function_call: (IDENTIFIER) @font-lock-function-call-face])
 	 (FnProto
 	  function: (IDENTIFIER) @font-lock-function-call-face))
        
        :language 'zig
        :feature 'assignment
-       '((VarDecl variable_type_function: (_) @font-lock-variable-name-face))
+       '((VarDecl variable_type_function: (_) @font-lock-variable-name-face)
+	 (PtrListPayload variable: (IDENTIFIER) @font-lock-variable-name-face)
+	 (Payload variable: (IDENTIFIER) @font-lock-variable-name-face))
 
        :language 'zig
        :feature 'operator
@@ -294,15 +297,15 @@ delimiters < and >'s."
   (goto-char beg)
   (while (re-search-forward (rx (or "<" ">")) end t)
     (pcase (treesit-node-type
-            (treesit-node-parent
-             (treesit-node-at (match-beginning 0))))
+	    (treesit-node-parent
+	     (treesit-node-at (match-beginning 0))))
       ((or "type_arguments" "type_parameters")
        (put-text-property (match-beginning 0)
-                          (match-end 0)
-                          'syntax-table
-                          (pcase (char-before)
-                            (?< '(4 . ?>))
-                            (?> '(5 . ?<))))))))
+			  (match-end 0)
+			  'syntax-table
+			  (pcase (char-before)
+			    (?< '(4 . ?>))
+			    (?> '(5 . ?<))))))))
 
 
 ;;; Mode definition
@@ -337,9 +340,9 @@ delimiters < and >'s."
     (setq-local treesit-font-lock-settings zig-ts-mode--font-lock-settings)
     (setq-local treesit-font-lock-feature-list
                 '(( comment )		; definitions
-                  ( keyword string type )
-                  ( assignment number builtin constant ) ; constants, literals
-                  ( bracket operator function delimiter ))) ; delimiters, punctuation, functions properties variables
+		  ( keyword string type )
+		  ( assignment number builtin constant ) ; constants, literals
+		  ( bracket operator function delimiter ))) ; delimiters, punctuation, functions properties variables
 
 
     ;; Imenu.
