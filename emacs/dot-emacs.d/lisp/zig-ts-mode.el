@@ -112,7 +112,6 @@ If given a SOURCE, execute the CMD on it."
   (interactive)
   (zig--run-cmd "run" (file-local-name (buffer-file-name)) "-O" zig-run-optimization-mode))
 
-
 ;;; Syntax table
 
 (defvar zig-ts-mode--syntax-table
@@ -148,6 +147,7 @@ If given a SOURCE, execute the CMD on it."
      ((and (parent-is "comment") c-ts-common-looking-at-star)
       c-ts-common-comment-start-after-first-star -1)
      ((parent-is "comment") prev-adaptive-prefix 0)
+     ((parent-is "ContainerDecl") parent-bol zig-ts-mode-indent-offset)
      ((parent-is "arguments") parent-bol zig-ts-mode-indent-offset)
      ((parent-is "await_expression") parent-bol zig-ts-mode-indent-offset)
      ((parent-is "array_expression") parent-bol zig-ts-mode-indent-offset)
@@ -308,6 +308,17 @@ delimiters < and >'s."
 			    (?> '(5 . ?<))))))))
 
 
+(defun zig-ts-mode--defun-name (node)
+  "Return the defun name of NODE.
+Return nil if there is no name or if NODE is not a defun node."
+  (pcase (treesit-node-type node)
+    ("TestDecl"
+     (treesit-node-text
+      (treesit-node-child node 1) t))
+    ("FnProto"
+     (treesit-node-text
+      (treesit-node-child-by-field-name node "function") t))))
+
 ;;; Mode definition
 
 ;; TODO: 
@@ -319,6 +330,14 @@ delimiters < and >'s."
 ;;   "C-c C-c" #'comment-region
 ;;   "C-c C-k" #'zig-mode-toggle-comment-style)
 
+(defvar zig-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-b") #'zig-compile)
+    (define-key map (kbd "C-c C-f") #'zig-format-buffer)
+    (define-key map (kbd "C-c C-r") #'zig-run)
+    (define-key map (kbd "C-c C-t") #'zig-test-buffer)
+    map)
+  "Keymap for Zig major mode.")
 
 ;;;###autoload
 (define-derived-mode zig-ts-mode prog-mode "Zig"
@@ -346,13 +365,9 @@ delimiters < and >'s."
 
 
     ;; Imenu.
-    ;; (setq-local treesit-simple-imenu-settings
-    ;;             `(("Module" "\\`mod_item\\'" nil nil)
-    ;;               ("Enum" "\\`enum_item\\'" nil nil)
-    ;;               ("Impl" "\\`impl_item\\'" nil nil)
-    ;;               ("Type" "\\`type_item\\'" nil nil)
-    ;;               ("Struct" "\\`struct_item\\'" nil nil)
-    ;;               ("Fn" "\\`function_item\\'" nil nil)))
+    (setq-local treesit-simple-imenu-settings
+                `(("Test" "\\`TestDecl\\'" nil nil)
+                  ("Fn" "\\`FnProto\\'" nil nil)))
 
     ;; Indent.
     (setq-local indent-tabs-mode nil
@@ -364,10 +379,8 @@ delimiters < and >'s."
 
     ;; Navigation.
     (setq-local treesit-defun-type-regexp
-                (regexp-opt '("enum_item"
-			      "function_item"
-			      "impl_item"
-			      "struct_item")))
+                (regexp-opt '("TestDecl"
+			      "FnProto")))
     (setq-local treesit-defun-name-function #'zig-ts-mode--defun-name)
 
     (treesit-major-mode-setup)))
