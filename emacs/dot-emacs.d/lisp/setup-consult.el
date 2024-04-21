@@ -189,6 +189,13 @@
   :config
   (consult-eglot-embark-mode))
 
+(use-package consult-todo
+  :straight t
+  :custom
+  (consult-todo-narrow '((?t . "TODO")
+			 (?f . "FIXME")
+			 (?b . "BUG")
+			 (?h . "HACK"))))
 
 
 ;; (use-package consult-bibtex

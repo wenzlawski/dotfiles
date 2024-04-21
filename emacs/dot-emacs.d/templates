@@ -3,22 +3,22 @@ fundamental-mode ;; Available everywhere
 (today (format-time-string "%Y-%m-%d"))
 (todayde (format-time-string "%d/%m/%Y"))
 
-prog-mode
+;; prog-mode
 
-(todo comment-start "TODO: " q)
-(note comment-start "NOTE: " q)
-(fail comment-start "FAIL: " q)
-(fixme comment-start "FIXME: " q)
-(review comment-start "REVIEW: " q)
+;; (todo comment-start "TODO: " q)
+;; (note comment-start "NOTE: " q)
+;; (fail comment-start "FAIL: " q)
+;; (fixme comment-start "FIXME: " q)
+;; (review comment-start "REVIEW: " q)
 
 emacs-lisp-mode lisp-interaction-mode
 
-(bat "(bound-and-true-p " r ")")
-(todo ";; TODO: " q)
-(note ";; NOTE: " q)
-(fail ";; FAIL: " q)
-(fixme ";; FIXME: " q)
-(review ";; REVIEW: " q)
+;; (bat "(bound-and-true-p " r ")")
+;; (todo ";; TODO: " q)
+;; (note ";; NOTE: " q)
+;; (fail ";; FAIL: " q)
+;; (fixme ";; FIXME: " q)
+;; (review ";; REVIEW: " q)
 
 python-ts-mode python-mode
 

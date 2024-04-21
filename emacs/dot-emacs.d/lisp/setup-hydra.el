@@ -201,22 +201,39 @@
 
 (bind-key "<f6>" #'my/hydra-smudge/body)
 
-;; (defvar my/c-mode-hydra)
-;; (pretty-hydra-define my/c-mode-hydra
-;;   (:title "C Mode" :color teal :quit-key "q")
-;;   ("Compile"
-;;    (("c" compile "Compile")
-;;     ("r" recompile "Recompile")
-;;     ("C" recompile "Recompile"))
-;;    "Run"
-;;    ()
-;;    "Xref"
-;;    (("xd" xref-find-definitions "Find Definitions")
-;;     ("xr" xref-find-references "Find References")
-;;     ("xD" xref-find-definitions-other-window "Find Definitions Other Window")
-;;     ("xR" xref-find-references-other-window "Find References Other Window"))
-;;    "Debug"
-;;    (("g" gdb "GDB"))))
+(with-eval-after-load 'c-ts-mode
+  (defvar my/c-mode-hydra)
+  (pretty-hydra-define my/c-mode-hydra
+    (:title "C Mode" :color teal :quit-key "q")
+    ("Compile"
+     (("c" compile "Compile")
+      ("r" recompile "Recompile")
+      ("C" recompile "Recompile"))
+     "Run"
+     (("q" quickrun "Quickrun")
+      ("R" quickrun-region "Quickrun Region"))
+     "Xref"
+     (("xd" xref-find-definitions "Find Definitions")
+      ("xr" xref-find-references "Find References")
+      ("xD" xref-find-definitions-other-window "Find Definitions Other Window")
+      ("xR" xref-find-references-other-window "Find References Other Window"))
+     "Snippets"
+     (("i" yas-insert-snippet "Insert Snippet")
+      ("n" yas-new-snippet "New Snippet")
+      ("v" yas-visit-snippet-file "Edit Snippet"))
+     "Hiding"
+     (("hh" hs-toggle-hiding "Toggle")
+      ("hb" hs-hide-block "Hide Block")
+      ("hB" hs-show-block "Show Block")
+      ("ha" hs-hide-all "Hide All")
+      ("hA" hs-show-all "Show All"))
+     "Debug"
+     (("g" gdb "GDB"))
+     "Tools"
+     (("e" eglot "eglot"))))
+  (bind-key "C-c C-c" #'my/c-mode-hydra/body 'c-ts-base-mode-map)
+  (bind-key "C-c c" #'my/c-mode-hydra/body 'c-ts-base-mode-map))
+
 
 (provide 'setup-hydra)
 ;;; setup-hydra.el ends here

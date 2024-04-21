@@ -170,6 +170,10 @@
 	    (bg-region bg-sage)
 	    (fg-region unspecified)
 	    (name blue-warmer)
+	    (fg-line-number-inactive "gray50")
+            (fg-line-number-active fg-main)
+            (bg-line-number-inactive unspecified)
+            (bg-line-number-active unspecified)
 	    ;; (fg-heading-1 black)
 	    ;; (fg-heading-2 olive)
 	    ;; (fg-heading-3 slate)
@@ -469,6 +473,7 @@ Containing LEFT, and RIGHT aligned respectively."
   ("C-<wheel-down>" . nil)
   ("C-<wheel-up>" . nil)
   ("C-c C" . calendar)
+  ("C-c <SPC>" . mode-line-other-buffer)
   (:map tab-prefix-map
 	("h" . tab-bar-mode)
 	("s" . tab-switcher))
@@ -500,7 +505,7 @@ Containing LEFT, and RIGHT aligned respectively."
 	ns-use-proxy-icon t
 	cursor-type t
 	blink-cursor-delay 1
-	blink-cursor-interval 1
+	blink-cursor-interval 0.3
 	register-preview-delay 0.25
 	history-length 100
 	initial-scratch-message ";; scratchy scratch"
@@ -524,7 +529,7 @@ Containing LEFT, and RIGHT aligned respectively."
   (pixel-scroll-precision-mode)
   (delete-selection-mode)
   (fringe-mode '(0 . 0))
-  (blink-cursor-mode)
+  ;; (blink-cursor-mode)
   (recentf-mode)
   (global-auto-revert-mode)
   (push '(lambda (_) (menu-bar-mode -1)) (cdr (last after-make-frame-functions)))
@@ -852,6 +857,7 @@ Containing LEFT, and RIGHT aligned respectively."
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)               ;; Enable auto completion
   (corfu-auto-delay 0.05)
+  (corfu-auto-prefix 4)
   ;; (corfu-separator ?\s)          ;; Orderless field separator
   ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
   (corfu-quit-no-match 'separator) ;; Never quit, even if there is no match
@@ -873,7 +879,7 @@ Containing LEFT, and RIGHT aligned respectively."
   :config
   (use-package corfu-popupinfo
     :custom
-    (corfu-popupinfo-delay 0.3))
+    (corfu-popupinfo-delay 0))
   (use-package corfu-info))
 
 (with-eval-after-load 'corfu
@@ -1214,6 +1220,20 @@ See URL `http://pypi.python.org/pypi/ruff'."
 					      (setq-local flycheck-checkers '(python-ruff))
 					      (flycheck-mode)))))))
 
+;; ** flycheck zig
+
+(with-eval-after-load 'flycheck
+  (flycheck-define-checker zig
+    "A zig syntax checker using zig's `ast-check` command."
+    :command ("zig" "ast-check" (eval (buffer-file-name)))
+    :error-patterns
+    ((error line-start (file-name) ":" line ":" column ": error: " (message) line-end))
+    :modes (zig-mode zig-ts-mode))
+  (add-to-list 'flycheck-checkers 'zig))
+
+;; main.zig:8:8: error: expected ';' after statement
+
+
 ;; ** flyspell
 
 (use-package flyspell-correct
@@ -1297,7 +1317,6 @@ See URL `http://pypi.python.org/pypi/ruff'."
     :straight t)
   (yas-reload-all))
 
-
 (use-package yankpad
   :straight t
   :disabled
@@ -1306,10 +1325,10 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 (use-package yasnippet-capf
   :straight (:host github :repo "elken/yasnippet-capf")
-  :after cape
+  :after cape yasnippet
   :config
-  (add-to-list 'completion-at-point-functions #'yasnippet-capf))
-;; :bind-keymap ("C-c s" . yas-minor-mode-map))
+  (add-to-list 'completion-at-point-functions #'yasnippet-capf)
+  (setopt yasnippet-capf-lookup-by 'key))
 
 ;; ** tempel
 
@@ -1357,10 +1376,9 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :hook
   ((conf-mode prog-mode text-mode) . tempel-setup-capf))
 
-(use-package tempel-collection
-  :
-  :straight t
-  :after tempel)
+;; (use-package tempel-collection
+;;   :straight t
+;;   :after tempel)
 
 
 ;; ** quickrun
@@ -1389,6 +1407,8 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :config
   (add-to-list 'eglot-server-programs
 	       '((svelte-mode svelte-ts-mode) . ("svelteserver" "--stdio")))
+  (add-to-list 'eglot-server-programs
+	       '((zig-mode zig-ts-mode) . ("zls")))
   :hook (eglot-managed-mode . (lambda () (cond ((derived-mode-p 'python-base-mode)
 						(add-hook 'flymake-diagnostic-functions 'python-flymake nil t))
 					       (t nil))))
@@ -1406,8 +1426,8 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (defun my/eglot-capf ()
     (setq-local completion-at-point-functions
 		(list (cape-capf-super
-		       #'yasnippet-capf
 		       #'eglot-completion-at-point
+		       #'yasnippet-capf
                        #'tempel-expand
                        #'cape-file))))
 
@@ -1457,12 +1477,16 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :config
   (with-eval-after-load 'julia-mode
     (push
-     '(julia . ((dir-concat user-emacs-directory "scripts/julia-format.sh") inplace ))
+     '(julia  ((dir-concat user-emacs-directory "scripts/julia-format.sh") inplace ))
      apheleia-formatters)
     (add-to-list 'apheleia-mode-alist '(julia-mode . julia)))
 
   (add-to-list 'apheleia-mode-alist '(python-mode . ruff-isort))
   (add-to-list 'apheleia-mode-alist '(python-ts-mode . ruff-isort))
+  (push
+   '(zig-fmt zig-zig-bin "fmt" inplace) apheleia-formatters)
+
+  (add-to-list 'apheleia-mode-alist '(zig-ts-mode . zig-fmt))
 
   (apheleia-global-mode))
 
@@ -1494,8 +1518,8 @@ See URL `http://pypi.python.org/pypi/ruff'."
 ;; ** irony
 
 (use-package irony
-  :straight t
-  :hook (c-ts-base-mode . irony-mode))
+  :straight t)
+;;:hook (c-ts-base-mode . irony-mode))
 
 (use-package irony-eldoc
   :straight t
@@ -1505,6 +1529,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (defun my/irony-capf ()
     (setq-local completion-at-point-functions
 		(list (cape-capf-super
+		       #'yasnippet-capf
                        #'irony-completion-at-point
                        #'tempel-expand
                        #'cape-file))))
@@ -1727,6 +1752,8 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :hook (c-ts-base-mode . hs-minor-mode)
   :bind
   (:map c-ts-base-mode-map
+	("C-c C-c" . nil)
+	("C-c C-t" . comment-region)
 	("<C-i>" . indent-for-tab-command)))
 
 ;; ** css
@@ -1789,6 +1816,10 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (bibtex-autokey-titlewords 2)
   (bibtex-autokey-titlewords-stretch 1)
   (bibtex-autokey-titleword-length 5))
+
+;; ** zig
+
+(use-package zig-ts-mode)
 
 ;; * ORG
 
