@@ -138,6 +138,7 @@ If given a SOURCE, execute the CMD on it."
 ;;; Indent
 
 ;; TODO: Adapt this to zig
+;; most work ootb, but some are not needed.
 (defvar zig-ts-mode--indent-rules
   `((zig
      ((parent-is "source_file") column-0 0)
@@ -149,24 +150,9 @@ If given a SOURCE, execute the CMD on it."
      ((parent-is "comment") prev-adaptive-prefix 0)
      ((parent-is "ContainerDecl") parent-bol zig-ts-mode-indent-offset)
      ((parent-is "arguments") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "await_expression") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "array_expression") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "binary_expression") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "block") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "declaration_list") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "enum_variant_list") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "field_declaration_list") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "field_expression") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "field_initializer_list") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "let_declaration") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "macro_definition") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "parameters") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "struct_pattern") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "token_tree") parent-bol zig-ts-mode-indent-offset)
-     ((parent-is "use_list") parent-bol zig-ts-mode-indent-offset)))
+     ((parent-is "block") parent-bol zig-ts-mode-indent-offset)))
   "Tree-sitter indent rules for `zig-ts-mode'.")
 
-;; TODO: Adapt this to zig
 (defvar zig-ts-mode--keywords
   '("break" "return" "continue" "asm" "defer" "errdefer" "unreachable"
     "try" "catch" "async" "nosuspend" "await" "suspend" "resume"
@@ -185,11 +171,6 @@ If given a SOURCE, execute the CMD on it."
 ;; TODO: Adapt this to zig
 (setq zig-ts-mode--font-lock-settings
       (treesit-font-lock-rules
-       ;; :language 'zig
-       ;; :feature 'attribute
-       ;; '((attribute_item) @font-lock-preprocessor-face
-       ;;   (inner_attribute_item) @font-lock-preprocessor-face)
-
        :language 'zig
        :feature 'bracket
        '((["(" ")" "[" "]" "{" "}"]) @font-lock-bracket-face)
@@ -307,7 +288,6 @@ delimiters < and >'s."
 			    (?< '(4 . ?>))
 			    (?> '(5 . ?<))))))))
 
-
 (defun zig-ts-mode--defun-name (node)
   "Return the defun name of NODE.
 Return nil if there is no name or if NODE is not a defun node."
@@ -321,15 +301,7 @@ Return nil if there is no name or if NODE is not a defun node."
 
 ;;; Mode definition
 
-;; TODO: 
-;; (defvar-keymap zig-ts-mode-map
-;;   :doc "Keymap for Zig language with tree-sitter."
-;;   :parent prog-mode-map
-;;   "C-c C-q" #'zig-mode-indent-defun
-;;   "C-c ." #'zig-mode-set-style
-;;   "C-c C-c" #'comment-region
-;;   "C-c C-k" #'zig-mode-toggle-comment-style)
-
+;; taken trom zig-mode.el
 (defvar zig-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-b") #'zig-compile)
