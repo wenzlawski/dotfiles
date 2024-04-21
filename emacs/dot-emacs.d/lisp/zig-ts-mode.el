@@ -51,9 +51,71 @@
   :safe 'integerp
   :group 'zig)
 
+(defcustom zig-zig-bin "zig"
+  "Path to zig executable."
+  :type 'file
+  :safe #'stringp)
+
+(defcustom zig-run-optimization-mode "Debug"
+  "Optimization mode to run code with."
+  :type 'string
+  :safe #'stringp)
+
+(defcustom zig-test-optimization-mode "Debug"
+  "Optimization mode to run tests with."
+  :type 'string
+  :safe #'stringp)
+
+
+;; zig CLI commands
+
+(defun zig--run-cmd (cmd &optional source &rest args)
+  "Use compile command to execute a zig CMD with ARGS if given.
+If given a SOURCE, execute the CMD on it."
+  (let ((cmd-args (if source (cons source args) args)))
+    (compilation-start (mapconcat 'shell-quote-argument
+                                  `(,zig-zig-bin ,cmd ,@cmd-args) " "))))
+
+;;;###autoload
+(defun zig-compile ()
+  "Compile using `zig build`."
+  (interactive)
+  (zig--run-cmd "build"))
+
+;;;###autoload
+(defun zig-build-exe ()
+  "Create executable from source or object file."
+  (interactive)
+  (zig--run-cmd "build-exe" (file-local-name (buffer-file-name))))
+
+;;;###autoload
+(defun zig-build-lib ()
+  "Create library from source or assembly."
+  (interactive)
+  (zig--run-cmd "build-lib" (file-local-name (buffer-file-name))))
+
+;;;###autoload
+(defun zig-build-obj ()
+  "Create object from source or assembly."
+  (interactive)
+  (zig--run-cmd "build-obj" (file-local-name (buffer-file-name))))
+
+;;;###autoload
+(defun zig-test-buffer ()
+  "Test buffer using `zig test`."
+  (interactive)
+  (zig--run-cmd "test" (file-local-name (buffer-file-name)) "-O" zig-test-optimization-mode))
+
+;;;###autoload
+(defun zig-run ()
+  "Create an executable from the current buffer and run it immediately."
+  (interactive)
+  (zig--run-cmd "run" (file-local-name (buffer-file-name)) "-O" zig-run-optimization-mode))
+
+
 ;;; Syntax table
 
-(defvar rust-ts-mode--syntax-table
+(defvar zig-ts-mode--syntax-table
   (let ((table (make-syntax-table)))
     (modify-syntax-entry ?+   "."      table)
     (modify-syntax-entry ?-   "."      table)
@@ -65,7 +127,7 @@
     (modify-syntax-entry ?@   "."      table)
     (modify-syntax-entry ?<   "."      table)
     (modify-syntax-entry ?>   "."      table)
-    (modify-syntax-entry ?/   ". 12"      table)
+    (modify-syntax-entry ?/   ". 12"   table)
     (modify-syntax-entry ?*   "."      table)
     (modify-syntax-entry ?'   "\""     table)
     (modify-syntax-entry ?\"  "\""     table)
@@ -140,9 +202,9 @@
        :feature 'comment
        '(([(line_comment)]) @font-lock-comment-face)
 
-       ;; :language 'zig
-       ;; :feature 'delimiter
-       ;; '((["," "." ";" ":" "::"]) @font-lock-delimiter-face)
+       :language 'zig
+       :feature 'delimiter
+       '((["," "." ";" ":"]) @font-lock-delimiter-face)
 
        :language 'zig
        :feature 'keyword
@@ -156,10 +218,13 @@
        :feature 'function
        '((SuffixExpr
 	  variable_type_function: (IDENTIFIER) @font-lock-function-call-face)
+	 field_constant: (IDENTIFIER) @font-lock-function-call-face
 	 [(FieldOrFnCall
            [
 	    field_access: (IDENTIFIER) @font-lock-function-call-face
-	    function_call: (IDENTIFIER) @font-lock-function-call-face])])
+	    function_call: (IDENTIFIER) @font-lock-function-call-face])]
+	 (FnProto
+	  function: (IDENTIFIER) @font-lock-function-call-face))
        
        :language 'zig
        :feature 'assignment
@@ -176,6 +241,10 @@
        :language 'zig
        :feature 'type
        '([(BuildinTypeExpr)] @font-lock-type-face)
+
+       :language 'zig
+       :feature 'constant
+       '(((CHAR_LITERAL) @font-lock-constant-face))
 
        ;; :language 'zig
        ;; :feature 'variable
@@ -267,10 +336,11 @@ delimiters < and >'s."
     ;; Font-lock.
     (setq-local treesit-font-lock-settings zig-ts-mode--font-lock-settings)
     (setq-local treesit-font-lock-feature-list
-                '(( comment )
-                  ( keyword string )
-                  ( assignment number builtin type )
-                  ( bracket operator function )))
+                '(( comment )		; definitions
+                  ( keyword string type )
+                  ( assignment number builtin constant ) ; constants, literals
+                  ( bracket operator function delimiter ))) ; delimiters, punctuation, functions properties variables
+
 
     ;; Imenu.
     ;; (setq-local treesit-simple-imenu-settings
