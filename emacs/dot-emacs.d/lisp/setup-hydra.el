@@ -204,7 +204,7 @@
 (with-eval-after-load 'c-ts-mode
   (defvar my/c-mode-hydra)
   (pretty-hydra-define my/c-mode-hydra
-    (:title "C Mode" :color teal :quit-key "q")
+    (:title "C Mode" :color teal :quit-key "q" :exit t)
     ("Compile"
      (("c" compile "Compile")
       ("r" recompile "Recompile")
@@ -233,6 +233,38 @@
      (("e" eglot "eglot"))))
   (bind-key "C-c C-c" #'my/c-mode-hydra/body 'c-ts-base-mode-map)
   (bind-key "C-c c" #'my/c-mode-hydra/body 'c-ts-base-mode-map))
+
+(with-eval-after-load 'zig-ts-mode
+  (defvar my/zig-mode-hydra)
+  (pretty-hydra-define my/zig-mode-hydra
+    (:title "Zig mode" :quit-key "q" :exit t)
+    ("Code actions"
+     (("c" zig-compile "Compile")
+      ("f" zig-format "Format")
+      ("r" zig-run "Run")
+      ("t" zig-test "Test"))
+     "Run"
+     (("q" quickrun "Quickrun")
+      ("R" quickrun-region "Quickrun Region"))
+     "Xref"
+     (("xd" xref-find-definitions "Definitions")
+      ("xr" xref-find-references "References")
+      ("xD" xref-find-definitions-other-window "Definitions OW")
+      ("xR" xref-find-references-other-window "References OW"))
+     "Snippets"
+     (("i" yas-insert-snippet "Insert Snippet")
+      ("n" yas-new-snippet "New Snippet")
+      ("v" yas-visit-snippet-file "Edit Snippet"))
+     "Hiding"
+     (("hh" hs-toggle-hiding "Toggle")
+      ("hb" hs-hide-block "Hide Block")
+      ("hB" hs-show-block "Show Block")
+      ("ha" hs-hide-all "Hide All")
+      ("hA" hs-show-all "Show All"))
+     "Tools"
+     (("e" eglot "eglot"))))
+
+  (bind-key "C-c C-c" #'my/zig-mode-hydra/body 'zig-ts-mode-map))
 
 
 (provide 'setup-hydra)

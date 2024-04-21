@@ -301,19 +301,20 @@ Return nil if there is no name or if NODE is not a defun node."
 
 ;;; Mode definition
 
-;; taken trom zig-mode.el
-(defvar zig-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-b") #'zig-compile)
-    (define-key map (kbd "C-c C-f") #'zig-format-buffer)
-    (define-key map (kbd "C-c C-r") #'zig-run)
-    (define-key map (kbd "C-c C-t") #'zig-test-buffer)
-    map)
-  "Keymap for Zig major mode.")
+;; taken trom c-ts-mode.el
+(defvar-keymap zig-ts-mode-map
+  :doc "Keymap for Zig major mode with tree-sitter."
+  :parent prog-mode-map
+  "C-c C-b" #'zig-compile
+  "C-c C-r" #'zig-run
+  "C-c C-t" #'zig-test-buffer
+  "C-c C-k" #'comment-region)
 
 ;;;###autoload
 (define-derived-mode zig-ts-mode prog-mode "Zig"
-  "Major mode for editing Zig, powered by tree-sitter."
+  "Major mode for editing Zig, powered by tree-sitter.
+
+\\{zig-ts-mode-map}"
   :group 'zig
   :syntax-table zig-ts-mode--syntax-table
 
@@ -350,6 +351,7 @@ Return nil if there is no name or if NODE is not a defun node."
                 (append "{}():;,#" electric-indent-chars))
 
     ;; Navigation.
+    ;; FIXME: Does not work for end-of-defun
     (setq-local treesit-defun-type-regexp
                 (regexp-opt '("TestDecl"
 			      "FnProto")))
@@ -357,45 +359,8 @@ Return nil if there is no name or if NODE is not a defun node."
 
     (treesit-major-mode-setup)))
 
-;; TODO: Maybe do something like this?
-;; (easy-menu-define c-ts-mode-menu (list c-ts-mode-map c++-ts-mode-map)
-;;   "Menu for `c-ts-mode' and `c++-ts-mode'."
-;;   '("C/C++"
-;;     ["Comment Out Region" comment-region
-;;      :enable mark-active
-;;      :help "Comment out the region between the mark and point"]
-;;     ["Uncomment Region" (comment-region (region-beginning)
-;;                                         (region-end) '(4))
-;;      :enable mark-active
-;;      :help "Uncomment the region between the mark and point"]
-;;     ["Indent Top-level Expression" c-ts-mode-indent-defun
-;;      :help "Indent/reindent top-level function, class, etc."]
-;;     ["Indent Line or Region" indent-for-tab-command
-;;      :help "Indent current line or region, or insert a tab"]
-;;     ["Forward Expression" forward-sexp
-;;      :help "Move forward across one balanced expression"]
-;;     ["Backward Expression" backward-sexp
-;;      :help "Move back across one balanced expression"]
-;;     "--"
-;;     ("Style..."
-;;      ["Set Indentation Style..." c-ts-mode-set-style
-;;       :help "Set C/C++ indentation style for current buffer"]
-;;      ["Show Current Indentation Style" (message "Indentation Style: %s"
-;;                                                 c-ts-mode-indent-style)
-;;       :help "Show the name of the C/C++ indentation style for current buffer"]
-;;      ["Set Comment Style" c-ts-mode-toggle-comment-style
-;;       :help "Toggle C/C++ comment style between block and line comments"])
-;;     "--"
-;;     ("Toggle..."
-;;      ["SubWord Mode" subword-mode
-;;       :style toggle :selected subword-mode
-;;       :help "Toggle sub-word movement and editing mode"])))
-
-
-
 (if (treesit-ready-p 'zig)
     (add-to-list 'auto-mode-alist '("\\.zig\\'" . zig-ts-mode)))
-
 
 (provide 'zig-ts-mode)
 ;;; zig-ts-mode.el ends here

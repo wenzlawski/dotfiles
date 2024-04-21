@@ -879,7 +879,7 @@ Containing LEFT, and RIGHT aligned respectively."
   :config
   (use-package corfu-popupinfo
     :custom
-    (corfu-popupinfo-delay 0))
+    (corfu-popupinfo-delay 0.3))
   (use-package corfu-info))
 
 (with-eval-after-load 'corfu
@@ -1819,7 +1819,8 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 ;; ** zig
 
-(use-package zig-ts-mode)
+(use-package zig-ts-mode
+  :mode ("\\.zig\\'" . zig-ts-mode))
 
 ;; * ORG
 

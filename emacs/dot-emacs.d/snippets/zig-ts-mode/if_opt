@@ -2,6 +2,6 @@
 # name: if_opt
 # key: ifo
 # --
-if ($0) |v| {
+if ($0) |${1:v}| {
     `yas-selected-text`
 }
