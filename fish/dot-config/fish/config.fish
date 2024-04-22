@@ -17,6 +17,8 @@ set -gx PNPM_HOME ~/Library/pnpm
 set -gx GPG_TTY $tty
 
 # Path variables
+
+fish_add_path /usr/local/opt/make/libexec/gnubin
 fish_add_path ~/.cargo/bin
 fish_add_path ~/.cargo/env
 fish_add_path ~/.config/emacs/bin
