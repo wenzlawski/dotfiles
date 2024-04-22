@@ -50,6 +50,7 @@
     ("c" centered-cursor-mode "center cursor" :toggle t))
    "Display"
    (("t" #'consult-theme "theme")
+    ("T" #'fontaine-set-preset "font" :exit t)
     ("d" #'toggle-frame-fullscreen "fullscreen" :toggle (frame-parameter nil 'fullscreen))
     ("w" #'my/distraction-free "writing" :toggle (default-value (bound-and-true-p olivetti-mode)))
     ("e" (lambda () (interactive) (setq visual-fill-column-center-text (not (bound-and-true-p visual-fill-column-center-text)))) "center text"
@@ -201,7 +202,7 @@
 
 (bind-key "<f6>" #'my/hydra-smudge/body)
 
-(with-eval-after-load 'c-ts-mode
+(with-eval-after-load 'cc-mode
   (defvar my/c-mode-hydra)
   (pretty-hydra-define my/c-mode-hydra
     (:title "C Mode" :color teal :quit-key "q" :exit t)
@@ -218,9 +219,9 @@
       ("xD" xref-find-definitions-other-window "Find Definitions Other Window")
       ("xR" xref-find-references-other-window "Find References Other Window"))
      "Snippets"
-     (("i" yas-insert-snippet "Insert Snippet")
+     (("i" consult-yasnippet "Insert Snippet")
       ("n" yas-new-snippet "New Snippet")
-      ("v" yas-visit-snippet-file "Edit Snippet"))
+      ("v" consult-yasnippet-visit-snippet-file "Edit Snippet"))
      "Hiding"
      (("hh" hs-toggle-hiding "Toggle")
       ("hb" hs-hide-block "Hide Block")
@@ -231,8 +232,9 @@
      (("g" gdb "GDB"))
      "Tools"
      (("e" eglot "eglot"))))
-  (bind-key "C-c C-c" #'my/c-mode-hydra/body 'c-ts-base-mode-map)
-  (bind-key "C-c c" #'my/c-mode-hydra/body 'c-ts-base-mode-map))
+  ;;(bind-key "C-c C-c" #'my/c-mode-hydra/body 'c-ts-base-mode-map)
+  (bind-key "C-c C-c" #'my/c-mode-hydra/body 'c-mode-base-map))
+;;(bind-key "C-c c" #'my/c-mode-hydra/body 'c-ts-base-mode-map)
 
 (with-eval-after-load 'zig-ts-mode
   (defvar my/zig-mode-hydra)
@@ -252,9 +254,9 @@
       ("xD" xref-find-definitions-other-window "Definitions OW")
       ("xR" xref-find-references-other-window "References OW"))
      "Snippets"
-     (("i" yas-insert-snippet "Insert Snippet")
+     (("i" consult-yasnippet "Insert Snippet")
       ("n" yas-new-snippet "New Snippet")
-      ("v" yas-visit-snippet-file "Edit Snippet"))
+      ("v" consult-yasnippet-visit-snippet-file "Edit Snippet"))
      "Hiding"
      (("hh" hs-toggle-hiding "Toggle")
       ("hb" hs-hide-block "Hide Block")

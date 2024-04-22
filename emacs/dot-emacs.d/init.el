@@ -215,8 +215,18 @@
 (defun my/modus-theme-change (appearance)
   "Load theme, taking current system APPEARANCE into consideration."
   (pcase appearance
-    ('light (my/theme-default-light))
-    ('dark  (my/theme-default-dark))))
+    ('light (progn
+	      (my/theme-default-light)
+	      (set-face-attribute 'yas-field-highlight-face nil
+				  :inherit 'region :background (modus-themes-get-color-value 'bg-blue-nuanced))
+	      (set-face-attribute 'eglot-highlight-symbol-face nil
+				  :bold t :underline nil :background (modus-themes-get-color-value 'bg-active-value))))
+    ('dark  (progn
+	      (my/theme-default-dark)
+	      (set-face-attribute 'yas-field-highlight-face nil
+				  :inherit 'region :background (modus-themes-get-color-value 'bg-blue-subtle))
+	      (set-face-attribute 'eglot-highlight-symbol-face nil
+				  :bold t :underline nil :background (modus-themes-get-color-value 'bg-yellow-intense))))))
 
 (defun my/modus-themes-invisible-dividers (&rest _)
   "Make window dividers for THEME invisible."
@@ -314,7 +324,7 @@
   (pulsar-pulse t)
   (pulsar-delay 0.05)
   (pulsar-iterations 10)
-  (pulsar-face 'pulsar-green)
+  (pulsar-face 'pulsar-blue)
   (pulsar-highlight-face 'pulsar-yellow)
   :config
   (pulsar-global-mode 1))
@@ -439,6 +449,80 @@ Containing LEFT, and RIGHT aligned respectively."
   (nerd-icons-scale-factor 1.0)
   )
 
+;; ** fontaine
+
+(use-package fontaine
+  :straight t
+  :hook
+  (enable-theme-functions . fontaine-apply-current-preset)
+  :config
+  (fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular))
+  (fontaine-mode))
+
+(setq fontaine-presets
+      '(
+	(input :default-family "Input Mono")
+	(jetbrains :default-family "JetBrains Mono")
+	(source-code-pro :default-family "Source Code Pro")
+	(dejavu-sans-mono :default-family "DejaVu Sans Mono")
+	(fira-code :default-family "Fira Code"
+		   :line-spacing 0.05)
+	(iosevka :default-family "Iosevka")
+	(menlo :default-family "Menlo")
+	(unifont :default-family "Unifont")
+	(go-mono :default-family "Go Mono")
+	(regular)
+	(t :default-family "Iosevka"
+	   :default-weight regular
+	   :default-slant normal
+	   :default-height 170
+	   :fixed-pitch-family nil
+	   :fixed-pitch-weight nil
+	   :fixed-pitch-slant nil
+	   :fixed-pitch-height 1.0
+	   :fixed-pitch-serif-family nil
+	   :fixed-pitch-serif-weight nil
+	   :fixed-pitch-serif-slant nil
+	   :fixed-pitch-serif-height 1.0
+	   :variable-pitch-family "iA Writer Quattro V"
+	   :variable-pitch-weight nil
+	   :variable-pitch-slant nil
+	   :variable-pitch-height 1.0
+	   :mode-line-active-family nil
+	   :mode-line-active-weight nil
+	   :mode-line-active-slant nil
+	   :mode-line-active-height 1.0
+	   :mode-line-inactive-family nil
+	   :mode-line-inactive-weight nil
+	   :mode-line-inactive-slant nil
+	   :mode-line-inactive-height 1.0
+	   :header-line-family nil
+	   :header-line-weight nil
+	   :header-line-slant nil
+	   :header-line-height 1.0
+	   :line-number-family nil
+	   :line-number-weight nil
+	   :line-number-slant nil
+	   :line-number-height 1.0
+	   :tab-bar-family nil
+	   :tab-bar-weight nil
+	   :tab-bar-slant nil
+	   :tab-bar-height 1.0
+	   :tab-line-family nil
+	   :tab-line-weight nil
+	   :tab-line-slant nil
+	   :tab-line-height 1.0
+	   :bold-family nil
+	   :bold-slant nil
+	   :bold-weight bold
+	   :bold-height 1.0
+	   :italic-family nil
+	   :italic-weight nil
+	   :italic-slant italic
+	   :italic-height 1.0
+	   :line-spacing 0.05)
+	))
+
 ;; * CONFIGURATION
 ;; ** user details
 
@@ -459,9 +543,9 @@ Containing LEFT, and RIGHT aligned respectively."
   :hook (prog-mode . show-paren-mode)
   :custom-face
   (show-paren-match ((t (:underline nil :inverse-video nil))))
-  (deault ((t (:family "Iosevka"))))
+  (deault ((t (:family "Fira Code"))))
   (variable-pitch ((t (:family "iA Writer Quattro V"))))
-  (fixed-pitch ((t (:family "Iosevka"))))
+  (fixed-pitch ((t (:family "Fira Code"))))
   :bind
   ("C-x C-l" . nil)
   ("C-x C-S-l" . downcase-region)
@@ -693,8 +777,8 @@ Containing LEFT, and RIGHT aligned respectively."
   :custom
   (eldoc-echo-area-display-truncation-message nil)
   (eldoc-echo-area-use-multiline-p nil)
-  :config
-  (setq eldoc-current-idle-delay 0.3))
+  (eldoc-idle-delay 0.05)
+  (eldoc-current-idle-delay 0.05))
 
 ;; ** pos-tip
 
@@ -1312,6 +1396,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :straight t
   :hook (prog-mode . yas-minor-mode)
   :config
+  
   (setq yas-verbosity 0)
   (use-package yasnippet-snippets
     :straight t)
@@ -1421,7 +1506,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
 	("C-c e r" . eglot-rename)))
 
 (with-eval-after-load 'eglot
-  (set-face-attribute 'eglot-highlight-symbol-face nil :bold nil :underline nil :background (modus-themes-get-color-value 'bg-hover))
+  
   
   (defun my/eglot-capf ()
     (setq-local completion-at-point-functions
@@ -1464,8 +1549,10 @@ See URL `http://pypi.python.org/pypi/ruff'."
 (setopt treesit-font-lock-level 4)
 
 (use-package treesit-auto
+  :disabled
   :straight t
   :config
+  (delete 'c treesit-auto-langs)
   (global-treesit-auto-mode))
 
 ;; ** apheleia
@@ -1746,12 +1833,11 @@ See URL `http://pypi.python.org/pypi/ruff'."
 ;; ** cc-mode
 
 (use-package cc-mode
-  :hook (awk-mode . (lambda nil (setq tab-width 4))))
-
-(use-package c-ts-mode
-  :hook (c-ts-base-mode . hs-minor-mode)
+  :hook (awk-mode . (lambda nil (setq tab-width 4)))
+  (c-mode . hs-minor-mode)
+  (c-mode . semantic-mode)
   :bind
-  (:map c-ts-base-mode-map
+  (:map c-mode-base-map
 	("C-c C-c" . nil)
 	("C-c C-t" . comment-region)
 	("<C-i>" . indent-for-tab-command)))

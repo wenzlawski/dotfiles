@@ -205,6 +205,15 @@
 ;;   (with-eval-after-load 'embark
 ;;     (add-to-list 'embark-keymap-alist '(bibtex-completion . consult-bibtex-embark-map))))
 
+(use-package consult-yasnippet
+  :straight t
+  :bind
+  (:map yas-minor-mode-map
+	("C-c & C-s" . consult-yasnippet)
+	("C-c & C-v" . consult-yasnippet-visit-snippet-file)))
+
+
+
 
 (provide 'setup-consult)
 ;;; setup-consult.el ends here

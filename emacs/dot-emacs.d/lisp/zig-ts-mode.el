@@ -199,11 +199,11 @@ If given a SOURCE, execute the CMD on it."
        :feature 'function
        '((SuffixExpr
 	  [
-	   variable_type_function: (IDENTIFIER) @font-lock-function-call-face
+	   variable_type_function: (IDENTIFIER) @font-lock-property-use-face
 	   field_constant: (IDENTIFIER) @font-lock-function-call-face])
 	 (FieldOrFnCall
           [
-	   field_access: (IDENTIFIER) @font-lock-function-call-face
+	   field_access: (IDENTIFIER) @font-lock-property-use-face
 	   function_call: (IDENTIFIER) @font-lock-function-call-face])
 	 (FnProto
 	  function: (IDENTIFIER) @font-lock-function-call-face))
