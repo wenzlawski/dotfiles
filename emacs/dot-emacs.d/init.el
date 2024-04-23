@@ -121,12 +121,11 @@
 ;; * THEMES
 
 (setq custom-safe-themes t)
-(defalias 'my/apply-theme-change 'my/modus-theme-change)
 
-(add-to-list 'ns-system-appearance-change-functions 'my/apply-theme-change)
+(add-to-list 'ns-system-appearance-change-functions 'my/modus-theme-change)
 ;; (add-to-list 'after-make-frame-functions '(lambda (_)
 ;; (my/apply-theme-change ns-system-appearance))) ;; DOES NOT WORK
-(push '(lambda (_) (my/apply-theme-change ns-system-appearance)) (cdr (last after-make-frame-functions)))
+(push '(lambda (_) (my/modus-theme-initialize ns-system-appearance)) (cdr (last after-make-frame-functions)))
 (use-package ef-themes
   :straight t)
 (use-package color-theme-modern
@@ -188,7 +187,7 @@
 	    (accent-1 cyan-cooler)
 	    (accent-2 blue-warmer)
 	    (accent-3 red-cooler)
-	    (bg-completion bg-dim)
+	    (bg-completion bg-blue-nuanced)
 	    (bg-mode-line-active bg-dim)
 	    (fg-mode-line-active fg-dim)
 	    (bg-paren-match bg-magenta-intense)
@@ -202,31 +201,26 @@
             (prose-todo red-faint)
 	    )))
 
-(defun my/theme-default-light ()
-  "Set the default theme to light."
-  (interactive)
-  (load-theme 'modus-operandi t))
-
-(defun my/theme-default-dark ()
-  "Set the default theme to dark."
-  (interactive)
-  (load-theme 'modus-vivendi t))
+(defun my/modus-theme-initialize (appearance)
+  "Initialize the modus theme."
+  (pcase appearance
+    ('light (load-theme 'modus-operandi t))
+    ('dark  (load-theme 'modus-vivendi t))))
 
 (defun my/modus-theme-change (appearance)
   "Load theme, taking current system APPEARANCE into consideration."
   (pcase appearance
-    ('light (progn
-	      (my/theme-default-light)
-	      (set-face-attribute 'yas-field-highlight-face nil
-				  :inherit 'region :background (modus-themes-get-color-value 'bg-blue-nuanced))
-	      (set-face-attribute 'eglot-highlight-symbol-face nil
-				  :bold t :underline nil :background (modus-themes-get-color-value 'bg-active-value))))
-    ('dark  (progn
-	      (my/theme-default-dark)
-	      (set-face-attribute 'yas-field-highlight-face nil
-				  :inherit 'region :background (modus-themes-get-color-value 'bg-blue-subtle))
-	      (set-face-attribute 'eglot-highlight-symbol-face nil
-				  :bold t :underline nil :background (modus-themes-get-color-value 'bg-yellow-intense))))))
+    ('light (modus-themes-select 'modus-operandi))
+    ('dark  (modus-themes-select 'modus-vivendi))))
+
+(defun my/modus-theme-on-toggle ()
+  "Set some faces each toggle."
+  (set-face-attribute 'yas-field-highlight-face nil
+		      :inherit 'region :background (modus-themes-get-color-value 'bg-blue-subtle))
+  (set-face-attribute 'eglot-highlight-symbol-face nil
+		      :bold t :underline nil :background (modus-themes-get-color-value 'bg-yellow-intense)))
+
+(add-hook 'modus-themes-after-load-theme-hook #'my/modus-theme-on-toggle)
 
 (defun my/modus-themes-invisible-dividers (&rest _)
   "Make window dividers for THEME invisible."
@@ -517,6 +511,7 @@ Containing LEFT, and RIGHT aligned respectively."
 
 (use-package fontaine
   :straight t
+  :demand t
   :hook
   (enable-theme-functions . fontaine-apply-current-preset)
   :config
@@ -547,6 +542,7 @@ Containing LEFT, and RIGHT aligned respectively."
   (variable-pitch ((t (:family "iA Writer Quattro V"))))
   (fixed-pitch ((t (:family "Fira Code"))))
   :bind
+  ("C-z" . nil)
   ("C-x C-l" . nil)
   ("C-x C-S-l" . downcase-region)
   ("C-c o" .  occur)
@@ -558,7 +554,7 @@ Containing LEFT, and RIGHT aligned respectively."
   ("C-<wheel-up>" . nil)
   ("C-c C" . calendar)
   ("C-c <SPC>" . mode-line-other-buffer)
-  ("M-i" . completion-at-point)
+  ("<C-i>" . completion-at-point)
   (:map tab-prefix-map
 	("h" . tab-bar-mode)
 	("s" . tab-switcher))
@@ -571,7 +567,9 @@ Containing LEFT, and RIGHT aligned respectively."
   :config
   (setq-default fill-column 79
 		line-spacing 0.1
-		electric-indent-inhibit t)
+		electric-indent-inhibit t
+		require-final-newline t
+		)
 
   (setq undo-limit 80000000
 	auto-save-default t
@@ -581,7 +579,6 @@ Containing LEFT, and RIGHT aligned respectively."
 	confirm-kill-emacs 'yes-or-no-p
 	redisplay-dont-pause t
 	sentence-end-double-space nil
-	require-final-newline t
 	frame-inhibit-implied-resize t
 	scroll-margin 0
 	scroll-conservatively 0
@@ -943,13 +940,21 @@ Containing LEFT, and RIGHT aligned respectively."
   (corfu-auto t)               ;; Enable auto completion
   (corfu-auto-delay 0.05)
   (corfu-auto-prefix 4)
-  ;; (corfu-separator ?\s)          ;; Orderless field separator
-  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  (corfu-quit-no-match 'separator) ;; Never quit, even if there is no match
+  (corfu-separator ?-)          ;; Orderless field separator
+  (corfu-quit-at-boundary 'separator)   ;; Never quit at completion boundary
+  (corfu-quit-no-match t) ;; Never quit, even if there is no match
   (corfu-preview-current nil)    ;; Disable current candidate preview
-  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-  (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+  (corfu-preselect 'first)      ;; Preselect the prompt
+  (corfu-on-exact-match 'show)     ;; Configure handling of exact matches
+  (corfu-min-width 40)
+  (corfu-max-width 40)
+  (corfu-scroll-margin 3)        ;; Use scroll margin
+  :bind
+  (:map corfu-map
+        ;; Option 1: Unbind RET completely
+        ("RET" . nil))
+  ;; Option 2: Use RET only in shell modes
+  ;; ("<return>" . (menu-item "" nil :filter corfu-insert-shell-filter)))
 
   ;; Enable Corfu only for certain modes.
   :hook ((prog-mode . corfu-mode)
@@ -965,10 +970,52 @@ Containing LEFT, and RIGHT aligned respectively."
   (use-package corfu-popupinfo
     :hook (corfu-mode . corfu-popupinfo-mode)
     :custom
-    (corfu-popupinfo-delay '(0.5 . 0)))
+    (corfu-popupinfo-delay '(0.5 . 0.05)))
+  (use-package corfu-history
+    :hook (corfu-mode . corfu-history-mode))
   (use-package corfu-info))
 
+(use-package nerd-icons-corfu
+  :after corfu
+  :straight t
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
 (with-eval-after-load 'corfu
+  (defun corfu-insert-shell-filter (&optional _)
+    "Insert completion candidate and send when inside comint/eshell."
+    (when (or (derived-mode-p 'eshell-mode) (derived-mode-p 'comint-mode))
+      (lambda ()
+	(interactive)
+	(corfu-insert)
+	;; `corfu-send-shell' was defined above
+	(corfu-send-shell))))
+  
+  ;; Enable Corfu more generally for every minibuffer, as long as no other
+  ;; completion UI is active. If you use Mct or Vertico as your main minibuffer
+  ;; completion UI. From
+  ;; https://github.com/minad/corfu#completing-with-corfu-in-the-minibuffer
+  (defun corfu-enable-always-in-minibuffer ()
+    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+    (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
+		(bound-and-true-p vertico--input))
+      (setq-local corfu-auto nil)       ; Ensure auto completion is disabled
+      (corfu-mode 1)))
+  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
+
+  (defun my-corfu-combined-sort (candidates)
+    "Sort CANDIDATES using both display-sort-function and corfu-sort-function."
+    (let ((candidates
+           (let ((display-sort-func (corfu--metadata-get 'display-sort-function)))
+             (if display-sort-func
+		 (funcall display-sort-func candidates)
+               candidates))))
+      (if corfu-sort-function
+          (funcall corfu-sort-function candidates)
+	candidates)))
+
+  (setq corfu-sort-override-function #'my-corfu-combined-sort)
+  
   (defun corfu-move-to-minibuffer ()
     (interactive)
     (pcase completion-in-region--data
@@ -978,6 +1025,19 @@ Containing LEFT, and RIGHT aligned respectively."
 	 (consult-completion-in-region beg end table pred)))))
   (keymap-set corfu-map "M-m" #'corfu-move-to-minibuffer)
   (add-to-list 'corfu-continue-commands #'corfu-move-to-minibuffer))
+
+;; ** prescient
+
+;; (use-package prescient
+;;   :straight t)
+
+;; (use-package corfu-prescient
+;;   :after prescient
+;;   :straight t)
+
+;; (use-package vertico-prescient
+;;   :after presciet
+;;   :straight t)
 
 ;; ** abbrev
 
@@ -1005,6 +1065,13 @@ Containing LEFT, and RIGHT aligned respectively."
   :straight t
   :config
   (add-to-list 'completion-at-point-functions #'cape-file))
+
+(use-package yasnippet-capf
+    :straight (:host github :repo "elken/yasnippet-capf")
+    :after cape
+    :config
+    (add-to-list 'completion-at-point-functions #'yasnippet-capf)
+    (setopt yasnippet-capf-lookup-by 'key))
 
 (defun my/ignore-elisp-keywords (cand)
   (or (not (keywordp cand))
@@ -1265,7 +1332,6 @@ This function can be used as the value of the user option
 (use-package flycheck-eglot
   :straight t
   :after flycheck eglot
-  :commands (global-flycheck-eglot-mode)
   :config
   (global-flycheck-eglot-mode 1))
 
@@ -1395,10 +1461,12 @@ See URL `http://pypi.python.org/pypi/ruff'."
 (use-package yasnippet
   :straight t
   :hook (prog-mode . yas-minor-mode)
+  (snippet-mode . (lambda () (setq-local require-final-newline nil)))
   :config
   (setq yas-verbosity 0)
   (use-package yasnippet-snippets
     :straight t)
+  
   (yas-reload-all))
 
 (use-package yankpad
@@ -1406,13 +1474,6 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :disabled
   :init
   (setq yankpad-file "~/.emacs.d/yankpad.org"))
-
-(use-package yasnippet-capf
-  :straight (:host github :repo "elken/yasnippet-capf")
-  :after cape yasnippet
-  :config
-  (add-to-list 'completion-at-point-functions #'yasnippet-capf)
-  (setopt yasnippet-capf-lookup-by 'key))
 
 ;; ** tempel
 
@@ -1501,16 +1562,20 @@ See URL `http://pypi.python.org/pypi/ruff'."
 	("C-c e q" . eglot-shutdown)
 	("C-c e Q" . eglot-shutdown-all)
 	("C-c e l" . eglot-list-connections)
-	("C-c e r" . eglot-rename)))
+	("C-c e r" . eglot-rename))
+  :init
+  (defun my/orderless-dispatch-flex-first (_pattern index _total)
+    (and (eq index 0) 'orderless-flex)))
 
 (with-eval-after-load 'eglot
   (defun my/eglot-capf ()
+    (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
     (setq-local completion-at-point-functions
 		(list (cape-capf-super
 		       #'yasnippet-capf
-                       #'tempel-expand
-		       #'eglot-completion-at-point
-                       #'cape-file))))
+		       #'tempel-expand
+		       (cape-capf-buster #'eglot-completion-at-point)
+		       #'cape-file))))
 
   (add-hook 'eglot-managed-mode-hook #'my/eglot-capf))
 
@@ -1613,9 +1678,9 @@ See URL `http://pypi.python.org/pypi/ruff'."
     (setq-local completion-at-point-functions
 		(list (cape-capf-super
 		       #'yasnippet-capf
-                       #'irony-completion-at-point
-                       #'tempel-expand
-                       #'cape-file))))
+		       #'irony-completion-at-point
+		       #'tempel-expand
+		       #'cape-file))))
 
   (add-hook 'irony-mode-hook #'my/irony-capf))
 
@@ -1833,8 +1898,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (c-mode . semantic-mode)
   :bind
   (:map c-mode-base-map
-	("C-c C-t" . comment-region)
-	("<C-i>" . indent-for-tab-command)))
+	("C-c C-t" . comment-region)))
 
 ;; ** css
 
@@ -1882,7 +1946,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (defun my/org-ref-format-citation (keys)
     "Format ebib references for keys in KEYS."
     (s-join ", "
-            (--map (format "cite:&%s" it) keys)))
+	    (--map (format "cite:&%s" it) keys)))
 
   (add-to-list 'bibtex-completion-format-citation-functions '(org-mode . my/org-ref-format-citation)))
 
