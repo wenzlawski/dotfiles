@@ -908,120 +908,121 @@ that."
 (use-package org-mac-link
   :straight t
   :when (eq system-type 'darwin)
-  :commands (org-mac-link-do-applescript org-mac-link-paste-applescript-links)
   :after org
-  :custom
-  (org-mac-link-brave-app-p nil)
-  (org-mac-link-chrome-app-p nil)
-  (org-mac-link-acrobat-app-p nil)
-  (org-mac-link-outlook-app-p nil)
-  (org-mac-link-addressbook-app-p nil)
-  (org-mac-link-qutebrowser-app-p nil)
-  (org-mac-link-finder-app-p t)
-  (org-mac-link-mail-app-p t)
-  (org-mac-link-devonthink-app-p nil)
-  (org-mac-link-safari-app-p nil)
-  (org-mac-link-librewolf-app-p t)
-  (org-mac-link-firefox-vimperator-p nil)
-  (org-mac-link-evernote-app-p nil)
-  (org-mac-link-together-app-p nil)
-  (org-mac-link-skim-app-p nil))
+  :bind
+  (:map org-mode-map ("C-c L" . my/org-mac-link-get-link))
+  :init
+  (setq org-mac-link-brave-app-p nil
+	org-mac-link-chrome-app-p nil
+	org-mac-link-acrobat-app-p nil
+	org-mac-link-outlook-app-p nil
+	org-mac-link-addressbook-app-p nil
+	org-mac-link-qutebrowser-app-p nil
+	org-mac-link-finder-app-p t
+	org-mac-link-mail-app-p t
+	org-mac-link-devonthink-app-p nil
+	org-mac-link-safari-app-p nil
+	org-mac-link-librewolf-app-p t
+	org-mac-link-firefox-vimperator-p nil
+	org-mac-link-evernote-app-p nil
+	org-mac-link-together-app-p nil
+	org-mac-link-skim-app-p nil))
 
-(defcustom org-mac-link-librewolf-app-p nil
-  "Whether to use the LibreWolf.app for `org-mac-link' functions."
-  :tag "Grab LibreWolf.app links"
-  :group 'org-mac-link
-  :type 'boolean)
+(with-eval-after-load 'org-mac-link
+  (defcustom org-mac-link-librewolf-app-p nil
+    "Whether to use the LibreWolf.app for `org-mac-link' functions."
+    :tag "Grab LibreWolf.app links"
+    :group 'org-mac-link
+    :type 'boolean)
 
-(defun my/org-mac-link-applescript-librewolf-get-frontmost-url ()
-  "AppleScript to get the links to the frontmost window of the LibreWolf.app."
-  (let ((result
-	 (org-mac-link-do-applescript
-	  (concat
-	   "tell application \"System Events\"\n"
-	   "   tell its application process \"LibreWolf\"\n"
-	   "       set theTitle to get name of window 1\n"
-	   "       set theUrl to get value of UI element 1 of combo box 1 of toolbar \"Navigation\" of first group of front window\n"
-	   "    end tell\n"
-	   "end tell\n"
-	   "set theResult to (get theUrl) & \"::split::\" & (get theTitle)\n"
-	   "set links to {}\n"
-	   "copy theResult to the end of links\n"
-	   "return links as string\n"))))
-    (car (split-string result "[\r\n]+" t))))
+  (defun my/org-mac-link-applescript-librewolf-get-frontmost-url ()
+    "AppleScript to get the links to the frontmost window of the LibreWolf.app."
+    (let ((result
+	   (org-mac-link-do-applescript
+	    (concat
+	     "tell application \"System Events\"\n"
+	     "   tell its application process \"LibreWolf\"\n"
+	     "       set theTitle to get name of window 1\n"
+	     "       set theUrl to get value of UI element 1 of combo box 1 of toolbar \"Navigation\" of first group of front window\n"
+	     "    end tell\n"
+	     "end tell\n"
+	     "set theResult to (get theUrl) & \"::split::\" & (get theTitle)\n"
+	     "set links to {}\n"
+	     "copy theResult to the end of links\n"
+	     "return links as string\n"))))
+      (car (split-string result "[\r\n]+" t))))
 
-(defun my/org-mac-link-librewolf-get-frontmost-url ()
-  "Get the link to the frontmost window of the LibreWolf.app."
-  (interactive)
-  (message "Applescript: Getting Firefox url...")
-  (org-mac-link-paste-applescript-links (my/org-mac-link-applescript-librewolf-get-frontmost-url)))
+  (defun my/org-mac-link-librewolf-get-frontmost-url ()
+    "Get the link to the frontmost window of the LibreWolf.app."
+    (interactive)
+    (message "Applescript: Getting Firefox url...")
+    (org-mac-link-paste-applescript-links (my/org-mac-link-applescript-librewolf-get-frontmost-url)))
 
-(defun my/org-mac-link-librewolf-insert-frontmost-url ()
-  "Insert the link to the frontmost window of the LibreWolf.app."
-  (interactive)
-  (insert (my/org-mac-link-librewolf-get-frontmost-url)))
+  (defun my/org-mac-link-librewolf-insert-frontmost-url ()
+    "Insert the link to the frontmost window of the LibreWolf.app."
+    (interactive)
+    (insert (my/org-mac-link-librewolf-get-frontmost-url)))
 
-(defun my/org-mac-link-get-link (&optional beg end)
-  "Prompt for an application to grab a link from.
+  (defun my/org-mac-link-get-link (&optional beg end)
+    "Prompt for an application to grab a link from.
 When done, go grab the link, and insert it at point. If a region
 is active, that will be the link's description."
-  (interactive
-   (if (use-region-p)
-       (list (region-beginning) (region-end))
-     '()))
-  (let* ((descriptors
-	  `(("F" "inder" org-mac-link-finder-insert-selected ,org-mac-link-finder-app-p)
-	    ("m" "ail" org-mac-link-mail-insert-selected ,org-mac-link-mail-app-p)
-	    ("d" "EVONthink Pro Office" org-mac-link-devonthink-item-insert-selected
-	     ,org-mac-link-devonthink-app-p)
-	    ("o" "utlook" org-mac-link-outlook-message-insert-selected ,org-mac-link-outlook-app-p)
-	    ("a" "ddressbook" org-mac-link-addressbook-item-insert-selected ,org-mac-link-addressbook-app-p)
-	    ("s" "afari" org-mac-link-safari-insert-frontmost-url ,org-mac-link-safari-app-p)
-	    ("l" "ibrewolf" my/org-mac-link-librewolf-insert-frontmost-url ,org-mac-link-librewolf-app-p)
-	    ("v" "imperator" org-mac-link-vimperator-insert-frontmost-url ,org-mac-link-firefox-vimperator-p)
-	    ("c" "hrome" org-mac-link-chrome-insert-frontmost-url ,org-mac-link-chrome-app-p)
-	    ("b" "rave" org-mac-link-brave-insert-frontmost-url ,org-mac-link-brave-app-p)
-	    ("e" "evernote" org-mac-link-evernote-note-insert-selected ,org-mac-link-evernote-app-p)
-	    ("t" "ogether" org-mac-link-together-insert-selected ,org-mac-link-together-app-p)
-	    ("S" "kim" org-mac-link-skim-insert-page ,org-mac-link-skim-app-p)
-	    ("A" "crobat" org-mac-link-acrobat-insert-page ,org-mac-link-acrobat-app-p)
-	    ("q" "utebrowser" org-mac-link-qutebrowser-insert-frontmost-url ,org-mac-link-qutebrowser-app-p)))
-	 (menu-string (make-string 0 ?x))
-	 input)
+    (interactive
+     (if (use-region-p)
+	 (list (region-beginning) (region-end))
+       '()))
+    (let* ((descriptors
+	    `(("F" "inder" org-mac-link-finder-insert-selected ,org-mac-link-finder-app-p)
+	      ("m" "ail" org-mac-link-mail-insert-selected ,org-mac-link-mail-app-p)
+	      ("d" "EVONthink Pro Office" org-mac-link-devonthink-item-insert-selected
+	       ,org-mac-link-devonthink-app-p)
+	      ("o" "utlook" org-mac-link-outlook-message-insert-selected ,org-mac-link-outlook-app-p)
+	      ("a" "ddressbook" org-mac-link-addressbook-item-insert-selected ,org-mac-link-addressbook-app-p)
+	      ("s" "afari" org-mac-link-safari-insert-frontmost-url ,org-mac-link-safari-app-p)
+	      ("l" "ibrewolf" my/org-mac-link-librewolf-insert-frontmost-url ,org-mac-link-librewolf-app-p)
+	      ("v" "imperator" org-mac-link-vimperator-insert-frontmost-url ,org-mac-link-firefox-vimperator-p)
+	      ("c" "hrome" org-mac-link-chrome-insert-frontmost-url ,org-mac-link-chrome-app-p)
+	      ("b" "rave" org-mac-link-brave-insert-frontmost-url ,org-mac-link-brave-app-p)
+	      ("e" "evernote" org-mac-link-evernote-note-insert-selected ,org-mac-link-evernote-app-p)
+	      ("t" "ogether" org-mac-link-together-insert-selected ,org-mac-link-together-app-p)
+	      ("S" "kim" org-mac-link-skim-insert-page ,org-mac-link-skim-app-p)
+	      ("A" "crobat" org-mac-link-acrobat-insert-page ,org-mac-link-acrobat-app-p)
+	      ("q" "utebrowser" org-mac-link-qutebrowser-insert-frontmost-url ,org-mac-link-qutebrowser-app-p)))
+	   (menu-string (make-string 0 ?x))
+	   input)
 
-    ;; Create the menu string for the keymap
-    (mapc (lambda (descriptor)
-	    (when (elt descriptor 3)
-	      (setf menu-string (concat menu-string
-					"[" (elt descriptor 0) "]"
-					(elt descriptor 1) " "))))
-	  descriptors)
-    (setf (elt menu-string (- (length menu-string) 1)) ?:)
+      ;; Create the menu string for the keymap
+      (mapc (lambda (descriptor)
+	      (when (elt descriptor 3)
+		(setf menu-string (concat menu-string
+					  "[" (elt descriptor 0) "]"
+					  (elt descriptor 1) " "))))
+	    descriptors)
+      (setf (elt menu-string (- (length menu-string) 1)) ?:)
 
-    ;; Prompt the user, and grab the link
-    (message menu-string)
-    (setq input (read-char-exclusive))
-    (mapc (lambda (descriptor)
-	    (let ((key (elt (elt descriptor 0) 0))
-		  (active (elt descriptor 3))
-		  (grab-function (elt descriptor 2)))
-	      (when (and active (eq input key))
-		(if (and beg end)
-		    (let ((new-desc (buffer-substring beg end))
-			  end-desc)
-		      (delete-region beg end)
-		      (call-interactively grab-function)
-		      (save-excursion
-			(backward-char 2)
-			(setq end-desc (point))
-			(search-backward "][")
-			(forward-char 2)
-			(delete-region (point) end-desc)
-			(insert new-desc)))
-		  (call-interactively grab-function)))))
-	  descriptors)))
+      ;; Prompt the user, and grab the link
+      (message menu-string)
+      (setq input (read-char-exclusive))
+      (mapc (lambda (descriptor)
+	      (let ((key (elt (elt descriptor 0) 0))
+		    (active (elt descriptor 3))
+		    (grab-function (elt descriptor 2)))
+		(when (and active (eq input key))
+		  (if (and beg end)
+		      (let ((new-desc (buffer-substring beg end))
+			    end-desc)
+			(delete-region beg end)
+			(call-interactively grab-function)
+			(save-excursion
+			  (backward-char 2)
+			  (setq end-desc (point))
+			  (search-backward "][")
+			  (forward-char 2)
+			  (delete-region (point) end-desc)
+			  (insert new-desc)))
+		    (call-interactively grab-function)))))
+	    descriptors))))
 
-(bind-key "C-c L" #'my/org-mac-link-get-link org-mode-map)
 
 ;; ** org-noter
 

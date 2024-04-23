@@ -97,7 +97,7 @@
       ("D" #'outline-move-subtree-down "move down")
       ("<" #'outline-promote "promote")
       (">" #'outline-demote "demote"))))
-  (bind-key "<f5>" #'my/hydra-outline/body 'outline-minor-mode-map))
+  (bind-key "<f8>" #'my/hydra-outline/body 'outline-minor-mode-map))
 
 (with-eval-after-load 'org
 ;;; Org Refile
@@ -267,6 +267,73 @@
      (("e" eglot "eglot"))))
 
   (bind-key "C-c C-c" #'my/zig-mode-hydra/body 'zig-ts-mode-map))
+
+(defvar my/denote-hydra)
+(pretty-hydra-define my/denote-hydra
+  (:title "Denote" :color teal :quit-key "q")
+  ("New"
+   (("n" denote "Note")
+    ("t" denote-template "Template")
+    ("s" denote-signature "Signature")
+    ("c" denote-region "Region")
+    ("z" denote-subdirectory "Subdirectory")
+    ("N" denote-type "Type")
+    ("d" denote-date "With Date")
+    )
+   "Link"
+   (("i" denote-insert-link "Insert Link")
+    ("l" denote-link-after-creating "Link After Creating")
+    ("L" denote-link-or-create "Link or Create")
+    ("h" denote-org-extras-link-to-heading "to Heading"))
+   "Find"
+   (("o" consult-notes "Open Note")
+    ("O" my/consult-notes-other-window "Open Note Other Window")
+    ("fl" denote-find-link "Find Link")
+    ("fb" denote-find-backlink "Find Backlink")
+    ("fs" search-denote "Search Denote")
+    ("e" my/denote-explore-hydra/body "Explore" :exit t))
+   "Edit"
+   (("r" denote-rename-file "Rename File")
+    ("R" denote-rename-file-using-front-matter "Rename File FM")
+    ("b" denote-backlinks "Backlinks")
+    ("P" denote-org-extras-extract-org-subtree "Extract Subtree")
+    ("I" denote-add-links "Add Links")
+    ("C" my/denote-rename-buffer "Rename Buffer"))
+   ))
+
+(bind-key "<f5>" #'my/denote-hydra/body)
+
+(defvar my/denote-explore-hydra)
+(pretty-hydra-define my/denote-explore-hydra
+  (:title "Denote Explore" :color teal :quit-key "q")
+  ("Network"
+   (("n" denote-explore-network "Network")
+    ("N" denote-explore-network-regenerate "Regenerate Network")
+    ("r" denote-explore-random-link "Random Link")
+    ("y" denote-explore-sync-metadata "Sync Metadata")
+    ("d" denote-explore-degree-barchart "Degree Barchart")
+    ("g" denote-explore-dashboard-activate "Activate Dashboard")
+    ("G" denote-explore-dashboard-deactivate "Deactivate Dashboard")
+    ("x" denote-explore-extensions-barchart "Extensions Barchart")
+    )
+   "Notes"
+   (
+    ("c" denote-explore-count-notes "Count")
+    ("i" denote-explore-isolated-notes "Isolated Notes")
+    ("R" denote-explore-random-note "Random Note")
+    )
+   "Keywords"
+   (
+    ("s" denote-explore-sort-keywords "Sort Keywords")
+    ("z" denote-explore-zero-keywords "Zero Keywords")
+    ("K" denote-explore-random-keyword "Random Keyword")
+    ("e" denote-explore-rename-keyword "Rename Keyword")
+    ("k" denote-explore-count-keywords "Count Keywords")
+    ("E" denote-explore-rename-keywords "Rename Keywords")
+    ("S" denote-explore-single-keywords "Single Keywords")
+    ("B" denote-explore-keywords-barchart "Keywords Barchart")
+    )
+   ))
 
 
 (provide 'setup-hydra)

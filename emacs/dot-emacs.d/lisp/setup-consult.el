@@ -206,14 +206,16 @@
 ;;     (add-to-list 'embark-keymap-alist '(bibtex-completion . consult-bibtex-embark-map))))
 
 (use-package consult-yasnippet
+  :after yasnippet
   :straight t
   :bind
   (:map yas-minor-mode-map
 	("C-c & C-s" . consult-yasnippet)
-	("C-c & C-v" . consult-yasnippet-visit-snippet-file)))
+	("C-c & s" . consult-yasnippet)
+	("C-c & C-v" . consult-yasnippet-visit-snippet-file)
+	("C-c & v" . consult-yasnippet-visit-snippet-file)))
 
-
-
+(require 'consult-ripgrep-all)
 
 (provide 'setup-consult)
 ;;; setup-consult.el ends here

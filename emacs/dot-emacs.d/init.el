@@ -451,14 +451,6 @@ Containing LEFT, and RIGHT aligned respectively."
 
 ;; ** fontaine
 
-(use-package fontaine
-  :straight t
-  :hook
-  (enable-theme-functions . fontaine-apply-current-preset)
-  :config
-  (fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular))
-  (fontaine-mode))
-
 (setq fontaine-presets
       '(
 	(input :default-family "Input Mono")
@@ -523,6 +515,14 @@ Containing LEFT, and RIGHT aligned respectively."
 	   :line-spacing 0.05)
 	))
 
+(use-package fontaine
+  :straight t
+  :hook
+  (enable-theme-functions . fontaine-apply-current-preset)
+  :config
+  (fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular))
+  (fontaine-mode 1))
+
 ;; * CONFIGURATION
 ;; ** user details
 
@@ -558,6 +558,7 @@ Containing LEFT, and RIGHT aligned respectively."
   ("C-<wheel-up>" . nil)
   ("C-c C" . calendar)
   ("C-c <SPC>" . mode-line-other-buffer)
+  ("M-i" . completion-at-point)
   (:map tab-prefix-map
 	("h" . tab-bar-mode)
 	("s" . tab-switcher))
@@ -962,8 +963,9 @@ Containing LEFT, and RIGHT aligned respectively."
   ;; (global-corfu-mode)
   :config
   (use-package corfu-popupinfo
+    :hook (corfu-mode . corfu-popupinfo-mode)
     :custom
-    (corfu-popupinfo-delay 0.3))
+    (corfu-popupinfo-delay '(0.5 . 0)))
   (use-package corfu-info))
 
 (with-eval-after-load 'corfu
@@ -1011,6 +1013,7 @@ Containing LEFT, and RIGHT aligned respectively."
 (defun my/setup-elisp ()
   (setq-local completion-at-point-functions
               `(,(cape-capf-super
+		  #'yasnippet-capf
                   (cape-capf-predicate
                    #'elisp-completion-at-point
                    #'my/ignore-elisp-keywords)
@@ -1018,10 +1021,6 @@ Containing LEFT, and RIGHT aligned respectively."
 		  #'tempel-complete)
                 cape-file)
               cape-dabbrev-min-length 5))
-
-(defun my/superduperfunction ()
-  (interactive)
-  (message "Superduperfunction"))
 
 (add-hook 'emacs-lisp-mode-hook #'my/setup-elisp)
 
@@ -1195,6 +1194,7 @@ This function can be used as the value of the user option
   (:map dired-mode-map
 	("M-o" . dired-do-open)
 	("M-RET" . my/open-current-dir-in-finder))
+  :hook (dired-mode . (lambda () (setq truncate-lines t)))
   :config
   (defun my/open-current-dir-in-finder ()
     "Open current directory in Finder."
@@ -1396,7 +1396,6 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :straight t
   :hook (prog-mode . yas-minor-mode)
   :config
-  
   (setq yas-verbosity 0)
   (use-package yasnippet-snippets
     :straight t)
@@ -1475,7 +1474,6 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 (use-package copilot
   :straight (:host github :repo "copilot-emacs/copilot.el" :files ("dist" "*.el"))
-  :hook prog-mode
   :commands copilot-login
   :bind (:map copilot-completion-map ("<C-i>" . copilot-accept-completion))
   :config
@@ -1506,14 +1504,12 @@ See URL `http://pypi.python.org/pypi/ruff'."
 	("C-c e r" . eglot-rename)))
 
 (with-eval-after-load 'eglot
-  
-  
   (defun my/eglot-capf ()
     (setq-local completion-at-point-functions
 		(list (cape-capf-super
-		       #'eglot-completion-at-point
 		       #'yasnippet-capf
                        #'tempel-expand
+		       #'eglot-completion-at-point
                        #'cape-file))))
 
   (add-hook 'eglot-managed-mode-hook #'my/eglot-capf))
@@ -1546,7 +1542,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
 	  (typst "https://github.com/uben0/tree-sitter-typst")
 	  (yaml "https://github.com/ikatyang/tree-sitter-yaml")
 	  (zig "https://github.com/maxxnino/tree-sitter-zig")))
-(setopt treesit-font-lock-level 4)
+(setopt treesit-font-lock-level 3)
 
 (use-package treesit-auto
   :disabled
@@ -1564,7 +1560,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :config
   (with-eval-after-load 'julia-mode
     (push
-     '(julia  ((dir-concat user-emacs-directory "scripts/julia-format.sh") inplace ))
+     '(julia "~/.emacs.d/scripts/julia-format.sh" inplace )
      apheleia-formatters)
     (add-to-list 'apheleia-mode-alist '(julia-mode . julia)))
 
@@ -1777,7 +1773,6 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 (use-package julia-snail
   :straight t
-  :bind (:map julia-snail-mode-map ("C-c f" . julia-snail/formatter-format-buffer))
   :custom
   (julia-snail-popup-display-eval-results nil)
   (julia-snail-repl-display-eval-results t)
@@ -1838,7 +1833,6 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (c-mode . semantic-mode)
   :bind
   (:map c-mode-base-map
-	("C-c C-c" . nil)
 	("C-c C-t" . comment-region)
 	("<C-i>" . indent-for-tab-command)))
 
@@ -2334,6 +2328,15 @@ The browser to used is specified by the
 ;; :config
 ;; (defun highlight-negative-amounts nil (interactive)
 ;; 	 (highlight-regexp "\\(\\$-\\|-\\$\\)[.,0-9]+" (quote hi-red-b))))
+
+;; ** w3m
+
+(use-package w3m
+  :straight t
+  :custom
+  (w3m-search-default-engine "duckduckgo")
+  :config
+  (add-to-list 'w3m-search-engine-alist '("duckduckgo" "https://html.duckduckgo.com/html/?q=%s")))
 
 ;; * enable all commands
 
