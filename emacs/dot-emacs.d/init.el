@@ -205,7 +205,8 @@
   "Initialize the modus theme."
   (pcase appearance
     ('light (load-theme 'modus-operandi t))
-    ('dark  (load-theme 'modus-vivendi t))))
+    ('dark  (load-theme 'modus-vivendi t)))
+  (my/modus-theme-on-toggle))
 
 (defun my/modus-theme-change (appearance)
   "Load theme, taking current system APPEARANCE into consideration."
@@ -555,6 +556,7 @@ Containing LEFT, and RIGHT aligned respectively."
   ("C-c C" . calendar)
   ("C-c <SPC>" . mode-line-other-buffer)
   ("<C-i>" . completion-at-point)
+  ("C-j" . reindent-then-newline-and-indent)
   (:map tab-prefix-map
 	("h" . tab-bar-mode)
 	("s" . tab-switcher))
@@ -940,7 +942,7 @@ Containing LEFT, and RIGHT aligned respectively."
   (corfu-auto t)               ;; Enable auto completion
   (corfu-auto-delay 0.05)
   (corfu-auto-prefix 4)
-  (corfu-separator ?-)          ;; Orderless field separator
+  (corfu-separator ?\s)          ;; Orderless field separator
   (corfu-quit-at-boundary 'separator)   ;; Never quit at completion boundary
   (corfu-quit-no-match t) ;; Never quit, even if there is no match
   (corfu-preview-current nil)    ;; Disable current candidate preview
@@ -1067,11 +1069,23 @@ Containing LEFT, and RIGHT aligned respectively."
   (add-to-list 'completion-at-point-functions #'cape-file))
 
 (use-package yasnippet-capf
-    :straight (:host github :repo "elken/yasnippet-capf")
-    :after cape
-    :config
-    (add-to-list 'completion-at-point-functions #'yasnippet-capf)
-    (setopt yasnippet-capf-lookup-by 'key))
+  :straight (:host github :repo "elken/yasnippet-capf")
+  :after cape
+  :init
+  (defun yasnippet-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'.
+    ;; `tempel-expand' only triggers on exact matches. Alternatively use
+    ;; `tempel-complete' if you want to see all matches, but then you
+    ;; should also configure `tempel-trigger-prefix', such that Tempel
+    ;; does not trigger too often when you don't expect it. NOTE: We add
+    ;; `tempel-expand' *before* the main programming mode Capf, such
+    ;; that it will be tried first.
+    (setq-local completion-at-point-functions
+		(cons #'yasnippet-capf
+		      completion-at-point-functions)))
+  :hook (prog-mode . yasnippet-setup-capf) 
+  :config
+  (setopt yasnippet-capf-lookup-by 'key))
 
 (defun my/ignore-elisp-keywords (cand)
   (or (not (keywordp cand))
@@ -1090,6 +1104,19 @@ Containing LEFT, and RIGHT aligned respectively."
               cape-dabbrev-min-length 5))
 
 (add-hook 'emacs-lisp-mode-hook #'my/setup-elisp)
+
+(defun my/setup-julia ()
+  (setq-local completion-at-point-functions
+	      `(,(cape-capf-super
+		  #'julia-snail-repl-completion-at-point
+		  #'tempel-expand
+		  #'yasnippet-capf
+		  #'julia-mode-latexsub-completion-at-point-around
+		  #'julia-mode-latexsub-completion-at-point-before)
+		cape-file)))
+
+(add-hook 'julia-snail-mode-hook #'my/setup-julia)
+
 
 ;; ** expand-region
 
@@ -1455,6 +1482,12 @@ See URL `http://pypi.python.org/pypi/ruff'."
     ;; Please note ispell-extra-args contains ACTUAL parameters passed to aspell
     (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")))))
 
+;; ** TODO dape
+
+(use-package dape
+  :disabled
+  :straight t)
+
 ;; * LANGUAGE TOOLS
 ;; ** yasnippet
 
@@ -1574,7 +1607,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
 		(list (cape-capf-super
 		       #'yasnippet-capf
 		       #'tempel-expand
-		       (cape-capf-buster #'eglot-completion-at-point)
+		       #'eglot-completion-at-point
 		       #'cape-file))))
 
   (add-hook 'eglot-managed-mode-hook #'my/eglot-capf))
@@ -1838,15 +1871,20 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 (use-package julia-snail
   :straight t
+  :bind
+  (:map julia-snail-mode-map
+	("C-c f" . julia-snail/formatter-format-buffer))
   :custom
-  (julia-snail-popup-display-eval-results nil)
+  (julia-snail-popup-display-eval-results ':command)
   (julia-snail-repl-display-eval-results t)
   (julia-snail-multimedia-enable t)
   (julia-snail-extensions '(repl-history formatter))
-  :config
-  (add-to-list 'display-buffer-alist
-	       '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
-  :hook (julia-mode . julia-snail-mode))
+  :hook (julia-mode . julia-snail-mode)
+  (julia-snail-mode . (lambda () (apheleia-mode -1))))
+
+;;   :config
+;;   (add-to-list 'display-buffer-alist
+;; 	       '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
 
 (use-package eglot-jl
   :straight t
