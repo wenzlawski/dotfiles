@@ -33,3 +33,4 @@ flycheck_*.el
 smudge
 irony
 org-clock-save.el
+*.csv
