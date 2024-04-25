@@ -84,10 +84,11 @@ New frames are instructed to call `prot-emacs-re-enable-frame-theme'."
 (add-to-list 'default-frame-alist '(height . 80))
 (add-to-list 'initial-frame-alist '(width . 140))
 (add-to-list 'default-frame-alist '(width . 140))
+(add-to-list 'default-frame-alist '(title . " \n"))
+(add-to-list 'default-frame-alist '(name . " \n"))
 
 (setq frame-resize-pixelwise t
       frame-inhibit-implied-resize t
-      frame-title-format '("what the %b")
       ring-bell-function 'ignore
       use-dialog-box t ; only for mouse events, which I seldom use
       use-file-dialog nil

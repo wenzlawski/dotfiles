@@ -314,8 +314,8 @@
   :custom-face
   (pulsar-green ((t (:background "#c0e7d4"))))
   :custom
-  (window-selection-change-functions '((lambda (_) (pulsar-pulse-line))))
-  (window-buffer-change-functions '((lambda (_) (pulsar-pulse-line))))
+  (window-selection-change-functions '((lambda (_) (if (not (window-minibuffer-p)) (pulsar-pulse-line)))))
+  (window-buffer-change-functions '((lambda (_) (if (not (window-minibuffer-p)) (pulsar-pulse-line)))))
   (pulsar-pulse t)
   (pulsar-delay 0.05)
   (pulsar-iterations 10)
@@ -586,7 +586,6 @@ Containing LEFT, and RIGHT aligned respectively."
 	scroll-margin 0
 	scroll-conservatively 0
 	;; frame-title-format '("" "what the %b")
-	frame-title-format "\n"
 	ns-use-proxy-icon t
 	cursor-type t
 	blink-cursor-delay 1
