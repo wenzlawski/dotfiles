@@ -1034,8 +1034,9 @@ is active, that will be the link's description."
 	("C-c C-x n n" . org-noter)
 	("C-c C-x n k" . org-noter-kill-session)
 	("C-c C-x n s" . org-noter-create-skeleton))
+  :custom
+  (org-noter-notes-search-path '("/Users/mw/Library/CloudStorage/Dropbox/Org"))
   :config
-  (add-to-list 'org-noter-notes-search-path "/Users/my/Library/CloudStorage/Dropbox/Org")
   (bind-key "C-c C-n" #'org-noter 'pdf-view-mode-map)
   (setq org-noter-default-notes-file-names '("noter.org")
 	org-noter-always-create-frame nil

@@ -31,3 +31,5 @@ tramp
 nix-buffer
 flycheck_*.el
 smudge
+irony
+org-clock-save.el

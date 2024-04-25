@@ -537,6 +537,7 @@ Containing LEFT, and RIGHT aligned respectively."
 
 (use-package emacs
   :hook (prog-mode . show-paren-mode)
+  (prog-mode . hl-line-mode)
   :custom-face
   (show-paren-match ((t (:underline nil :inverse-video nil))))
   (deault ((t (:family "Fira Code"))))
@@ -725,9 +726,63 @@ Containing LEFT, and RIGHT aligned respectively."
   :config
   (exec-path-from-shell-initialize))
 
+;; ** calc
+
+(use-package calc)
+
+(with-eval-after-load 'calc
+  (defvar-local calc-trail-buffer-file-name nil
+    "Like `buffer-file-name' for calc-trail buffers.")
+
+  (defun calc-trail-save (&optional filename)
+    "Save current calc trail buffer.
+To be used in `write-contents-functions'.
+Append with current prefix arg."
+    (interactive "FCalc Trail File: ")
+    (unless filename
+      (setq calc-trail-buffer-file-name
+	    (expand-file-name (setq filename
+				    (read-file-name "Calc Trail File: " nil calc-trail-buffer-file-name)))))
+    (when (null (derived-mode-p 'calc-trail-mode))
+      (user-error "Saving calc trail buffers requires calc-trail-mode"))
+    (save-excursion
+      (save-restriction
+	(widen)
+	(let* ((b-trail (progn (goto-char 1) (1+ (line-end-position))))
+	       (b (progn (goto-char (max (or (and (use-region-p) (region-beginning)) (point-min)) b-trail))
+			 (line-beginning-position)))
+	       (e (progn (goto-char (max (or (and (use-region-p) (region-end)) (point-max)) b-trail))
+			 (line-end-position))))
+	  (write-region b e filename current-prefix-arg)))))
+
+  (defun calc-insert-file (filename)
+    "Insert calc-trail file FILENAME at point."
+    (interactive "FCalc trail file: ")
+    (when (= (line-beginning-position) 1)
+      (goto-char (1+ (line-end-position))))
+    (goto-char (line-beginning-position
+		(if (looking-at "[[:space:]]*$")
+		    2
+		  1)))
+    (let ((inhibit-read-only t))
+      (insert-file-contents filename)
+      (when (and (null (looking-at "[[:space:]]*$"))
+		 (null (looking-back "^[[:space:]]*" (line-beginning-position))))
+	(insert "\n"))))
+
+  (defun calc-trail-install-save ()
+    "Install `calc-trail-save' in `write-contents-functions' of `calc-trail-mode' buffers."
+    (push #'calc-trail-save write-contents-functions)
+    (local-set-key (kbd "C-x i") #'calc-insert-file))
+
+  (add-hook 'calc-trail-mode-hook #'calc-trail-install-save)
+  (bind-key "C-x C-s" #'calc-trail-save 'calc-mode-map))
+
 ;; ** savehist
 
 (use-package savehist
+  :custom
+  (savehist-additional-variables '(tablist-named-filter kill-ring search-ring regexp-search-ring))
   :init
   (savehist-mode))
 
@@ -939,8 +994,8 @@ Containing LEFT, and RIGHT aligned respectively."
   :straight t
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)               ;; Enable auto completion
-  (corfu-auto-delay 0.05)
+  (corfu-auto nil)               ;; Enable auto completion
+  (corfu-auto-delay 0.09)
   (corfu-auto-prefix 4)
   (corfu-separator ?\s)          ;; Orderless field separator
   (corfu-quit-at-boundary 'separator)   ;; Never quit at completion boundary
@@ -1011,7 +1066,7 @@ Containing LEFT, and RIGHT aligned respectively."
            (let ((display-sort-func (corfu--metadata-get 'display-sort-function)))
              (if display-sort-func
 		 (funcall display-sort-func candidates)
-               candidates))))
+	       candidates))))
       (if corfu-sort-function
           (funcall corfu-sort-function candidates)
 	candidates)))
@@ -1093,7 +1148,7 @@ Containing LEFT, and RIGHT aligned respectively."
 
 (defun my/setup-elisp ()
   (setq-local completion-at-point-functions
-              `(,(cape-capf-super
+	      `(,(cape-capf-super
 		  #'yasnippet-capf
                   (cape-capf-predicate
                    #'elisp-completion-at-point
@@ -1101,7 +1156,7 @@ Containing LEFT, and RIGHT aligned respectively."
                   #'cape-dabbrev
 		  #'tempel-complete)
                 cape-file)
-              cape-dabbrev-min-length 5))
+	      cape-dabbrev-min-length 5))
 
 (add-hook 'emacs-lisp-mode-hook #'my/setup-elisp)
 
@@ -1866,8 +1921,14 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 (use-package julia-mode
   :straight t
-  :hook (julia-mode . (lambda nil (progn (apheleia-mode -1) (setq-local eglot-connect-timeout 300))))
+  :hook (julia-ts-mode . (lambda nil (progn (apheleia-mode -1) (setq-local eglot-connect-timeout 300))))
   :mode "\\.jl\\'")
+
+(use-package julia-ts-mode
+  :disabled
+  :straight t
+  :hook (julia-ts-mode . (lambda nil (progn (apheleia-mode -1) (setq-local eglot-connect-timeout 300))))
+  :mode "\\.jl$")
 
 (use-package julia-snail
   :straight t
@@ -2338,6 +2399,7 @@ The browser to used is specified by the
   :custom
   (pdf-view-resize-factor 1.05)
   (pdf-view-display-size 'fit-page)
+  (pdf-view-midnight-colors '("#E2E2E2" . "#070707"))
   :hook (pdf-view-mode . pdf-view-themed-minor-mode)
   :bind
   (:map pdf-view-mode-map
@@ -2345,7 +2407,9 @@ The browser to used is specified by the
 	("C-c C-r r" . my/pdf-view-themed-minor-mode-refresh)
 	("c" . my/pdf-view-current-page)
 	("o" . pdf-outline)
-	("C-c C-n" . org-noter)))
+	("C-c C-n" . org-noter))
+  :config
+  (add-to-list 'display-buffer-alist '("\\`\\*Outline.*\\*" nil (window-width . 0.3))))
 
 (use-package saveplace-pdf-view
   :straight t
