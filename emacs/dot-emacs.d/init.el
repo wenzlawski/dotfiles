@@ -397,7 +397,6 @@ Containing LEFT, and RIGHT aligned respectively."
                           prot-modeline-narrow
                           prot-modeline-buffer-status
                           prot-modeline-input-method
-                          prot-modeline-evil
                           prot-modeline-buffer-identification
                           "  "
                           prot-modeline-major-mode
@@ -709,6 +708,9 @@ Containing LEFT, and RIGHT aligned respectively."
 (use-package tab-bar
   :custom
   (tab-bar-select-tab-modifiers '(super))
+  :bind
+  (:map tab-bar-mode-map
+	("C-)" . tab-recent))
   :config
   (setq tab-bar-close-button-show nil)       ;; hide tab close / X button
   (setq tab-bar-new-tab-choice "*dashboard*");; buffer to show in new tabs
@@ -1771,6 +1773,17 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
   (add-hook 'irony-mode-hook #'my/irony-capf))
 
+;; ** polymode
+
+(use-package polymode
+  :staight t)
+
+(use-package poly-org
+  :straight t
+  :hook (polymode-init-host . (lambda () (if (eq major-mode 'org-mode) (org-modern-mode 1))))
+  :config
+  (setq auto-mode-alist (delete '("\\.org\\'" . poly-org-mode) auto-mode-alist)))
+
 ;; * LANGUAGE MODES
 ;; ** lisp
 
@@ -1820,37 +1833,43 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (:map python-ts-mode-map
 	("C-c C-n" . python-pytest-dispatch)))
 
-;; ** ein
+;; ** jupytyer
 
-(use-package ein
+(use-package jupyter
   :straight t)
 
-(use-package ob-ein
-  :after ein python-ts-mode
-  :config
-  (org-babel-do-load-languages 'org-babel-load-languages '((ein . t))))
 
 ;; ** ess
 
 (use-package ess
   :straight t
   :defer t
-  :config
-  (setq ess-eval-visibly 'nowait)
-  (setq ess-use-company 'nil)
-  (setq ess-R-font-lock-keywords
-	'((ess-R-fl-keyword:keywords . t)
-	  (ess-R-fl-keyword:constants . t)
-	  (ess-R-fl-keyword:modifiers . t)
-	  (ess-R-fl-keyword:fun-defs . t)
-	  (ess-R-fl-keyword:assign-ops . t)
-	  (ess-R-fl-keyword:%op% . t)
-	  (ess-fl-keyword:fun-calls . t)
-	  (ess-fl-keyword:numbers . t)
-	  (ess-fl-keyword:operators . t)
-	  (ess-fl-keyword:delimiters . t)
-	  (ess-fl-keyword:= . t)
-	  (ess-R-fl-keyword:F&T . t))))
+  :hook (comint-mode . (lambda () (toggle-truncate-lines -1)))
+  :custom
+  (ess-eval-visibly 'nowait)
+  (ess-use-company 'nil)
+  (ess-R-font-lock-keywords
+   '((ess-R-fl-keyword:keywords . t)
+     (ess-R-fl-keyword:constants . t)
+     (ess-R-fl-keyword:modifiers . t)
+     (ess-R-fl-keyword:fun-defs . t)
+     (ess-R-fl-keyword:assign-ops . t)
+     (ess-R-fl-keyword:%op% . t)
+     (ess-fl-keyword:fun-calls . t)
+     (ess-fl-keyword:numbers . t)
+     (ess-fl-keyword:operators . t)
+     (ess-fl-keyword:delimiters . t)
+     (ess-fl-keyword:= . t)
+     (ess-R-fl-keyword:F&T . t)))
+  (ess-history-directory "~/.ess"))
+
+(use-package comint
+  :custom
+  (comint-prompt-read-only t)
+  (comint-scroll-to-bottom-on-input t)
+  (comint-scroll-to-bottom-on-output t)
+  (comint-move-point-for-output 'others)
+  (comint-buffer-maximum-size 4096))
 
 ;; (setq display-buffer-alist
 ;;       '(("*R Dired"
@@ -1936,7 +1955,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
 	("C-c f" . julia-snail/formatter-format-buffer))
   :custom
   (julia-snail-popup-display-eval-results ':command)
-  (julia-snail-repl-display-eval-results t)
+  (julia-snail-repl-display-eval-results nil)
   (julia-snail-multimedia-enable t)
   (julia-snail-extensions '(repl-history formatter))
   :hook (julia-mode . julia-snail-mode)
@@ -2063,6 +2082,27 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 (use-package zig-ts-mode
   :mode ("\\.zig\\'" . zig-ts-mode))
+
+;; ** go
+
+(use-package go-ts-mode
+  :custom
+  (go-ts-mode-indent-offset 4)
+  :hook
+  (go-ts-mode . (lambda () (setq tab-width 4)))
+  )
+
+(use-package gotest
+  :straight t
+  :bind
+  (:map go-ts-mode-map
+	("C-c C-t f" . go-test-current-file)
+	("C-c C-t t" . go-test-current-test)
+	("C-c C-t p" . go-test-current-project)
+	("C-c C-t c" . go-test-current-coverage)
+	("C-c C-t r" . go-test-current-test-cache)
+	("C-c C-t b" . go-test-current-file-benchmarks)
+	("C-c C-t B" . go-test-current-project-benchmarks)))
 
 ;; * ORG
 
@@ -2286,7 +2326,6 @@ The browser to used is specified by the
 	("j" . (lambda () (interactive) (scroll-up 1)))
 	("k" . (lambda () (interactive) (scroll-down 1)))
 	("z" . visual-fill-column-mode)
-	("d" . +lookup/dictionary-definition)
 	("m" . nil)
 	("h" . nil)
 	("y" . org-store-link)
@@ -2406,6 +2445,7 @@ The browser to used is specified by the
 	("C-c C-r r" . my/pdf-view-themed-minor-mode-refresh)
 	("c" . my/pdf-view-current-page)
 	("o" . pdf-outline)
+	("d" . dictionary-search)
 	("C-c C-n" . org-noter))
   :config
   (add-to-list 'display-buffer-alist '("\\`\\*Outline.*\\*" nil (window-width . 0.3))))

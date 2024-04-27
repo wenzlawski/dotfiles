@@ -7,6 +7,10 @@
 
 ;; * ORG
 
+(defun my/org-fix-inline-images ()
+  (when org-inline-image-overlays
+    (org-redisplay-inline-images)))
+
 (use-package org
   :straight t
   :hook
@@ -20,6 +24,7 @@
 				    "\\<org-capture-mode-map>Capture buffer.  Finish \
 `\\[my/org-capture-finalize]', refile `\\[org-capture-refile]', \
 abort `\\[org-capture-kill]'."))))
+  (org-babel-after-execute . my/org-fix-inline-images)
   :bind
   ("C-x c" . org-capture)
   ("C-c l" . org-store-link)
@@ -38,7 +43,8 @@ abort `\\[org-capture-kill]'."))))
 	("C-c C-x <DEL>" . org-cut-subtree)
 	("C-c C-x C-<backspace>" . org-cut-subtree)
 	("C-c C-x t" . (lambda () (interactive) (setopt visual-fill-column-center-text (not visual-fill-column-center-text)) (visual-fill-column-mode 1)))
-	("C-c C-x i" . org-indent-mode))
+	("C-c C-x i" . org-indent-mode)
+	("C-c C-v <C-i>" . org-toggle-inline-images))
   :custom-face
   ;; (org-level-1 ((t (:inherit variable-pitch))))
   ;; (org-level-2 ((t (:inherit variable-pitch))))
@@ -81,6 +87,7 @@ abort `\\[org-capture-kill]'."))))
 			     ("resources.org" :level . 0))
 	org-ellipsis "↴"
 	org-src-preserve-indentation t
+	org-edit-src-content-indentation 0
 	org-pretty-entities t
 	org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id
 	org-fast-tag-selection-single-key t
@@ -399,6 +406,7 @@ first-level entry for writing comments."
      (haskell . nil)
      (latex . t)
      (ocaml . nil)
+     (julia . t)
      (octave . t)
      (python . t)
      (ruby . t)
