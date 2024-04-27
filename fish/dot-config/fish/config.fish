@@ -9,7 +9,6 @@ end
 # Environment variables
 set -x EDITOR "/usr/local/bin/emacsclient -nw"
 set -x VISUAL $EDITOR
-set -x GOHOME ~/go
 set -x XDG_CONFIG_HOME ~/.config
 set -x VOLTA_FEATURE_PNPM 1
 set -x VOLTA_HOME ~/.volta
