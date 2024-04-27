@@ -1544,6 +1544,15 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :disabled
   :straight t)
 
+;; ** dictionary
+
+(use-package dictionary
+  :custom
+  (dictionary-server "dict.org"))
+
+(use-package osx-dictionary
+  :straight t)
+
 ;; * LANGUAGE TOOLS
 ;; ** yasnippet
 
@@ -1776,7 +1785,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
 ;; ** polymode
 
 (use-package polymode
-  :staight t)
+  :straight t)
 
 (use-package poly-org
   :straight t
@@ -2446,6 +2455,7 @@ The browser to used is specified by the
 	("c" . my/pdf-view-current-page)
 	("o" . pdf-outline)
 	("d" . dictionary-search)
+	("D" . osx-dictionary-search-input)
 	("C-c C-n" . org-noter))
   :config
   (add-to-list 'display-buffer-alist '("\\`\\*Outline.*\\*" nil (window-width . 0.3))))
@@ -2537,7 +2547,10 @@ The browser to used is specified by the
 ;; ** w3m
 
 (use-package w3m
-  :straight t
+  :straight t)
+
+(use-package w3m-search
+  :after w3m
   :custom
   (w3m-search-default-engine "duckduckgo")
   :config
