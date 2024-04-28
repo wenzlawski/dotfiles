@@ -216,10 +216,11 @@
 
 (defun my/modus-theme-on-toggle ()
   "Set some faces each toggle."
-  (set-face-attribute 'yas-field-highlight-face nil
-		      :inherit 'region :background (modus-themes-get-color-value 'bg-blue-subtle))
-  (set-face-attribute 'eglot-highlight-symbol-face nil
-		      :bold t :underline nil :background (modus-themes-get-color-value 'bg-yellow-intense)))
+  ;; (set-face-attribute 'yas-field-highlight-face nil
+  ;; 		      :inherit 'region :background (modus-themes-get-color-value 'bg-blue-subtle))
+  ;; (set-face-attribute 'eglot-highlight-symbol-face nil
+  ;; 		      :bold t :underline nil :background (modus-themes-get-color-value 'bg-yellow-intense))
+  )
 
 (add-hook 'modus-themes-after-load-theme-hook #'my/modus-theme-on-toggle)
 
@@ -1565,7 +1566,9 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (use-package yasnippet-snippets
     :straight t)
   
-  (yas-reload-all))
+  (yas-reload-all)
+  (set-face-attribute 'yas-field-highlight-face nil
+		      :inherit 'region :background (modus-themes-get-color-value 'bg-blue-subtle)))
 
 (use-package yankpad
   :straight t
@@ -1663,7 +1666,10 @@ See URL `http://pypi.python.org/pypi/ruff'."
 	("C-c e r" . eglot-rename))
   :init
   (defun my/orderless-dispatch-flex-first (_pattern index _total)
-    (and (eq index 0) 'orderless-flex)))
+    (and (eq index 0) 'orderless-flex))
+  :config
+  (set-face-attribute 'eglot-highlight-symbol-face nil
+		      :bold t :underline nil :background (modus-themes-get-color-value 'bg-yellow-intense)))
 
 (with-eval-after-load 'eglot
   (defun my/eglot-capf ()
@@ -1966,7 +1972,10 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (julia-snail-popup-display-eval-results ':command)
   (julia-snail-repl-display-eval-results nil)
   (julia-snail-multimedia-enable t)
-  (julia-snail-extensions '(repl-history formatter))
+  :config
+  (setq-default julia-snail-extensions '(repl-history formatter ob-julia))
+  (add-to-list 'display-buffer-alist
+               '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
   :hook (julia-mode . julia-snail-mode)
   (julia-snail-mode . (lambda () (apheleia-mode -1))))
 
@@ -1981,6 +1990,13 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (eglot-jl-language-server-project "~/.julia/environments/v1.10")
   :config
   (eglot-jl-init))
+
+(use-package ob-julia-vterm
+  :straight t
+  :disabled
+  :config
+  (add-to-list 'org-babel-load-languages '(julia-vterm . t))
+  (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages))
 
 ;; ** markdown
 

@@ -406,7 +406,6 @@ first-level entry for writing comments."
      (haskell . nil)
      (latex . t)
      (ocaml . nil)
-     (julia . t)
      (octave . t)
      (python . t)
      (ruby . t)
@@ -763,6 +762,7 @@ end #OB-JULIA-VTERM_END\n"))
 
 (setopt org-modern-keyword nil
 	org-modern-checkbox nil
+	org-modern-star 'replace
 	org-modern-table nil)
 (global-org-modern-mode)
 
