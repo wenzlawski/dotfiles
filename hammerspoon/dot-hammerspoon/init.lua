@@ -64,30 +64,30 @@ function autoSetWallpaper()
 end
 
 -- on system color change, switch between light and dark wallpaper.
-dm.addHandler(function(dm2)
-	local wallpaper = "Silver.png"
-	if dm2 == true then
-		wallpaper = "Black.png"
-	end
-	logger.d("wallpaper: " .. wallpaper)
-	hs.execute(
-		'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/'
-			.. wallpaper
-			.. "\" as POSIX file'"
-	)
-end)
+-- dm.addHandler(function(dm2)
+-- 	local wallpaper = "Silver.png"
+-- 	if dm2 == true then
+-- 		wallpaper = "Black.png"
+-- 	end
+-- 	logger.d("wallpaper: " .. wallpaper)
+-- 	hs.execute(
+-- 		'osascript -e \'tell application "System Events" to tell every desktop to set picture to "/System/Library/Desktop Pictures/Solid Colors/'
+-- 			.. wallpaper
+-- 			.. "\" as POSIX file'"
+-- 	)
+-- end)
 
 -- on system wake check if dark mode is enabled and set the wallpaper accordingly
-hs.caffeinate.watcher
-	.new(function(event)
-		if event == hs.caffeinate.watcher.systemDidWake then
-			autoSetWallpaper()
-		end
-	end)
-	:start()
+-- hs.caffeinate.watcher
+-- 	.new(function(event)
+-- 		if event == hs.caffeinate.watcher.systemDidWake then
+-- 			autoSetWallpaper()
+-- 		end
+-- 	end)
+-- 	:start()
 
--- add a menubar item to change the wallpaper
-hs.menubar.new(true, "wallpaper"):setClickCallback(autoSetWallpaper):setTitle("wp")
+-- -- add a menubar item to change the wallpaper
+-- hs.menubar.new(true, "wallpaper"):setClickCallback(autoSetWallpaper):setTitle("wp")
 
 ---------------------
 
