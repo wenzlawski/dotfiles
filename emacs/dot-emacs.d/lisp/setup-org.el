@@ -246,13 +246,13 @@ Triggered by a custom macOS Quick Action with a keyboard shortcut."
 
     (bind-key "C-c C-c" #'my/org-capture-finalize 'org-capture-mode-map))
 
-  (advice-add 'my/org-capture-finalize :after #'my/close-if-capture)
+  (advice-add #'my/org-capture-finalize :after #'my/close-if-capture)
 
-  ;;(advice-add 'org-capture-finalize :after #'my/close-if-capture)
-  (advice-add 'org-capture-refile :after #'my/close-if-capture)
-  (advice-add 'org-capture-kill :after #'my/close-if-capture)
-  (advice-add 'my/read-later-template-from-prompt :after #'my/close-if-capture)
-  (advice-add 'org-protocol-capture :before
+  ;;(advice-add #'org-capture-finalize :after #'my/close-if-capture)
+  (advice-add #'org-capture-refile :after #'my/close-if-capture)
+  (advice-add #'org-capture-kill :after #'my/close-if-capture)
+  (advice-add #'my/read-later-template-from-prompt :after #'my/close-if-capture)
+  (advice-add #'org-protocol-capture :before
 	      (lambda (_) (progn
 			    (make-frame '((name . "capture")
 					  (top . 300)
@@ -261,7 +261,9 @@ Triggered by a custom macOS Quick Action with a keyboard shortcut."
 					  (height . 25)))
 			    (select-frame-by-name "capture")
 			    (my/frame-recenter))))
-  (advice-add 'org-protocol-capture :after (lambda (_) (delete-other-windows)))
+  (advice-add #'org-protocol-capture :after (lambda (_) (delete-other-windows)))
+  (advice-add  #'org-capture-place-template :after (lambda (_) (if (equal "capture" (frame-parameter nil 'name))
+								   (delete-other-windows))))
 
   ;; ** org align tags
 
@@ -407,9 +409,11 @@ first-level entry for writing comments."
      (latex . t)
      (ocaml . nil)
      (octave . t)
+     (julia . t)
      (python . t)
      (ruby . t)
      (screen . nil)
+     (shell . t)
      (sql . nil)
      (sqlite . t)))
   ;; ** org-refile
@@ -1045,6 +1049,7 @@ is active, that will be the link's description."
   :custom
   (org-noter-notes-search-path '("/Users/mw/Library/CloudStorage/Dropbox/Org"))
   :config
+  ;; (add-to-list 'display-buffer-alist '("Notes of" (window-width . 0.3)))
   (bind-key "C-c C-n" #'org-noter 'pdf-view-mode-map)
   (setq org-noter-default-notes-file-names '("noter.org")
 	org-noter-always-create-frame nil
