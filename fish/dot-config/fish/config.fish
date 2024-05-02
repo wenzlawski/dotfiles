@@ -30,3 +30,5 @@ fish_add_path $PNPM_HOME
 fish_add_path ~/.pyenv/shims
 fish_add_path /Library/TeX/texbin
 fish_add_path /usr/local/opt/gnupg@2.2/bin
+fish_add_path /opt/local/bin
+fish_add_path ~/.cask/bin
