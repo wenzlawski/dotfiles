@@ -109,6 +109,7 @@ New frames are instructed to call `prot-emacs-re-enable-frame-theme'."
 (add-hook 'after-init-hook (lambda nil (menu-bar-mode -1)))
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
+(tooltip-mode -1)
 
 ;; Set the frame padding and fringe
 (modify-all-frames-parameters
