@@ -160,6 +160,8 @@
 	    (bg-dim "#EBEBEB")
 	    (fg-main "#2C2C2C")
 	    (fg-dim "#8B8B8B")))
+  (setopt modus-operandi-tinted-palette-overrides modus-operandi-palette-overrides)
+  (setopt modus-vivendi-tinted-palette-overrides modus-vivendi-palette-overrides)
   (setopt modus-themes-common-palette-overrides
 	  '((cursor magenta-cooler)
 	    (prose-done cyan-cooler)
@@ -609,6 +611,7 @@ Containing LEFT, and RIGHT aligned respectively."
 	fit-window-to-buffer-horizontally t
 	calendar-latitude '[50 50 north]
 	calendar-longitude '[12 55 east]
+	auto-save-no-message t
 	)
   (pixel-scroll-precision-mode)
   (delete-selection-mode)
@@ -1554,6 +1557,15 @@ See URL `http://pypi.python.org/pypi/ruff'."
 (use-package osx-dictionary
   :straight t)
 
+;; ** unfill
+
+(use-package unfill
+  :straight t)
+;; ** a.el
+
+(use-package a :straight t)
+(use-package map :straight t)
+
 ;; * LANGUAGE TOOLS
 ;; ** yasnippet
 
@@ -1799,6 +1811,23 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :config
   (setq auto-mode-alist (delete '("\\.org\\'" . poly-org-mode) auto-mode-alist)))
 
+;; ** testing
+
+(use-package ert)
+
+(use-package ert-runner
+  :straight t)
+
+(use-package epdh
+  :disabled
+  :straight (:host github :repo "alphapapa/emacs-package-dev-handbook"))
+;; ** ctrlf
+
+(use-package ctrlf
+  :straight t
+  :config
+  (ctrlf-mode))
+
 ;; * LANGUAGE MODES
 ;; ** lisp
 
@@ -1973,7 +2002,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (julia-snail-repl-display-eval-results nil)
   (julia-snail-multimedia-enable t)
   :config
-  (setq-default julia-snail-extensions '(repl-history formatter ob-julia))
+  (setq-default julia-snail-extensions '(repl-history formatter))
   (add-to-list 'display-buffer-alist
                '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
   :hook (julia-mode . julia-snail-mode)
@@ -1982,6 +2011,15 @@ See URL `http://pypi.python.org/pypi/ruff'."
 ;;   :config
 ;;   (add-to-list 'display-buffer-alist
 ;; 	       '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
+
+;; (use-package julia-snail/ob-julia
+;;   :after julia-snail
+;;   :hook
+;;   (julia-snail/ob-julia-interaction-mode . (lambda () (advice-remove 'org-ctrl-c-ctrl-c #'julia-snail/ob-julia--around-ctrl-c-ctrl-c)))
+;;   :custom
+;;   (julia-snail/ob-julia-use-error-pane nil)
+;;   (julia-snail/ob-julia-mirror-output-in-repl nil)
+;;   (julia-snail/ob-julia-capture-io nil))
 
 (use-package eglot-jl
   :straight t
@@ -2475,6 +2513,7 @@ The browser to used is specified by the
 	("C-c C-n" . org-noter))
   :config
   (add-to-list 'display-buffer-alist '("\\`\\*Outline.*\\*" nil (window-width . 0.3))))
+
 
 (use-package saveplace-pdf-view
   :straight t
