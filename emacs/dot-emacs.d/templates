@@ -33,8 +33,8 @@ org-mode
 (tp "[%]" :post (org-ctrl-c-ctrl-c))
 (todoh "#+TODO: " r)
 (prop "#+PROPERTY: " q)
-(scr "#+begin_src " p n r n "#+end_src" :post (org-edit-src-code))
-(julia "#+begin_src julia" n r n "#+end_src" :post (org-edit-src-code))
+(src "#+begin_src " p n r n "#+end_src" :post (org-edit-src-code))
+(jl "#+begin_src julia" n r n "#+end_src")
 (sh "#+begin_src sh" n r n "#+end_src" :post (org-edit-src-code))
 (fish "#+begin_src fish" n r n "#+end_src" :post (org-edit-src-code))
 (python "#+begin_src python" n r n "#+end_src" :post (org-edit-src-code))
@@ -48,6 +48,7 @@ org-mode
 (loremp (Lorem-ipsum-insert-paragraphs (read-number "Paragraphs: ")))
 (title (cadar (org-collect-keywords '("TITLE"))))
 (ttl "#+TITLE: " p n "#+date: Created on " (format-time-string "[%Y-%m-%d %a]") n n q)
+(hargs "#+property: header-args" p " :" q)
 
 ;; Local Variables:
 ;; mode: lisp-data
