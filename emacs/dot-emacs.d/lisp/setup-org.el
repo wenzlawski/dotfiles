@@ -179,7 +179,7 @@ Triggered by a custom macOS Quick Action with a keyboard shortcut."
   
   (setq org-capture-templates
         '(("r" "refile" entry (file "refile.org")
-	   "* %^{Title}\n%U\n\n%?" :prepend t :empty-lines-after 1)
+	   "* %^{Title}\n%U\n\n%i%?" :prepend t :empty-lines-after 1)
 	  ;; ("t" "today" entry (file+olp+datetree "daily.org")
 	  ;;  "* %^{Title}\n\n%?")
 	  ;; ("T" "today+open" entry (file+olp+datetree "daily.org")

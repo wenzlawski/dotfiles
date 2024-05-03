@@ -97,7 +97,8 @@ New frames are instructed to call `prot-emacs-re-enable-frame-theme'."
       inhibit-startup-screen t
       inhibit-x-resources t
       inhibit-startup-echo-area-message user-login-name ; read the docstring
-      inhibit-startup-buffer-menu t)
+      inhibit-startup-buffer-menu t
+      bidi-paragraph-direction 'left-to-right)
 
 ;; Prevent the glimpse of un-styled Emacs by disabling these UI elements early.
 (push '(menu-bar-lines . 0) default-frame-alist)
@@ -117,13 +118,6 @@ New frames are instructed to call `prot-emacs-re-enable-frame-theme'."
    (internal-border-width . 10)))
 
 (set-face-background 'fringe (face-attribute 'default :background))
-
-;; Temporarily increase the garbage collection threshold.  These
-;; changes help shave off about half a second of startup time.  The
-;; `most-positive-fixnum' is DANGEROUS AS A PERMANENT VALUE.  See the
-;; `emacs-startup-hook' a few lines below for what I actually use.
-(setq gc-cons-threshold most-positive-fixnum
-      gc-cons-percentage 0.6)
 
 ;; Same idea as above for the `file-name-handler-alist' and the
 ;; `vc-handled-backends' with regard to startup speed optimisation.
