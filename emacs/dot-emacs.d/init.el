@@ -455,7 +455,7 @@ Containing LEFT, and RIGHT aligned respectively."
 	(source-code-pro :default-family "Source Code Pro")
 	(dejavu-sans-mono :default-family "DejaVu Sans Mono")
 	(fira-code :default-family "Fira Code"
-		   :line-spacing 0.05)
+		   :line-spacing nil)
 	(iosevka :default-family "Iosevka")
 	(menlo :default-family "Menlo")
 	(unifont :default-family "Unifont")
@@ -556,6 +556,10 @@ Containing LEFT, and RIGHT aligned respectively."
   ("C-<mouse-5>" . nil)
   ("C-<wheel-down>" . nil)
   ("C-<wheel-up>" . nil)
+  ("C-M-<mouse-4>" . nil)
+  ("C-M-<mouse-5>" . nil)
+  ("C-M-<wheel-up>" . nil)
+  ("C-M-<wheel-down>" . nil)
   ("C-c C" . calendar)
   ("C-c <SPC>" . mode-line-other-buffer)
   ("<C-i>" . completion-at-point)
@@ -1683,6 +1687,15 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (set-face-attribute 'eglot-highlight-symbol-face nil
 		      :bold t :underline nil :background (modus-themes-get-color-value 'bg-yellow-intense)))
 
+(use-package emacs-lsp-booster
+  :straight (:host github :repo "blahgeek/emacs-lsp-booster"))
+
+(use-package eglot-booster
+  :straight (:host github :repo "jdtsmith/eglot-booster")
+  :after eglot emacs-lsp-booster
+  :config
+  (eglot-booster-mode))
+
 (with-eval-after-load 'eglot
   (defun my/eglot-capf ()
     (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
@@ -2602,7 +2615,9 @@ The browser to used is specified by the
 ;; ** w3m
 
 (use-package w3m
-  :straight t)
+  :straight t
+  :custom-face
+  (w3m-tab-background ((t (:background unspecified)))))
 
 (use-package w3m-search
   :after w3m
