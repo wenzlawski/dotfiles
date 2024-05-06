@@ -73,6 +73,7 @@
   "Use compile command to execute a zig CMD with ARGS if given.
 If given a SOURCE, execute the CMD on it."
   (let ((cmd-args (if source (cons source args) args)))
+    (projectile-save-project-buffers)
     (compilation-start (mapconcat 'shell-quote-argument
                                   `(,zig-zig-bin ,cmd ,@cmd-args) " "))))
 
@@ -104,6 +105,7 @@ If given a SOURCE, execute the CMD on it."
 (defun zig-test-buffer ()
   "Test buffer using `zig test`."
   (interactive)
+  (projectile-save-project-buffers)
   (zig--run-cmd "test" (file-local-name (buffer-file-name)) "-O" zig-test-optimization-mode))
 
 ;;;###autoload
@@ -148,7 +150,10 @@ If given a SOURCE, execute the CMD on it."
      ((and (parent-is "comment") c-ts-common-looking-at-star)
       c-ts-common-comment-start-after-first-star -1)
      ((parent-is "comment") prev-adaptive-prefix 0)
+     ((parent-is "ParamDeclList") parent-bol zig-ts-mode-indent-offset)
+     ((parent-is "InitList") parent-bol zig-ts-mode-indent-offset)
      ((parent-is "ContainerDecl") parent-bol zig-ts-mode-indent-offset)
+     ((parent-is "SwitchExpr") parent-bol zig-ts-mode-indent-offset)
      ((parent-is "arguments") parent-bol zig-ts-mode-indent-offset)
      ((parent-is "block") parent-bol zig-ts-mode-indent-offset)))
   "Tree-sitter indent rules for `zig-ts-mode'.")
@@ -165,7 +170,7 @@ If given a SOURCE, execute the CMD on it."
     )
   "Zig keywords for tree-sitter font-locking.")
 
-(defvar zig-ts-mode--operators '("=" "+" "*" "/" "%" "&" "|" "!" "<" ">")
+(defvar zig-ts-mode--operators '("=" "+" "*" "**" "=>" ".?" ".*" "?" "/" "%" "&" "|" "!" "<" ">")
   "Zig operators for tree-sitter font-locking.")
 
 ;; TODO: Adapt this to zig
@@ -173,7 +178,16 @@ If given a SOURCE, execute the CMD on it."
       (treesit-font-lock-rules
        :language 'zig
        :feature 'bracket
-       '((["(" ")" "[" "]" "{" "}"]) @font-lock-bracket-face)
+       '([
+	  "[" "]" "(" ")" "{" "}"
+	  (Payload "|")
+	  (PtrPayload "|")
+	  (PtrIndexPayload "|")
+	  ] @font-lock-bracket-face)
+
+       :language 'zig
+       :feature 'punctuation
+       '([ ".." "..." ] @font-lock-misc-punctuation-face)
 
        :language 'zig
        :feature 'builtin
@@ -181,7 +195,7 @@ If given a SOURCE, execute the CMD on it."
 
        :language 'zig
        :feature 'comment
-       '(([(line_comment)]) @font-lock-comment-face)
+       '(([(line_comment) (doc_comment) (container_doc_comment)]) @font-lock-comment-face)
 
        :language 'zig
        :feature 'delimiter
@@ -216,7 +230,15 @@ If given a SOURCE, execute the CMD on it."
 
        :language 'zig
        :feature 'operator
-       `([,@zig-ts-mode--operators] @font-lock-operator-face)
+       `([
+	  (CompareOp)
+	  (BitwiseOp)
+	  (BitShiftOp)
+	  (AdditionOp)
+	  (AssignOp)
+	  (MultiplyOp)
+	  (PrefixOp)
+	  ,@zig-ts-mode--operators] @font-lock-operator-face)
 
        :language 'zig
        :feature 'string
@@ -228,29 +250,70 @@ If given a SOURCE, execute the CMD on it."
 
        :language 'zig
        :feature 'constant
-       '(((CHAR_LITERAL) @font-lock-constant-face))
+       '(["null" "unreachable" "undefined" (CHAR_LITERAL)] @font-lock-builtin-face)
 
-       ;; :language 'zig
-       ;; :feature 'variable
-       ;; '((arguments (identifier) @font-lock-variable-use-face)
-       ;;   (array_expression (identifier) @font-lock-variable-use-face)
-       ;;   (assignment_expression right: (identifier) @font-lock-variable-use-face)
-       ;;   (binary_expression left: (identifier) @font-lock-variable-use-face)
-       ;;   (binary_expression right: (identifier) @font-lock-variable-use-face)
-       ;;   (block (identifier) @font-lock-variable-use-face)
-       ;;   (compound_assignment_expr right: (identifier) @font-lock-variable-use-face)
-       ;;   (field_expression value: (identifier) @font-lock-variable-use-face)
-       ;;   (field_initializer value: (identifier) @font-lock-variable-use-face)
-       ;;   (if_expression condition: (identifier) @font-lock-variable-use-face)
-       ;;   (let_condition value: (identifier) @font-lock-variable-use-face)
-       ;;   (let_declaration value: (identifier) @font-lock-variable-use-face)
-       ;;   (match_arm value: (identifier) @font-lock-variable-use-face)
-       ;;   (match_expression value: (identifier) @font-lock-variable-use-face)
-       ;;   (reference_expression value: (identifier) @font-lock-variable-use-face)
-       ;;   (return_expression (identifier) @font-lock-variable-use-face)
-       ;;   (tuple_expression (identifier) @font-lock-variable-use-face)
-       ;;   (unary_expression (identifier) @font-lock-variable-use-face)
-       ;;   (while_expression condition: (identifier) @font-lock-variable-use-face))
+       :language 'zig
+       :feature 'builtin
+       '([ "true" "false" ] @font-lock-builtin-face)
+
+       :language 'zig
+       :feature 'number
+       '(((INTEGER) @font-lock-number-face)
+	 ((FLOAT) @font-lock-number-face))
+
+       :language 'zig
+       :feature 'builtin
+       '((BUILTINIDENTIFIER) @font-lock-builtin-face)
+
+       :language 'zig
+       :feature 'constant
+       '(
+	 ("." field_constant: (IDENTIFIER) @font-lock-constant-face)
+	 ((ErrorSetDecl field_constant: (IDENTIFIER) @font-lock-constant-face)))
+
+       :language 'zig
+       :feature 'builtin
+       '((
+	  ((IDENTIFIER) @font-lock-builtin-face)
+	  (:equal @font-lock-builtin-face "_")
+	  )
+	 ((FnProto exception: "!" @font-lock-builtin-face))
+	 ((PtrTypeStart "c" @font-lock-builtin-face)))
+
+       :language 'zig
+       :feature 'function
+       '(((FnProto function: (IDENTIFIER) @font-lock-function-name-face))
+	 ((SuffixExpr variable_type_function: (IDENTIFIER) @font-lock-function-call-face (FnCallArguments)))
+	 ((FieldOrFnCall function_call: (IDENTIFIER) @font-lock-function-call-face)))
+
+       :language 'zig
+       :feature 'variable
+       '(((SuffixExpr variable_type_function: (IDENTIFIER) @font-lock-variable-use-face))
+	 ((VarDecl variable_type_function: (IDENTIFIER) @font-lock-variable-name-face))
+	 ((ParamDecl parameter: (IDENTIFIER) @font-lock-variable-name-face))
+	 ((FieldOrFnCall field_access: (IDENTIFIER) @font-lock-variable-use-face))
+	 ((ContainerField field_member: (IDENTIFIER) @font-lock-variable-name-face)))
+
+       :language 'zig
+       :feature 'type
+       :override t
+       '(([
+	   (VarDecl variable_type_function: (IDENTIFIER) @font-lock-type-face)
+	   (SuffixExpr variable_type_function: (IDENTIFIER) @font-lock-type-face)
+	   (ParamDecl parameter: (IDENTIFIER) @font-lock-type-face)
+	   (FieldOrFnCall field_access: (IDENTIFIER) @font-lock-type-face)
+	   ]
+	  (:match "^[A-Z]\\([a-z]+[A-Za-z_0-9]*\\)*$" @font-lock-type-face)))
+
+       :language 'zig
+       :feature 'constant
+       :override t
+       '(([
+	   (VarDecl variable_type_function: (IDENTIFIER) @font-lock-constant-face)
+	   (SuffixExpr variable_type_function: (IDENTIFIER) @font-lock-constant-face)
+	   (FieldOrFnCall field_access: (IDENTIFIER) @font-lock-constant-face)
+	   ]
+	  (:match "^[A-Z][A-Z_0-9]+$" @font-lock-constant-face)))
        ))
 
 
@@ -332,9 +395,9 @@ Return nil if there is no name or if NODE is not a defun node."
     (setq-local treesit-font-lock-settings zig-ts-mode--font-lock-settings)
     (setq-local treesit-font-lock-feature-list
                 '(( comment )		; definitions
-		  ( keyword string type )
+		  ( keyword string types )
 		  ( assignment number builtin constant ) ; constants, literals
-		  ( bracket operator function delimiter ))) ; delimiters, punctuation, functions properties variables
+		  ( bracket operator function delimiter punctuation variable))) ; delimiters, punctuation, functions properties variables
 
 
     ;; Imenu.
@@ -359,8 +422,8 @@ Return nil if there is no name or if NODE is not a defun node."
 
     (treesit-major-mode-setup)))
 
-(if (treesit-ready-p 'zig)
-    (add-to-list 'auto-mode-alist '("\\.zig\\'" . zig-ts-mode)))
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.\\(zig\\|zon\\)\\'" . zig-ts-mode))
 
 (provide 'zig-ts-mode)
 ;;; zig-ts-mode.el ends here

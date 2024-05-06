@@ -2,8 +2,8 @@
 # name: if_else
 # key: ife
 # --
-if ($0) {
-    `yas-selected-text`
+if ($1) {
+    `yas-selected-text`$0
 } else {
     
 }

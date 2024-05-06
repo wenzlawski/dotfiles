@@ -2,6 +2,6 @@
 # name: for_val_index
 # key: forvi
 # --
-for ($0) |${1:v},${2:i}| {
-    `yas-selected-text`
+for (${1:seq}, 0..) |${2:v}, ${3:i}| {
+    `yas-selected-text`$0
 }

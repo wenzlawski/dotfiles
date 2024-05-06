@@ -2,7 +2,7 @@
 # name: for_else
 # key: fore
 # --
-for ($0) |${1:v}| {
-    `yas-selected-text`
+for (${1:seq}) |${2:v}| {
+    `yas-selected-text`$0
     break true;
 } else false;

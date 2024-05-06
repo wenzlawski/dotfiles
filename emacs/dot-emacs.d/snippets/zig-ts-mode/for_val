@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: for_val
-# key: forv
+# key: for
 # --
-for ($0) |${1:v}| {
-    `yas-selected-text`
+for (${1:seq}) |${2:v}| {
+    `yas-selected-text`$0
 }

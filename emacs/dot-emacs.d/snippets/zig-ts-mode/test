@@ -2,7 +2,6 @@
 # name: test
 # key: test
 # --
-test ${1:name} {
-    `yas-selected-text`
-    assert(true)
+test "${1:name}" {
+    `yas-selected-text`$0
 }

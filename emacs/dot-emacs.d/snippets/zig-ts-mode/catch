@@ -2,6 +2,6 @@
 # name: catch
 # key: catch
 # --
-catch |$0| {
-    `yas-selected-text`
+catch |$1| {
+    `yas-selected-text`$0
 }
