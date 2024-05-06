@@ -196,9 +196,9 @@
 	    (bg-mode-line-inactive bg-main)
 	    (border-mode-line-active bg-mode-line-active)
 	    (border-mode-line-inactive bg-mode-line-inactive)
-	    (bg-tab-bar bg-main)
-	    (bg-tab-current bg-active)
-	    (bg-tab-other bg-main)
+	    (bg-tab-bar bg-dim)
+	    (bg-tab-current bg-main)
+	    (bg-tab-other bg-dim)
 	    (prose-done green-faint)
             (prose-todo red-faint)
 	    )))
@@ -649,10 +649,22 @@ Containing LEFT, and RIGHT aligned respectively."
 
 ;; ** Man
 
+(defun my/man-plain (arg)
+  "Plain man"
+  (interactive "sCommand: ")
+  (man arg))
+
 (use-package man
+  :custom
+  (Man-arguments "-a")
   :bind
+  (:map help-map
+	("C-w" . my/man-plain))
   (:map Man-mode-map
 	("g" . consult-imenu)))
+
+printf
+
 
 ;; ** editorconfig
 
@@ -838,11 +850,13 @@ Append with current prefix arg."
 ;; ** eldoc
 
 (use-package eldoc
+  :straight t
   :custom
   (eldoc-echo-area-display-truncation-message nil)
   (eldoc-echo-area-use-multiline-p nil)
   (eldoc-idle-delay 0.05)
-  (eldoc-current-idle-delay 0.05))
+  (eldoc-current-idle-delay 0.05)
+  (eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly))
 
 ;; ** pos-tip
 
@@ -1189,6 +1203,15 @@ Append with current prefix arg."
   :bind
   ("C-=" . er/expand-region)
   ("C-+" . er/contract-region))
+;; ** expreg
+
+(use-package expreg
+  :straight t
+  :config
+  (dolist (m (list zig-ts-mode-map python-ts-mode-map typst-ts-mode-map rust-ts-mode-map))
+    (bind-key "C-=" #'expreg-expand m)
+    (bind-key "C-+" #'expreg-contract m)))
+
 ;; ** completion
 
 (defun my/sort-by-length (elements)
@@ -1210,6 +1233,18 @@ This function can be used as the value of the user option
 ;;(bind-key "e" #'switch-to-minibuffer 'completion-list-mode-map)
 ;;(bind-key "<return>" #'minibuffer-force-complete-and-exit 'minibuffer-mode-map)
 ;;(bind-key "C-<return>" #'minibuffer-tcomplete-and-exit 'minibuffer-mode-map)
+;; ** mct
+
+(use-package mct
+  :straight t)
+;; :custom
+;; (mct-completion-window-size (cons #'mct-frame-height-third 1))
+;; (mct-remove-shadowed-file-names t) ; works when `file-name-shadow-mode' is enabled
+;; (mct-hide-completion-mode-line t)
+;; (mct-minimum-input 3)
+;; (mct-live-completion nil)
+;; (mct-live-update-delay 0.6)
+;; (mct-persist-dynamic-completion t))
 
 ;; ** marginalia
 
@@ -1225,6 +1260,8 @@ This function can be used as the value of the user option
   :bind
   ("C-c t" . vterm)
   ("C-c 4 t" . vterm-other-window)
+  (:map vterm-mode-map
+	("<deletechar>" . vterm-send-delete))
   :custom
   (vterm-eval-cmds
    '(("find-file" find-file)
@@ -1286,9 +1323,10 @@ This function can be used as the value of the user option
   :after vertico
   :init
   (vertico-multiform-mode)
-  (setq vertico-multiform-commands
-	'((consult-ripgrep buffer)
-	  (consult-buffer flat))))
+  :custom
+  (vertico-multiform-commands
+   '((consult-ripgrep buffer)
+     (consult-buffer flat))))
 
 ;; ** consult
 
@@ -1679,7 +1717,8 @@ See URL `http://pypi.python.org/pypi/ruff'."
 	("C-c e q" . eglot-shutdown)
 	("C-c e Q" . eglot-shutdown-all)
 	("C-c e l" . eglot-list-connections)
-	("C-c e r" . eglot-rename))
+	("C-c e r" . eglot-rename)
+	("C-c e i" . eglot-inlay-hints-mode))
   :init
   (defun my/orderless-dispatch-flex-first (_pattern index _total)
     (and (eq index 0) 'orderless-flex))
@@ -1688,6 +1727,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
 		      :bold t :underline nil :background (modus-themes-get-color-value 'bg-yellow-intense)))
 
 (use-package emacs-lsp-booster
+  :after eglot
   :straight (:host github :repo "blahgeek/emacs-lsp-booster"))
 
 (use-package eglot-booster
@@ -1752,11 +1792,11 @@ See URL `http://pypi.python.org/pypi/ruff'."
   :bind
   (:map prog-mode-map ("C-c f" . apheleia-format-buffer))
   :config
-  (with-eval-after-load 'julia-mode
-    (push
-     '(julia "~/.emacs.d/scripts/julia-format.sh" inplace )
-     apheleia-formatters)
-    (add-to-list 'apheleia-mode-alist '(julia-mode . julia)))
+  ;; (with-eval-after-load 'julia-mode
+  ;;   (push
+  ;;    '(julia "~/.emacs.d/scripts/julia-format.sh" inplace )
+  ;;    apheleia-formatters)
+  ;;   (add-to-list 'apheleia-mode-alist '(julia-mode . julia)))
 
   (add-to-list 'apheleia-mode-alist '(python-mode . ruff-isort))
   (add-to-list 'apheleia-mode-alist '(python-ts-mode . ruff-isort))
@@ -1996,7 +2036,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 (use-package julia-mode
   :straight t
-  :hook (julia-ts-mode . (lambda nil (progn (apheleia-mode -1) (setq-local eglot-connect-timeout 300))))
+  :hook (julia-mode . (lambda nil (progn (apheleia-mode -1) (setq-local eglot-connect-timeout 30000))))
   :mode "\\.jl\\'")
 
 (use-package julia-ts-mode
@@ -2012,18 +2052,21 @@ See URL `http://pypi.python.org/pypi/ruff'."
 	("C-c f" . julia-snail/formatter-format-buffer))
   :custom
   (julia-snail-popup-display-eval-results ':command)
-  (julia-snail-repl-display-eval-results nil)
+  (julia-snail-repl-display-eval-results t)
   (julia-snail-multimedia-enable t)
   :config
   (setq-default julia-snail-extensions '(repl-history formatter))
-  (add-to-list 'display-buffer-alist
-               '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
-  :hook (julia-mode . julia-snail-mode)
+  :hook
+  (julia-mode . julia-snail-mode)
   (julia-snail-mode . (lambda () (apheleia-mode -1))))
 
-;;   :config
-;;   (add-to-list 'display-buffer-alist
-;; 	       '("\\*julia" (display-buffer-reuse-window display-buffer-same-window)))
+(use-package julia-formatter
+  :disabled
+  :straight t
+  :hook julia-mode
+  :custom
+  (julia-formatter-should-compile-julia-image nil))
+
 
 ;; (use-package julia-snail/ob-julia
 ;;   :after julia-snail
@@ -2088,7 +2131,6 @@ See URL `http://pypi.python.org/pypi/ruff'."
 (use-package cc-mode
   :hook (awk-mode . (lambda nil (setq tab-width 4)))
   (c-mode . hs-minor-mode)
-  (c-mode . semantic-mode)
   :bind
   (:map c-mode-base-map
 	("C-c C-t" . comment-region)))
