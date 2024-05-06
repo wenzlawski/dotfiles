@@ -15,3 +15,4 @@ abbr n nvim
 abbr zj zellij
 abbr hi history
 abbr --add dotdot --regex '^\.\.+$' --function multicd
+abbr gcc gcc-13
